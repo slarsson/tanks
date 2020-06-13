@@ -7,12 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Client struct {
-	conn         *websocket.Conn
-	position     *Point
-	NetworkInput chan []byte
-}
-
 func (c *Client) swag() {
 	fmt.Println("myclient")
 }
@@ -40,12 +34,40 @@ func newServer() *Server {
 	}
 }
 
+func (s *Server) reader(client *Client) {
+	defer func() {
+		s.unregister <- client // close connection?
+	}()
+
+	for {
+		_, message, err := client.conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		client.NetworkInput <- message
+	}
+}
+
+func (s *Server) writer(client *Client) {
+	// TODO: write from this connection osv
+	// for {
+	// 	select {
+	// 	case message, ok := <-client.NetworkOutput:
+	// 		client.conn.w
+	// 	}
+	// }
+}
+
 func (s *Server) run() {
+	//game := newGame()
+
 	go s.gameLoop()
 	for {
 		select {
 		case client := <-s.register:
 			s.clients[client] = true
+			go s.reader(client)
+			go s.writer(client)
 		case client := <-s.unregister:
 			delete(s.clients, client)
 		case message := <-s.broadcast:
@@ -60,7 +82,7 @@ func (s *Server) run() {
 func (s *Server) broadcastState() {
 	buf := "["
 	for x := range s.clients {
-		buf += `{"x": ` + fmt.Sprintf("%f", x.position.X) + `, "y": 0, "z": 0},`
+		buf += `{"x": ` + fmt.Sprintf("%f", x.position.X) + `, "y": ` + fmt.Sprintf("%f", x.position.Y) + `, "z": 0},`
 	}
 	if len(buf) > 1 {
 		buf = buf[:len(buf)-1]
@@ -75,27 +97,44 @@ func (s *Server) broadcastState() {
 	}
 }
 
-func (c *Client) inputs() {
+func (c *Client) inputs(dt float32) {
 	for len(c.NetworkInput) != 0 {
 		message := <-c.NetworkInput
-		//x := uint32(message)
-		//x := binary.BigEndian.Uint64(message)
 
-		//fmt.Println(x)
-		fmt.Printf("message: %s", message)
-		c.position.move()
+		fmt.Println("ID: ", c.ID, " ->", message[0])
+
+		if message[0] == byte(49) {
+			fmt.Println("do somethings ffs")
+			c.position.Y += dt * 0.005
+		}
+
+		if message[1] == byte(49) {
+			c.position.X -= dt * 0.005
+		}
+
+		if message[2] == byte(49) {
+			c.position.Y -= dt * 0.005
+		}
+
+		if message[3] == byte(49) {
+			c.position.X += dt * 0.005
+		}
 	}
 }
 
 func (s *Server) gameLoop() {
-	ticker := time.NewTicker(100 * time.Millisecond)
+	fmt.Println("gameloop started..")
+	var step float32
+	step = 50
+	ticker := time.NewTicker(time.Duration(step) * time.Millisecond)
+
 	for range ticker.C {
 		//fmt.Println("do update osv", len(s.clients))
 
 		for c := range s.clients {
 			//fmt.Println("get inputz")
 			//fmt.Println("do shiet")
-			c.inputs()
+			c.inputs(step)
 		}
 
 		s.broadcastState()

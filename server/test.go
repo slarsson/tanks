@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -17,26 +18,28 @@ func server(s *Server, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		conn:         c,
-		position:     &Point{X: 0, Y: 0, Z: 0},
-		NetworkInput: make(chan []byte, 100),
+		conn:          c,
+		position:      &Point{X: 0, Y: 0, Z: 0},
+		NetworkInput:  make(chan []byte, 100),
+		NetworkOutput: make(chan []byte, 100),
+		ID:            rand.Intn(10000),
 	}
 	s.register <- client // register new player
 
-	defer func() {
-		s.unregister <- client
-		c.Close()
-	}()
+	// defer func() {
+	// 	s.unregister <- client
+	// 	c.Close()
+	// }()
 
-	for {
-		_, message, err := c.ReadMessage()
-		if err != nil {
-			break
-		}
+	// for {
+	// 	_, message, err := c.ReadMessage()
+	// 	if err != nil {
+	// 		break
+	// 	}
 
-		client.NetworkInput <- message
-		//s.broadcast <- message // pipe input from player to server
-	}
+	// 	client.NetworkInput <- message
+	// 	//s.broadcast <- message // pipe input from player to server
+	// }
 }
 
 func main() {

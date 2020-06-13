@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import Vehicle from './Vehicle';
+import TestVechicle from './TestVehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
 
@@ -11,48 +12,59 @@ class Render {
     renderer: THREE.WebGLRenderer;
     timestamp: number;
     key: Keypress;
-    test: Vehicle[];
-    state: any;
+    
+    vehicles: Vehicle[];
+    player: TestVechicle;
 
     constructor() {
+        // setup
         this.scene = new THREE.Scene();
+
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 2000);
         this.camera.rotation.x = Math.PI / 4;
-        //this.camera.rotation.z = Math.PI / 6;
         this.camera.position.y = -10;
+        this.camera.position.z = 15;
         
         this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        
         document.getElementById('root')?.appendChild(this.renderer.domElement);
 
         this.key = new Keypress();
 
+        // method binds
         this.animate = this.animate.bind(this);
+        this.test = this.test.bind(this);
         
+        // test
+        this.player = new TestVechicle(this.scene, this.key);
+        this.vehicles = [];
+
+        // websocket
+        this.conn = new Connection((state: any) => {
+            //console.log(state);
+            if (state.length == 0) return;
+            if (state.length != this.vehicles.length) {
+                this.vehicles.push(new Vehicle(this.scene));
+            }
+
+            for (let i = 0; i < state.length; i++) {
+                this.vehicles[i].setPosition(new THREE.Vector3(state[i].x, state[i].y, state[i].z));
+            }
+            },
+            () => {
+                this.test();
+            }
+        );
 
         // init
         this.timestamp = performance.now();
-        
-        //this.scene.add(this.cube);
-        this.camera.position.z = 15;
-        this.test = [
-            new Vehicle(this.scene, this.key),
-            new Vehicle(this.scene)
-        ];
-        this.test[1].setColor(0x00ff00);
-
         this.animate();
+        //this.test();
+    }
 
-        // test websocket
-        this.state = [];
-
-        this.conn = new Connection((x: any) => {
-            if (x.length == 0) return;
-            let last = x[x.length - 1];
-            this.test[this.test.length - 1].setPosition(new THREE.Vector3(last.x, last.y, last.z));
-            this.state = x;
-        });
+    test(): void {
+        this.conn.send(this.key.poll());
+        setTimeout(this.test, 50);
     }
 
     animate(): void {
@@ -60,11 +72,7 @@ class Render {
         let now = performance.now();
         let dt = now - this.timestamp;
 
-        for (const item of this.test) {
-            item.update(dt);
-        }
-        //this.test.update(dt);
-        //this.test.setPosition(new THREE.Vector3(0, 0, 0));
+        this.player.update(dt);
 
         this.renderer.render(this.scene, this.camera);    
         this.timestamp = now;
