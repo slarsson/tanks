@@ -15,11 +15,11 @@ class TestVechicle extends Vehicle {
     }
 
     update(dt: number): void {
-        let x = 0.005 * dt;
-        if (this.keys.status.w) this.body.position.y += x;
-        if (this.keys.status.s) this.body.position.y -= x;
-        if (this.keys.status.a) this.body.position.x -= x;
-        if (this.keys.status.d) this.body.position.x += x; 
+        // let x = 0.005 * dt;
+        // if (this.keys.status.w) this.body.position.y += x;
+        // if (this.keys.status.s) this.body.position.y -= x;
+        // if (this.keys.status.a) this.body.position.x -= x;
+        // if (this.keys.status.d) this.body.position.x += x; 
     }
 
 
