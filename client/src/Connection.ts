@@ -20,6 +20,7 @@ class Connection {
         this.target = target;
 
         this.socket = new WebSocket('ws://localhost:1337')
+        this.socket.binaryType = 'arraybuffer';
         this.socket.onopen = () => swag();
         this.socket.onmessage = this.message;
         this.socket.onclose = this.close;
@@ -34,16 +35,26 @@ class Connection {
     }
 
     private message(payload: MessageEvent) {
-        let data: Message[];
+        this.target(new Float32Array(payload.data));
 
-        try {
-            data = JSON.parse(payload.data)
-        } catch(err) {
-            console.error(err);
-            return;
-        }
+        // let x = new Uint32Array(payload.data);
+
+        // for (var i = 0; i < x.byteLength; i++) {
+        //     console.log('wtf?');
+        // }
+
+        //this.target();
+        //this.target(String.fromCharCode.apply(null, x));
+        // let data: Message[];
+
+        // try {
+        //     data = JSON.parse(payload.data)
+        // } catch(err) {
+        //     console.error(err);
+        //     return;
+        // }
         
-        this.target(data);
+        // this.target(data);
     }
 
     send(message: any) {

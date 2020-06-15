@@ -36,13 +36,19 @@ class Keypress {
         }
     }
 
-    poll(): string {
-        return (
-            (this.status.w ? 1 : 0).toString() + 
-            (this.status.a ? 1 : 0).toString() + 
-            (this.status.s ? 1 : 0).toString() + 
-            (this.status.d ? 1 : 0).toString()
-        );
+    poll(): Uint8Array {
+        let x = new Uint8Array(4);
+        x[0] = (this.status.w ? 1 : 0);
+        x[1] = (this.status.a ? 1 : 0);
+        x[2] = (this.status.s ? 1 : 0);
+        x[3] = (this.status.d ? 1 : 0);
+        return x;
+        // return (
+        //     (this.status.w ? 1 : 0).toString() + 
+        //     (this.status.a ? 1 : 0).toString() + 
+        //     (this.status.s ? 1 : 0).toString() + 
+        //     (this.status.d ? 1 : 0).toString()
+        // );
     }
 
     dispose(): void {

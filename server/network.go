@@ -65,7 +65,7 @@ func (n *Network) writer(client *Client) {
 		select {
 		case message, ok := <-client.NetworkOutput:
 			if ok {
-				client.conn.WriteMessage(websocket.TextMessage, message)
+				client.conn.WriteMessage(websocket.BinaryMessage, message)
 			}
 		}
 	}

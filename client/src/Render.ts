@@ -13,8 +13,8 @@ class Render {
     timestamp: number;
     key: Keypress;
     
-    vehicles: Vehicle[];
-    player: TestVechicle;
+    vehicles: Map<number, Vehicle>;
+    //player: TestVechicle;
 
     constructor() {
         // setup
@@ -34,23 +34,26 @@ class Render {
         // method binds
         this.animate = this.animate.bind(this);
         this.test = this.test.bind(this);
+        this.worldTick = this.worldTick.bind(this);
         
         // test
-        this.player = new TestVechicle(this.scene, this.key);
-        this.vehicles = [];
+        //this.player = new TestVechicle(this.scene, this.key);
+        this.vehicles = new Map();
 
         // websocket
-        this.conn = new Connection((state: any) => {
+        this.conn = new Connection(this.worldTick
+            //(state: any) => {
             //console.log(state);
-            if (state.length == 0) return;
-            if (state.length != this.vehicles.length) {
-                this.vehicles.push(new Vehicle(this.scene));
-            }
+            // //console.log(state);
+            // if (state.length == 0) return;
+            // if (state.length != this.vehicles.length) {
+            //     this.vehicles.push(new Vehicle(this.scene));
+            // }
 
-            for (let i = 0; i < state.length; i++) {
-                this.vehicles[i].setPosition(new THREE.Vector3(state[i].x, state[i].y, state[i].z));
-            }
-            },
+            // for (let i = 0; i < state.length; i++) {
+            //     this.vehicles[i].setPosition(new THREE.Vector3(state[i].x, state[i].y, state[i].z));
+            // }
+            ,
             () => {
                 this.test();
             }
@@ -62,9 +65,21 @@ class Render {
         //this.test();
     }
 
+    worldTick(state: Float32Array): void {
+        for (let i = 0; i < state.length; i += 4) {
+            if (this.vehicles.has(state[i])) {
+                this.vehicles.get(state[i])?.setPosition(new THREE.Vector3(state[i+1], state[i+2], state[i+3]));
+            } else {
+                this.vehicles.set(state[i], new Vehicle(this.scene));
+            }
+
+            //console.log(state[i], state[i+1], state[i+2]);
+        }
+    }
+
     test(): void {
-        this.conn.send(this.key.poll());
-        setTimeout(this.test, 50);
+        this.conn.send(this.key.poll().buffer);
+        setTimeout(this.test, 20);
     }
 
     animate(): void {
@@ -72,7 +87,7 @@ class Render {
         let now = performance.now();
         let dt = now - this.timestamp;
 
-        this.player.update(dt);
+        //this.player.update(dt);
 
         this.renderer.render(this.scene, this.camera);    
         this.timestamp = now;

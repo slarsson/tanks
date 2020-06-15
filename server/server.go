@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"encoding/binary"
+	"math"
 	"time"
 )
 
@@ -19,23 +20,50 @@ func newServer() *Server {
 
 func (s *Server) gameLoop() {
 	var step float32
-	step = 50
+	step = 20
 	ticker := time.NewTicker(time.Duration(step) * time.Millisecond)
 
 	for range ticker.C {
 		//fmt.Println("do world update")
 
-		var buf string
+		// bufx := make([]byte, 0, 100)
+		// x := make([]byte, 4)
+		// binary.LittleEndian.PutUint32(x, 12342)
+
+		// bufx = append(bufx, x...)
+		// fmt.Println("test:", x, bufx)
+
+		// var buf string
+		// for _, p := range s.Game.Players {
+		// 	// fmt.Println(v.Name)
+		// 	p.Client.handleInputs(p, step)
+
+		// 	buf = `[{"x": ` + fmt.Sprintf("%f", p.Position.X) + `, "y": ` + fmt.Sprintf("%f", p.Position.Y) + `, "z": 0}]`
+		// }
+
+		buf := make([]byte, 0, 20)
 		for _, p := range s.Game.Players {
-			// fmt.Println(v.Name)
 			p.Client.handleInputs(p, step)
 
-			buf = `[{"x": ` + fmt.Sprintf("%f", p.Position.X) + `, "y": ` + fmt.Sprintf("%f", p.Position.Y) + `, "z": 0}]`
+			id := make([]byte, 4)
+			x := make([]byte, 4)
+			y := make([]byte, 4)
+			z := make([]byte, 4)
+
+			binary.LittleEndian.PutUint32(id, math.Float32bits(float32(p.ID)))
+			binary.LittleEndian.PutUint32(x, math.Float32bits(p.Position.X))
+			binary.LittleEndian.PutUint32(y, math.Float32bits(p.Position.Y))
+			binary.LittleEndian.PutUint32(z, math.Float32bits(p.Position.Z))
+
+			buf = append(buf, id...)
+			buf = append(buf, x...)
+			buf = append(buf, y...)
+			buf = append(buf, z...)
 		}
 
-		// x := rand.Float32() * 5
-		// y := rand.Float32() * 3
-		s.Network.broadcast <- []byte(buf)
+		//fmt.Println(buf)
+
+		s.Network.broadcast <- buf
 	}
 }
 
@@ -43,22 +71,19 @@ func (c *Client) handleInputs(p *Player, dt float32) {
 	for len(c.NetworkInput) != 0 {
 		message := <-c.NetworkInput
 
-		//fmt.Println("ID: ", c.ID, " ->", message)
-
-		if message[0] == byte(49) {
-			fmt.Println("do somethings ffs")
+		if message[0] == 1 {
 			p.Position.Y += dt * 0.005
 		}
 
-		if message[1] == byte(49) {
+		if message[1] == 1 {
 			p.Position.X -= dt * 0.005
 		}
 
-		if message[2] == byte(49) {
+		if message[2] == 1 {
 			p.Position.Y -= dt * 0.005
 		}
 
-		if message[3] == byte(49) {
+		if message[3] == 1 {
 			p.Position.X += dt * 0.005
 		}
 	}
