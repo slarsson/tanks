@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -26,15 +28,18 @@ func newNetwork() *Network {
 	}
 }
 
-func (n *Network) start() {
+func (n *Network) start(ca chan *Actions) {
 	for {
 		select {
 		case client := <-n.register:
 			n.clients[client] = true
-			go n.reader(client)
+			go n.reader(client, ca)
 			go n.writer(client)
 		case client := <-n.unregister:
-			delete(n.clients, client)
+			fmt.Println("disconnect player")
+
+			ca <- &Actions{MessageType: 1, Client: client}
+			//delete(n.clients, client)
 		case message := <-n.broadcast:
 			for client := range n.clients {
 				client.NetworkOutput <- message
@@ -43,7 +48,7 @@ func (n *Network) start() {
 	}
 }
 
-func (n *Network) reader(client *Client) {
+func (n *Network) reader(client *Client, ca chan *Actions) {
 	defer func() {
 		n.unregister <- client // close connection?
 	}()
@@ -53,8 +58,13 @@ func (n *Network) reader(client *Client) {
 		if err != nil {
 			break
 		}
-		client.NetworkInput <- message
-		//n.broadcast <- message
+
+		//fmt.Println("NETWORK:", message)
+		if message[0] == 0 {
+			ca <- &Actions{MessageType: 0, Client: client}
+		} else {
+			client.NetworkInput <- message
+		}
 	}
 }
 

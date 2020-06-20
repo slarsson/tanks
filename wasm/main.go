@@ -15,6 +15,7 @@ type keys struct {
 type Player struct {
 	ID       int
 	Position *Vector3
+	Velocity *Vector3
 }
 
 type Vector3 struct {
@@ -65,22 +66,23 @@ func keypress(this js.Value, args []js.Value) interface{} {
 }
 
 func poll(this js.Value, args []js.Value) interface{} {
-	buf := make([]byte, 4)
+	buf := make([]byte, 5)
+	buf[0] = 1
 
 	if controls.w {
-		buf[0] = 1
-	}
-
-	if controls.a {
 		buf[1] = 1
 	}
 
-	if controls.s {
+	if controls.a {
 		buf[2] = 1
 	}
 
-	if controls.d {
+	if controls.s {
 		buf[3] = 1
+	}
+
+	if controls.d {
+		buf[4] = 1
 	}
 
 	uint8Array := js.Global().Get("Uint8Array")
@@ -93,29 +95,15 @@ func update(this js.Value, args []js.Value) interface{} {
 
 	//fmt.Println(args)
 
-	for i := 0; i < len(args); i += 4 {
+	for i := 0; i < len(args); i += 7 {
 		if _, ok := players[args[i].Int()]; ok {
 
 			players[args[i].Int()].Position.setPosition(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
 
-			// dt := float32(100)
-			// p := players[args[i].Int()]
-
-			// if controls.w {
-			// 	p.Position.Y += dt * 0.005
-			// }
-
-			// if controls.a {
-			// 	p.Position.X -= dt * 0.005
-			// }
-
-			// if controls.s {
-			// 	p.Position.Y -= dt * 0.005
-			// }
-
-			// if controls.d {
-			// 	p.Position.X += dt * 0.005
-			// }
+			dt := float32(50)
+			p := players[args[i].Int()]
+			p.Position.X += dt * p.Velocity.X
+			p.Position.Y += dt * p.Velocity.Y
 
 		} else {
 			fmt.Println("add new player?")
@@ -126,6 +114,11 @@ func update(this js.Value, args []js.Value) interface{} {
 					Y: float32(args[i+2].Float()),
 					Z: float32(args[i+3].Float()),
 				},
+				Velocity: &Vector3{
+					X: float32(0),
+					Y: float32(0),
+					Z: float32(0),
+				},
 			}
 		}
 	}
@@ -134,8 +127,12 @@ func update(this js.Value, args []js.Value) interface{} {
 }
 
 func getp(this js.Value, args []js.Value) interface{} {
-	p := players[args[0].Int()].Position.getPosition()
-	//fmt.Println(p)
+
+	play := players[args[0].Int()]
+	// dt := float32(args[0].Float())
+	// play.Position.X += dt * play.Velocity.Y
+	// play.Position.Y += dt * play.Velocity.X
+	p := play.Position.getPosition()
 	return []interface{}{p[0], p[1], p[2]}
 }
 
@@ -157,24 +154,24 @@ func test(this js.Value, x []js.Value) interface{} {
 
 func local(this js.Value, args []js.Value) interface{} {
 
-	dt := float32(args[0].Float())
-	p := players[8081]
+	// dt := float32(args[0].Float())
+	// p := players[8081]
 
-	if controls.w {
-		p.Position.Y += dt * 0.005
-	}
+	// if controls.w {
+	// 	p.Position.Y += dt * 0.005
+	// }
 
-	if controls.a {
-		p.Position.X -= dt * 0.005
-	}
+	// if controls.a {
+	// 	p.Position.X -= dt * 0.005
+	// }
 
-	if controls.s {
-		p.Position.Y -= dt * 0.005
-	}
+	// if controls.s {
+	// 	p.Position.Y -= dt * 0.005
+	// }
 
-	if controls.d {
-		p.Position.X += dt * 0.005
-	}
+	// if controls.d {
+	// 	p.Position.X += dt * 0.005
+	// }
 
 	return js.ValueOf(nil)
 }

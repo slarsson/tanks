@@ -10,15 +10,18 @@ class Vehicle {
     static readonly COLORS = [0xff0000, 0x00ff00, 0x0000ff]; 
     private keys: Keypress;
 
+    private scene: THREE.Scene;
 
-    constructor(scene: THREE.Scene, keys: Keypress) {
+
+    constructor(_scene: THREE.Scene, keys: Keypress) {
         this.keys = keys;
         
         this.geometry = new THREE.BoxGeometry(2, 4, 1);
         this.material = new THREE.MeshBasicMaterial({color: Vehicle.COLORS[Math.floor(Math.random() * Vehicle.COLORS.length)]});
         this.body = new THREE.Mesh(this.geometry, this.material);
 
-        scene.add(this.body);
+        this.scene = _scene;
+        this.scene.add(this.body);
 
         this.setPosition = this.setPosition.bind(this);
         this.setColor = this.setColor.bind(this);
@@ -41,6 +44,10 @@ class Vehicle {
         if (this.keys.status.d) this.body.position.x += x; 
         //console.log('do update..');
     } 
+
+    dispose(): void {
+        this.scene.remove(this.body);
+    }
 }
 
 export default Vehicle;

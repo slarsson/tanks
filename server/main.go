@@ -29,13 +29,13 @@ func start(s *Server, w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.Network.register <- client // new connection
-	s.Game.addPlayer(client)     // SKA INTE GÖRAS HÄR!!!
+	//s.Game.addPlayer(client)     // SKA INTE GÖRAS HÄR!!!
 }
 
 func main() {
 	server := newServer()
-	go server.Network.start()
 	go server.gameLoop()
+	go server.ops()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		start(server, w, r)

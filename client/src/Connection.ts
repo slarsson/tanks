@@ -35,7 +35,9 @@ class Connection {
     }
 
     private message(payload: MessageEvent) {
-        this.target(new Float32Array(payload.data));
+        //console.log(payload.data.Uint8Array);
+        
+        this.target(new Float32Array(payload.data), new Uint32Array(payload.data));
 
         // let x = new Uint32Array(payload.data);
 

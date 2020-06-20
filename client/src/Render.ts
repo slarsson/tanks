@@ -14,7 +14,7 @@ class Render {
     key: Keypress;
     
     vehicles: Map<number, Vehicle>;
-    //player: TestVechicle;
+    self: number = -1;
 
     wasm: any;
 
@@ -62,6 +62,10 @@ class Render {
             // }
             ,
             () => {
+                
+                let arr = new Uint8Array(1)
+                arr[0] = 0;
+                this.conn.send(arr.buffer);
                 this.test();
             }
         );
@@ -70,6 +74,10 @@ class Render {
         window.addEventListener('keydown', (evt: KeyboardEvent) => {
             //console.log(evt.key);
             this.wasm.state(evt.key, true);
+
+            if (evt.key == 'c') {
+                this.vehicles.get(this.self)?.setColor(0xfc99cd);
+            }
         });
 
         window.addEventListener('keyup', (evt: KeyboardEvent) => {
@@ -86,11 +94,27 @@ class Render {
         //window.addEventListener('keyup', this.remove);
     }
 
-    worldTick(state: Float32Array): void {
+    worldTick(state: Float32Array, test: Uint8Array): void {
         //console.log(state);
+        if (test[0] == 10) {
+            console.log('my ID:', test);
+            this.self = test[1];
+            //this.vehicles.get(test[1])?.setColor(0xf699cd);
+
+            return;
+        } 
+        
+        if (test[0] == 9) {
+            console.log('remove ID:', test);
+            //this.scene.remove(this.vehicles.get(test[1]))
+            this.vehicles.get(test[1])?.dispose();
+            this.vehicles.delete(test[1]);
+            return;
+        } 
+        
         this.wasm.update(...state);
     
-        for (let i = 0; i < state.length; i += 4) {
+        for (let i = 0; i < state.length; i += 7) {
             if (this.vehicles.has(state[i])) {
                 const pos = this.wasm.getPos(state[i])
                 //console.log(pos);
@@ -108,12 +132,12 @@ class Render {
     }
 
     test(): void {
-        //this.wasm.print(); 
 
-        //console.log(this.wasm.poll())
+
+
 
         this.conn.send(this.wasm.poll().buffer);
-        // this.conn.send(this.key.poll().buffer);
+
         setTimeout(this.test, 50);
     }
 
@@ -123,13 +147,14 @@ class Render {
         let dt = now - this.timestamp;
 
        
-        // this.wasm.local(dt)
+        this.wasm.local(dt)
 
-        // const it = this.vehicles[Symbol.iterator]();
-        // for (let item of it) {
-        //     const pos = this.wasm.getPos(item[0])
-        //     item[1].setPosition(new THREE.Vector3(pos[0], pos[1], pos[2]));
-        // }
+        const it = this.vehicles[Symbol.iterator]();
+        for (let item of it) {
+            //if (item[0] == 8081) continue;
+            const pos = this.wasm.getPos(item[0], dt)
+            item[1].setPosition(new THREE.Vector3(pos[0], pos[1], pos[2]));
+        }
 
 
        
