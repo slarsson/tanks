@@ -18,7 +18,7 @@ if (!prod) {
 
 const webpackConfig = {
 	mode: 'development',
-	entry: './src/index.ts',
+	entry: './src/index.js',
 	module: {
 		rules: [
 			{
@@ -75,16 +75,23 @@ const copy = () => {
 		.pipe(gulp.dest('build/assets'));
 };
 
+const wasm = () => {
+	return gulp.src('assets/*')
+		.pipe(gulp.dest('build'));
+};
+
 const server = () => {
 	browser.init({
         server: './build',
         open: false,
 	});
 	
-	gulp.watch('./src/assets/*', gulp.series('delete', 'copy', 'reload'));
+	gulp.watch('./assets/*', gulp.series('wasm', 'reload'));
+
+	//gulp.watch('./src/assets/*', gulp.series('delete', 'copy', 'reload'));
     gulp.watch('./src/*', gulp.series('webpack', 'reload'));
-    gulp.watch('./*.html', gulp.series('html', 'reload'));
-    gulp.watch('./*.scss', gulp.series('css', 'reload'));
+    //gulp.watch('./*.html', gulp.series('html', 'reload'));
+    //gulp.watch('./*.scss', gulp.series('css', 'reload'));
 };
 
 gulp.task('html', html);
@@ -94,7 +101,8 @@ gulp.task('reload', reload);
 gulp.task('delete', clean);
 gulp.task('copy', copy);
 gulp.task('server', server);
-gulp.task('build', gulp.series('delete', 'copy', 'html', 'css', 'webpack'));
+gulp.task('wasm', wasm);
+gulp.task('build', gulp.series('delete', 'copy', 'html', 'css', 'webpack', 'wasm'));
 
 if (prod) {
     gulp.task('default', gulp.series('build'));

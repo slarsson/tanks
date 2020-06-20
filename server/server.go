@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
 	"time"
 )
@@ -20,7 +21,7 @@ func newServer() *Server {
 
 func (s *Server) gameLoop() {
 	var step float32
-	step = 20
+	step = 50
 	ticker := time.NewTicker(time.Duration(step) * time.Millisecond)
 
 	for range ticker.C {
@@ -70,6 +71,8 @@ func (s *Server) gameLoop() {
 func (c *Client) handleInputs(p *Player, dt float32) {
 	for len(c.NetworkInput) != 0 {
 		message := <-c.NetworkInput
+
+		fmt.Println(message)
 
 		if message[0] == 1 {
 			p.Position.Y += dt * 0.005
