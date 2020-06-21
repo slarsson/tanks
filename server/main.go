@@ -28,14 +28,13 @@ func start(s *Server, w http.ResponseWriter, r *http.Request) {
 		NetworkOutput: make(chan []byte, 100),
 	}
 
-	s.Network.register <- client // new connection
-	//s.Game.addPlayer(client)     // SKA INTE GÖRAS HÄR!!!
+	s.Network.register <- client
 }
 
 func main() {
-	server := newServer()
-	go server.gameLoop()
-	go server.ops()
+	server := NewServer()
+	go server.GameLoop()
+	go server.Manager()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		start(server, w, r)

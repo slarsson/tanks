@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -19,7 +17,7 @@ type Client struct {
 	NetworkOutput chan []byte
 }
 
-func newNetwork() *Network {
+func NewNetwork() *Network {
 	return &Network{
 		clients:    make(map[*Client]bool),
 		register:   make(chan *Client),
@@ -28,18 +26,19 @@ func newNetwork() *Network {
 	}
 }
 
-func (n *Network) start(ca chan *Actions) {
+func (n *Network) Start(ca chan *Action) {
 	for {
 		select {
 		case client := <-n.register:
 			n.clients[client] = true
 			go n.reader(client, ca)
 			go n.writer(client)
-		case client := <-n.unregister:
-			fmt.Println("disconnect player")
 
-			ca <- &Actions{MessageType: 1, Client: client}
-			//delete(n.clients, client)
+		case client := <-n.unregister:
+			ca <- &Action{MessageType: 1, Client: client}
+			client.conn.Close()
+			delete(n.clients, client)
+
 		case message := <-n.broadcast:
 			for client := range n.clients {
 				client.NetworkOutput <- message
@@ -48,7 +47,7 @@ func (n *Network) start(ca chan *Actions) {
 	}
 }
 
-func (n *Network) reader(client *Client, ca chan *Actions) {
+func (n *Network) reader(client *Client, ca chan *Action) {
 	defer func() {
 		n.unregister <- client // close connection?
 	}()
@@ -61,7 +60,7 @@ func (n *Network) reader(client *Client, ca chan *Actions) {
 
 		//fmt.Println("NETWORK:", message)
 		if message[0] == 0 {
-			ca <- &Actions{MessageType: 0, Client: client}
+			ca <- &Action{MessageType: 0, Client: client}
 		} else {
 			client.NetworkInput <- message
 		}
@@ -69,13 +68,17 @@ func (n *Network) reader(client *Client, ca chan *Actions) {
 }
 
 func (n *Network) writer(client *Client) {
-	// TODO: add defer func
+	defer func() {
+		n.unregister <- client
+	}()
 
 	for {
 		select {
 		case message, ok := <-client.NetworkOutput:
 			if ok {
 				client.conn.WriteMessage(websocket.BinaryMessage, message)
+			} else {
+				// error?
 			}
 		}
 	}
