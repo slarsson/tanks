@@ -4,7 +4,7 @@ import Keypress from './Keypress';
 
 class Vehicle {
 
-    protected body: THREE.Mesh;
+    protected body: THREE.Group;
     protected geometry: THREE.Geometry;
     protected material: THREE.MeshBasicMaterial;
     static readonly COLORS = [0xff0000, 0x00ff00, 0x0000ff]; 
@@ -13,12 +13,48 @@ class Vehicle {
     private scene: THREE.Scene;
 
 
+    protected turret: THREE.Group;
+    protected turretMesh: THREE.Mesh;
+    protected hull: THREE.Mesh;
+    protected gun: THREE.Mesh;
+
+
     constructor(_scene: THREE.Scene, keys: Keypress) {
         this.keys = keys;
         
         this.geometry = new THREE.BoxGeometry(2, 4, 1);
-        this.material = new THREE.MeshBasicMaterial({color: Vehicle.COLORS[Math.floor(Math.random() * Vehicle.COLORS.length)]});
-        this.body = new THREE.Mesh(this.geometry, this.material);
+        this.material = new THREE.MeshPhongMaterial({color: 0xc2b280});
+        
+        
+        this.body = new THREE.Group();
+        this.turret = new THREE.Group();
+        //this.body = new THREE.Mesh(this.geometry, this.material);
+
+        this.hull = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 6, 1),
+            this.material
+        );
+
+        this.turretMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 2, 1),
+            new THREE.MeshPhongMaterial({color: 0xc2b280})
+        );
+        this.turretMesh.position.z = 1;
+
+        this.gun = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.2, 4, 16),
+            new THREE.MeshPhongMaterial({color: 0xc2b280})
+        );
+        this.gun.position.z = 1;
+        this.gun.position.y = 2;
+
+        this.body.add(this.hull);
+        this.body.add(this.turret);
+        
+        this.turret.add(this.gun);
+        this.turret.add(this.turretMesh);
+
+
 
         this.scene = _scene;
         this.scene.add(this.body);
@@ -31,6 +67,14 @@ class Vehicle {
     setPosition(v: THREE.Vector3) {
         this.body.position.set(v.x, v.y, v.z);
     } 
+
+    setRotation(rot: number) {
+        this.body.rotation.z = rot;
+    }
+
+    setTurretRotation(rot: number) {
+        this.turret.rotation.z = rot;
+    }
 
     setColor(color: number) {
         this.material.setValues({color: color});

@@ -6,16 +6,20 @@ import (
 )
 
 type keys struct {
-	w bool
-	a bool
-	s bool
-	d bool
+	w     bool
+	a     bool
+	s     bool
+	d     bool
+	left  bool
+	right bool
 }
 
 type Player struct {
-	ID       int
-	Position *Vector3
-	Velocity *Vector3
+	ID             int
+	Position       *Vector3
+	Velocity       *Vector3
+	Rotation       float32
+	TurretRotation float32
 }
 
 type Vector3 struct {
@@ -62,11 +66,21 @@ func keypress(this js.Value, args []js.Value) interface{} {
 		return js.ValueOf(true)
 	}
 
+	if key == "ArrowLeft" {
+		controls.left = args[1].Bool()
+		return js.ValueOf(true)
+	}
+
+	if key == "ArrowRight" {
+		controls.right = args[1].Bool()
+		return js.ValueOf(true)
+	}
+
 	return js.ValueOf(false)
 }
 
 func poll(this js.Value, args []js.Value) interface{} {
-	buf := make([]byte, 5)
+	buf := make([]byte, 7)
 	buf[0] = 1
 
 	if controls.w {
@@ -85,6 +99,14 @@ func poll(this js.Value, args []js.Value) interface{} {
 		buf[4] = 1
 	}
 
+	if controls.left {
+		buf[5] = 1
+	}
+
+	if controls.right {
+		buf[6] = 1
+	}
+
 	uint8Array := js.Global().Get("Uint8Array")
 	dst := uint8Array.New(len(buf))
 	js.CopyBytesToJS(dst, buf)
@@ -95,11 +117,14 @@ func update(this js.Value, args []js.Value) interface{} {
 
 	//fmt.Println(args)
 
-	for i := 0; i < len(args); i += 7 {
+	for i := 0; i < len(args); i += 9 {
 		if _, ok := players[args[i].Int()]; ok {
 
 			players[args[i].Int()].Position.setPosition(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+			players[args[i].Int()].Rotation = float32(args[i+7].Float())
+			players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
 
+			// predict next step ?
 			dt := float32(50)
 			p := players[args[i].Int()]
 			p.Position.X += dt * p.Velocity.X
@@ -119,6 +144,8 @@ func update(this js.Value, args []js.Value) interface{} {
 					Y: float32(0),
 					Z: float32(0),
 				},
+				Rotation:       0,
+				TurretRotation: 0,
 			}
 		}
 	}
@@ -133,7 +160,7 @@ func getp(this js.Value, args []js.Value) interface{} {
 	// play.Position.X += dt * play.Velocity.Y
 	// play.Position.Y += dt * play.Velocity.X
 	p := play.Position.getPosition()
-	return []interface{}{p[0], p[1], p[2]}
+	return []interface{}{p[0], p[1], p[2], play.Rotation, play.TurretRotation}
 }
 
 func printState(this js.Value, args []js.Value) interface{} {

@@ -4,6 +4,8 @@ import TestVechicle from './TestVehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
 
+import { helper } from './dev';
+
 class Render {
 
     conn: Connection;
@@ -44,6 +46,7 @@ class Render {
         // test
         //this.player = new TestVechicle(this.scene, this.key);
         this.vehicles = new Map();
+        helper(this.scene);
 
         // websocket
         this.conn = new Connection(this.worldTick
@@ -114,13 +117,14 @@ class Render {
         
         this.wasm.update(...state);
     
-        for (let i = 0; i < state.length; i += 7) {
+        for (let i = 0; i < state.length; i += 9) {
             if (this.vehicles.has(state[i])) {
                 const pos = this.wasm.getPos(state[i])
-                //console.log(pos);
+                //console.log(pos[3]);
                 
                 this.vehicles.get(state[i])?.setPosition(new THREE.Vector3(pos[0], pos[1], pos[2]));
-
+                this.vehicles.get(state[i])?.setRotation(pos[3]);
+                this.vehicles.get(state[i])?.setTurretRotation(pos[4]);
 
                 //this.vehicles.get(state[i])?.setPosition(new THREE.Vector3(state[i+1], state[i+2], state[i+3]));
             } else {

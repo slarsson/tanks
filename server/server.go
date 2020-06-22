@@ -64,7 +64,7 @@ func (s *Server) GameLoop() {
 
 	for range ticker.C {
 
-		buf := make([]byte, 0, 20)
+		buf := make([]byte, 0, 30)
 		for _, p := range s.Game.Players {
 			s.handleInputs(p.Client, p, step)
 			//p.Client.handleInputs(p, step)
@@ -78,6 +78,9 @@ func (s *Server) GameLoop() {
 			vy := make([]byte, 4)
 			vz := make([]byte, 4)
 
+			rot := make([]byte, 4)
+			trot := make([]byte, 4)
+
 			binary.LittleEndian.PutUint32(id, math.Float32bits(float32(p.ID)))
 
 			binary.LittleEndian.PutUint32(x, math.Float32bits(p.Position.X))
@@ -88,6 +91,9 @@ func (s *Server) GameLoop() {
 			binary.LittleEndian.PutUint32(vy, math.Float32bits(p.Velocity.Y))
 			binary.LittleEndian.PutUint32(vz, math.Float32bits(p.Velocity.Z))
 
+			binary.LittleEndian.PutUint32(rot, math.Float32bits(p.Rotation))
+			binary.LittleEndian.PutUint32(trot, math.Float32bits(p.TurretRotation))
+
 			buf = append(buf, id...)
 			buf = append(buf, x...)
 			buf = append(buf, y...)
@@ -96,6 +102,9 @@ func (s *Server) GameLoop() {
 			buf = append(buf, vx...)
 			buf = append(buf, vy...)
 			buf = append(buf, vz...)
+
+			buf = append(buf, rot...)
+			buf = append(buf, trot...)
 		}
 
 		//fmt.Println(buf)
@@ -116,29 +125,51 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 			fmt.Println("add new fkn player here")
 
 		case 1:
-			//fmt.Println(message)
-
-			x := 0.0001 * dt
 
 			if message[1] == 1 || message[3] == 1 {
 				if message[1] == 1 {
-					p.Velocity.Y += x
+					p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
+					p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
+
+					//p.Velocity.Y += 0.0001 * dt
 				} else {
-					p.Velocity.Y -= x
+					p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
+					p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
+
+					//p.Velocity.Y -= 0.0001 * dt
 				}
 			} else {
 				p.Velocity.Y = 0
-			}
-
-			if message[2] == 1 || message[4] == 1 {
-				if message[2] == 1 {
-					p.Velocity.X -= x
-				} else {
-					p.Velocity.X += x
-				}
-			} else {
 				p.Velocity.X = 0
 			}
+
+			if message[2] == 1 {
+				p.Rotation += 0.005 * dt
+			}
+
+			if message[4] == 1 {
+				p.Rotation -= 0.005 * dt
+			}
+
+			if message[5] == 1 {
+				p.TurretRotation += 0.002 * dt
+			}
+
+			if message[6] == 1 {
+				p.TurretRotation -= 0.002 * dt
+			}
+
+			fmt.Println(p.TurretRotation)
+
+			// if message[2] == 1 || message[4] == 1 {
+			// 	if message[2] == 1 {
+			// 		p.Velocity.X -= x
+			// 	} else {
+			// 		p.Velocity.X += x
+			// 	}
+			// } else {
+			// 	p.Velocity.X = 0
+			// }
 
 		default:
 			fmt.Println("unknown command")

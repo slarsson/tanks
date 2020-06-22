@@ -9,11 +9,13 @@ import (
 )
 
 type Player struct {
-	ID       int
-	Name     string
-	Position *Vector3
-	Velocity *Vector3
-	Client   *Client
+	ID             int
+	Name           string
+	Position       *Vector3
+	Velocity       *Vector3
+	Rotation       float32
+	TurretRotation float32
+	Client         *Client
 }
 
 type Game struct {
@@ -50,11 +52,13 @@ func (g *Game) addPlayer(client *Client) {
 	}
 
 	g.Players[playerID] = &Player{
-		ID:       playerID,
-		Name:     "player" + strconv.Itoa(playerID),
-		Position: &Vector3{X: 0, Y: 0, Z: 0},
-		Velocity: &Vector3{X: 0, Y: 0, Z: 0},
-		Client:   client,
+		ID:             playerID,
+		Name:           "player" + strconv.Itoa(playerID),
+		Position:       &Vector3{X: 0, Y: 0, Z: 0},
+		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
+		Rotation:       0,
+		TurretRotation: 0,
+		Client:         client,
 	}
 
 	fmt.Printf("\033[1;34m%s\033[0m", "new player added with id", playerID, "\n")
