@@ -4,6 +4,8 @@ import TestVechicle from './TestVehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
 
+import Particle from './Particle';
+
 import { helper } from './dev';
 
 class Render {
@@ -19,6 +21,8 @@ class Render {
     self: number = -1;
 
     wasm: any;
+
+    shoot: Particle;
 
     constructor(wasm: any) {
         this.wasm = wasm;
@@ -47,6 +51,7 @@ class Render {
         //this.player = new TestVechicle(this.scene, this.key);
         this.vehicles = new Map();
         helper(this.scene);
+        this.shoot = new Particle(this.scene);
 
         // websocket
         this.conn = new Connection(this.worldTick
@@ -80,6 +85,17 @@ class Render {
 
             if (evt.key == 'c') {
                 this.vehicles.get(this.self)?.setColor(0xfc99cd);
+            }
+
+            if (evt.key == ' ') {
+                if (this.self != -1) {
+                    const v = this.vehicles.get(this.self);
+                    if (v != undefined) {
+                        //this.shoot.add(v.getGunOrigin());
+                        this.shoot.add2(v.getGunRotation());
+                    }
+                }
+                
             }
         });
 
@@ -152,6 +168,7 @@ class Render {
 
        
         this.wasm.local(dt)
+        this.shoot.update(dt);
 
         const it = this.vehicles[Symbol.iterator]();
         for (let item of it) {

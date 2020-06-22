@@ -80,6 +80,15 @@ class Vehicle {
         this.material.setValues({color: color});
     }
 
+    getGunOrigin(): THREE.Vector3 {
+        console.log(this.gun.position.x);
+        return this.body.position.clone();
+    }
+
+    getGunRotation(): number {
+        return this.turret.rotation.z;
+    }
+
     update(dt: number): void {
         let x = 0.005 * dt;
         if (this.keys.status.w) this.body.position.y += x;

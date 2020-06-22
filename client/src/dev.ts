@@ -3,9 +3,9 @@ import * as THREE from 'three';
 const helper = (scene: THREE.Scene) => {
     scene.add(new THREE.AxesHelper(15));
 
-    let l1 = new THREE.PointLight(0xff0000, 20, 100);
-    l1.position.set(0, 0, 50);
-    //scene.add(l1);
+    let l1 = new THREE.PointLight(0xff0000, 0.5, 100);
+    l1.position.set(10, 10, 0);
+    scene.add(l1);
 
     let l2 = new THREE.DirectionalLight(0xefefff, 1.4);
     l2.position.set(1, 1, 1).normalize();
