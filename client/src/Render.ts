@@ -34,7 +34,8 @@ class Render {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 2000);
         this.camera.rotation.x = Math.PI / 4;
         this.camera.position.y = -10;
-        this.camera.position.z = 15;
+        this.camera.position.z = 20;
+        //this.camera.lookAt(0, 0, 0);
         
         this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setSize(window.innerWidth, window.innerHeight);

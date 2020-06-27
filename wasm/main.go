@@ -125,10 +125,10 @@ func update(this js.Value, args []js.Value) interface{} {
 			players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
 
 			// predict next step ?
-			dt := float32(50)
-			p := players[args[i].Int()]
-			p.Position.X += dt * p.Velocity.X
-			p.Position.Y += dt * p.Velocity.Y
+			// dt := float32(50)
+			// p := players[args[i].Int()]
+			// p.Position.X += dt * p.Velocity.X
+			// p.Position.Y += dt * p.Velocity.Y
 
 		} else {
 			fmt.Println("add new player?")
