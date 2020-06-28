@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"math"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -23,12 +22,6 @@ type Game struct {
 	Players map[int]*Player
 	mutex   *sync.RWMutex
 	Network *Network
-}
-
-type Vector3 struct {
-	X float32
-	Y float32
-	Z float32
 }
 
 func newGame(n *Network) *Game {
@@ -78,6 +71,34 @@ func (g *Game) addPlayer(client *Client) {
 
 	g.Players[playerID].Client.NetworkOutput <- buf
 
+}
+
+// func (g *Game) addBot() {
+// 	g.mutex.Lock()
+// 	defer g.mutex.Unlock()
+
+// 	var playerID int
+// 	for {
+// 		playerID = rand.Intn(10000) // fejk random?
+// 		_, ok := g.Players[playerID]
+// 		if !ok {
+// 			break
+// 		}
+// 	}
+
+// 	g.Players[playerID] = &Player{
+// 		ID:             playerID,
+// 		Name:           "player" + strconv.Itoa(playerID),
+// 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
+// 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
+// 		Rotation:       0,
+// 		TurretRotation: 0,
+// 		Client:         nil,
+// 	}
+// }
+
+func (p *Player) moveBot(dt float32) {
+	p.Position.Y += dt * 0.001
 }
 
 func (g *Game) removePlayer(idx int) {
@@ -163,66 +184,49 @@ func (g *Game) crash(p1 *Player, p2 *Player) bool {
 	return false
 }
 
-func (v *Vector3) rotate(rot float32) {
-	v.X = v.X*float32(math.Cos(float64(rot))) - v.Y*float32(math.Sin(float64(rot)))
-	v.Y = v.Y*float32(math.Cos(float64(rot))) + v.X*float32(math.Sin(float64(rot)))
-}
+// func (p *Player) corners() *Edges {
+// 	// //length := 6
+// 	// //width := 3
 
-func (v *Vector3) norm() {
-	if v.X == 0 && v.Y == 0 && v.Z == 0 {
-		return
-	}
+// 	// v := Vector3{X: 1.5, Y: 3, Z: 0}
+// 	// // v.X -= p.Position.X
+// 	// // v.Y -= p.Position.Y
+// 	// v.rotate(p.Rotation)
+// 	// A := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
+// 	// //fmt.Println("A:", A)
 
-	x := 1 / math.Sqrt(float64(v.X*v.X+v.Y*v.Y+v.Z*v.Z))
+// 	// v = Vector3{X: -1.5, Y: 3, Z: 0}
+// 	// // v.X -= p.Position.X
+// 	// // v.Y -= p.Position.Y
+// 	// v.rotate(p.Rotation)
+// 	// B := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
+// 	// //fmt.Println("B:", B)
 
-	v.X = v.X * float32(x)
-	v.Y = v.Y * float32(x)
-	v.Z = v.Z * float32(x)
-}
+// 	// v = Vector3{X: -1.5, Y: -3, Z: 0}
+// 	// // v.X -= p.Position.X
+// 	// // v.Y -= p.Position.Y
+// 	// v.rotate(p.Rotation)
+// 	// C := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
+// 	// //fmt.Println("C:", C)
 
-func (p *Player) corners() *Edges {
-	//length := 6
-	//width := 3
+// 	// v = Vector3{X: 1.5, Y: -3, Z: 0}
+// 	// // v.X -= p.Position.X
+// 	// // v.Y -= p.Position.Y
+// 	// v.rotate(p.Rotation)
+// 	// D := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
+// 	// //fmt.Println("D:", D)
 
-	v := Vector3{X: 1.5, Y: 3, Z: 0}
-	// v.X -= p.Position.X
-	// v.Y -= p.Position.Y
-	v.rotate(p.Rotation)
-	A := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
-	//fmt.Println("A:", A)
+// 	// fmt.Printf("A => x: %f, y: %f \n", A.X, A.Y)
+// 	// fmt.Printf("B => x: %f, y: %f \n", B.X, B.Y)
+// 	// fmt.Printf("C => x: %f, y: %f \n", C.X, C.Y)
+// 	// fmt.Printf("D => x: %f, y: %f \n", D.X, D.Y)
+// 	// fmt.Println("=====================")
 
-	v = Vector3{X: -1.5, Y: 3, Z: 0}
-	// v.X -= p.Position.X
-	// v.Y -= p.Position.Y
-	v.rotate(p.Rotation)
-	B := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
-	//fmt.Println("B:", B)
+// 	// return &Edges{A: &A, B: &B, C: &C, D: &D}
 
-	v = Vector3{X: -1.5, Y: -3, Z: 0}
-	// v.X -= p.Position.X
-	// v.Y -= p.Position.Y
-	v.rotate(p.Rotation)
-	C := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
-	//fmt.Println("C:", C)
+// 	//A := 6/2*math.Cos(float64(p.Rotation)) + 3/2*math.Sin(float64(p.Rotation))
 
-	v = Vector3{X: 1.5, Y: -3, Z: 0}
-	// v.X -= p.Position.X
-	// v.Y -= p.Position.Y
-	v.rotate(p.Rotation)
-	D := Vector3{X: p.Position.X + v.X, Y: p.Position.Y + v.Y, Z: 0}
-	//fmt.Println("D:", D)
+// 	//fmt.Println("A", A)
 
-	fmt.Printf("A => x: %f, y: %f \n", A.X, A.Y)
-	fmt.Printf("B => x: %f, y: %f \n", B.X, B.Y)
-	fmt.Printf("C => x: %f, y: %f \n", C.X, C.Y)
-	fmt.Printf("D => x: %f, y: %f \n", D.X, D.Y)
-	fmt.Println("=====================")
-
-	return &Edges{A: &A, B: &B, C: &C, D: &D}
-
-	//A := 6/2*math.Cos(float64(p.Rotation)) + 3/2*math.Sin(float64(p.Rotation))
-
-	//fmt.Println("A", A)
-
-	//fmt.Println(p.Position.X + 2 + float32(math.Sin(float64(p.Rotation))))
-}
+// 	//fmt.Println(p.Position.X + 2 + float32(math.Sin(float64(p.Rotation))))
+// }

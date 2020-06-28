@@ -62,11 +62,44 @@ func (s *Server) GameLoop() {
 	step := float32(50)
 	ticker := time.NewTicker(time.Duration(step) * time.Millisecond)
 
+	c := &Client{
+		conn:          nil,
+		NetworkInput:  make(chan []byte, 100),
+		NetworkOutput: make(chan []byte, 100),
+	}
+	s.Game.addPlayer(c)
+
 	for range ticker.C {
+
+		xx := make([]byte, 0, 30)
+		x1 := make([]byte, 4)
+		x2 := make([]byte, 4)
+		x3 := make([]byte, 4)
+		x4 := make([]byte, 4)
+		x5 := make([]byte, 4)
+		x6 := make([]byte, 4)
+		x7 := make([]byte, 4)
+		x8 := make([]byte, 4)
+		binary.LittleEndian.PutUint32(x1, 1)
+		binary.LittleEndian.PutUint32(x2, 1)
+		binary.LittleEndian.PutUint32(x3, 1)
+		xx = append(xx, x1...)
+		xx = append(xx, x2...)
+		xx = append(xx, x3...)
+		xx = append(xx, x4...)
+		xx = append(xx, x5...)
+		xx = append(xx, x6...)
+		xx = append(xx, x7...)
+		xx = append(xx, x8...)
+		c.NetworkInput <- xx
 
 		buf := make([]byte, 0, 30)
 		for _, p := range s.Game.Players {
-			s.handleInputs(p.Client, p, step)
+			if p.Client == nil {
+				p.moveBot(step)
+			} else {
+				s.handleInputs(p.Client, p, step)
+			}
 			//p.Client.handleInputs(p, step)
 
 			id := make([]byte, 4)
@@ -187,13 +220,13 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 				continue
 			}
 
-			poly1 := newPoygon()
-			poly1.rotate(p.Rotation, p.Position)
+			poly1 := NewTankHullPolygon()
+			poly1.Rotate(p.Rotation, p.Position)
 
-			poly2 := newPoygon()
-			poly2.rotate(v.Rotation, v.Position)
+			poly2 := NewTankHullPolygon()
+			poly2.Rotate(v.Rotation, v.Position)
 
-			ok, mtv := poly1.test(poly2)
+			ok, mtv := poly1.Collision(poly2)
 			if !ok {
 				continue
 			}
@@ -210,13 +243,13 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 					p.Rotation += 0.002 * dt
 				}
 
-				poly1 = newPoygon()
-				poly1.rotate(p.Rotation, p.Position)
+				poly1 = NewTankHullPolygon()
+				poly1.Rotate(p.Rotation, p.Position)
 
-				poly2 = newPoygon()
-				poly2.rotate(v.Rotation, v.Position)
+				poly2 = NewTankHullPolygon()
+				poly2.Rotate(v.Rotation, v.Position)
 
-				ok, mtv = poly1.test(poly2)
+				ok, mtv = poly1.Collision(poly2)
 				if !ok {
 					continue
 				}
