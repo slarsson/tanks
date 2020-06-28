@@ -24,11 +24,9 @@ func (v *Vector3) Norm() *Vector3 {
 		return v
 	}
 
-	x := 1 / math.Sqrt(float64(v.X*v.X+v.Y*v.Y+v.Z*v.Z))
-
-	v.X = v.X * float32(x)
-	v.Y = v.Y * float32(x)
-	v.Z = v.Z * float32(x)
-
+	val := float32(1 / math.Sqrt(float64(v.X*v.X+v.Y*v.Y+v.Z*v.Z)))
+	v.X = v.X * val
+	v.Y = v.Y * val
+	v.Z = v.Z * val
 	return v
 }

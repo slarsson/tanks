@@ -18,6 +18,16 @@ const helper = (scene: THREE.Scene) => {
     ));
 };
 
+const obstacleTest = (scene: THREE.Scene) => {
+    let wall = new THREE.Mesh(
+        new THREE.BoxGeometry(10, 1, 5),
+        new THREE.MeshPhongMaterial({color: 0x4d5858})
+    );
+    wall.position.set(5, 15.5, 2);
+    scene.add(wall);
+};
+
 export {
-    helper
+    helper,
+    obstacleTest
 }

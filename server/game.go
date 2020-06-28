@@ -19,6 +19,7 @@ type Player struct {
 }
 
 type Game struct {
+	Map     *Map
 	Players map[int]*Player
 	mutex   *sync.RWMutex
 	Network *Network
@@ -26,6 +27,7 @@ type Game struct {
 
 func newGame(n *Network) *Game {
 	return &Game{
+		Map:     NewMap(),
 		Players: make(map[int]*Player),
 		mutex:   &sync.RWMutex{},
 		Network: n,

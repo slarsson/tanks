@@ -6,7 +6,7 @@ import Connection from './Connection';
 
 import Particle from './Particle';
 
-import { helper } from './dev';
+import { helper, obstacleTest } from './dev';
 
 class Render {
 
@@ -34,7 +34,7 @@ class Render {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 2000);
         this.camera.rotation.x = Math.PI / 4;
         this.camera.position.y = -10;
-        this.camera.position.z = 20;
+        this.camera.position.z = 30;
         //this.camera.lookAt(0, 0, 0);
         
         this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -52,6 +52,7 @@ class Render {
         //this.player = new TestVechicle(this.scene, this.key);
         this.vehicles = new Map();
         helper(this.scene);
+        obstacleTest(this.scene);
         this.shoot = new Particle(this.scene);
 
         // websocket
@@ -144,6 +145,12 @@ class Render {
                 this.vehicles.get(state[i])?.setTurretRotation(pos[4]);
 
                 //this.vehicles.get(state[i])?.setPosition(new THREE.Vector3(state[i+1], state[i+2], state[i+3]));
+                
+                //console.log(state[0]);
+                if (state[i] == this.self) {
+                    this.camera.position.x = pos[0];
+                    this.camera.position.y = pos[1] - 30;
+                }
             } else {
                 this.vehicles.set(state[i], new Vehicle(this.scene, this.key));
             }

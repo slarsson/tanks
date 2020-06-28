@@ -62,36 +62,36 @@ func (s *Server) GameLoop() {
 	step := float32(50)
 	ticker := time.NewTicker(time.Duration(step) * time.Millisecond)
 
-	c := &Client{
-		conn:          nil,
-		NetworkInput:  make(chan []byte, 100),
-		NetworkOutput: make(chan []byte, 100),
-	}
-	s.Game.addPlayer(c)
+	// c := &Client{
+	// 	conn:          nil,
+	// 	NetworkInput:  make(chan []byte, 100),
+	// 	NetworkOutput: make(chan []byte, 100),
+	// }
+	// s.Game.addPlayer(c)
 
 	for range ticker.C {
-
-		xx := make([]byte, 0, 30)
-		x1 := make([]byte, 4)
-		x2 := make([]byte, 4)
-		x3 := make([]byte, 4)
-		x4 := make([]byte, 4)
-		x5 := make([]byte, 4)
-		x6 := make([]byte, 4)
-		x7 := make([]byte, 4)
-		x8 := make([]byte, 4)
-		binary.LittleEndian.PutUint32(x1, 1)
-		binary.LittleEndian.PutUint32(x2, 1)
-		binary.LittleEndian.PutUint32(x3, 1)
-		xx = append(xx, x1...)
-		xx = append(xx, x2...)
-		xx = append(xx, x3...)
-		xx = append(xx, x4...)
-		xx = append(xx, x5...)
-		xx = append(xx, x6...)
-		xx = append(xx, x7...)
-		xx = append(xx, x8...)
-		c.NetworkInput <- xx
+		start := time.Now()
+		// xx := make([]byte, 0, 30)
+		// x1 := make([]byte, 4)
+		// x2 := make([]byte, 4)
+		// x3 := make([]byte, 4)
+		// x4 := make([]byte, 4)
+		// x5 := make([]byte, 4)
+		// x6 := make([]byte, 4)
+		// x7 := make([]byte, 4)
+		// x8 := make([]byte, 4)
+		// binary.LittleEndian.PutUint32(x1, 1)
+		// binary.LittleEndian.PutUint32(x2, 1)
+		// binary.LittleEndian.PutUint32(x3, 1)
+		// xx = append(xx, x1...)
+		// xx = append(xx, x2...)
+		// xx = append(xx, x3...)
+		// xx = append(xx, x4...)
+		// xx = append(xx, x5...)
+		// xx = append(xx, x6...)
+		// xx = append(xx, x7...)
+		// xx = append(xx, x8...)
+		// c.NetworkInput <- xx
 
 		buf := make([]byte, 0, 30)
 		for _, p := range s.Game.Players {
@@ -143,6 +143,9 @@ func (s *Server) GameLoop() {
 		//fmt.Println(buf)
 
 		s.Network.broadcast <- buf
+
+		tt := time.Since(start) * 1000 //* time.Millisecond
+		fmt.Println("Executing time:", tt)
 	}
 }
 
@@ -214,6 +217,31 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 
 		p.Position.X += dt * p.Velocity.X
 		p.Position.Y += dt * p.Velocity.Y
+
+		for _, v := range s.Game.Map.Obstacles {
+			tank := NewTankHullPolygon()
+			tank.Rotate(p.Rotation, p.Position)
+			ok, mtv := tank.Collision(v)
+			if ok {
+				fmt.Println("CRASH WITH THE FKN WALL")
+				dx := mtv.Vector.X * mtv.Magnitude
+				dy := mtv.Vector.Y * mtv.Magnitude
+
+				if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
+					dx = -dx
+				}
+
+				if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
+					dy = -dy
+				}
+
+				p.Position.X += dx
+				p.Position.Y += dy
+
+				p.Velocity.X = 0
+				p.Velocity.Y = 0
+			}
+		}
 
 		for i, v := range s.Game.Players {
 			if i == p.ID {
