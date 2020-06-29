@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/slarsson/game/network"
 )
 
 var upgrader = websocket.Upgrader{
@@ -22,13 +23,13 @@ func start(s *Server, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{
-		conn:          c,
+	client := &network.Client{
+		Conn:          c,
 		NetworkInput:  make(chan []byte, 100),
 		NetworkOutput: make(chan []byte, 100),
 	}
 
-	s.Network.register <- client
+	s.Network.Register <- client
 }
 
 func main() {

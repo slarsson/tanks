@@ -1,46 +1,51 @@
-package main
+package network
 
 import (
 	"github.com/gorilla/websocket"
 )
 
 type Network struct {
-	clients    map[*Client]bool
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan []byte
+	Clients    map[*Client]bool
+	Register   chan *Client
+	Unregister chan *Client
+	Broadcast  chan []byte
 }
 
 type Client struct {
-	conn          *websocket.Conn
+	Conn          *websocket.Conn
 	NetworkInput  chan []byte
 	NetworkOutput chan []byte
 }
 
+type Action struct {
+	MessageType int8
+	Client      *Client
+}
+
 func NewNetwork() *Network {
 	return &Network{
-		clients:    make(map[*Client]bool),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan []byte),
+		Clients:    make(map[*Client]bool),
+		Register:   make(chan *Client),
+		Unregister: make(chan *Client),
+		Broadcast:  make(chan []byte),
 	}
 }
 
 func (n *Network) Start(ca chan *Action) {
 	for {
 		select {
-		case client := <-n.register:
-			n.clients[client] = true
+		case client := <-n.Register:
+			n.Clients[client] = true
 			go n.reader(client, ca)
 			go n.writer(client)
 
-		case client := <-n.unregister:
+		case client := <-n.Unregister:
 			ca <- &Action{MessageType: 1, Client: client}
-			client.conn.Close()
-			delete(n.clients, client)
+			client.Conn.Close()
+			delete(n.Clients, client)
 
-		case message := <-n.broadcast:
-			for client := range n.clients {
+		case message := <-n.Broadcast:
+			for client := range n.Clients {
 				client.NetworkOutput <- message
 			}
 		}
@@ -49,11 +54,11 @@ func (n *Network) Start(ca chan *Action) {
 
 func (n *Network) reader(client *Client, ca chan *Action) {
 	defer func() {
-		n.unregister <- client // close connection?
+		n.Unregister <- client // close connection?
 	}()
 
 	for {
-		_, message, err := client.conn.ReadMessage()
+		_, message, err := client.Conn.ReadMessage()
 		if err != nil {
 			break
 		}
@@ -69,14 +74,14 @@ func (n *Network) reader(client *Client, ca chan *Action) {
 
 func (n *Network) writer(client *Client) {
 	defer func() {
-		n.unregister <- client
+		n.Unregister <- client
 	}()
 
 	for {
 		select {
 		case message, ok := <-client.NetworkOutput:
 			if ok {
-				client.conn.WriteMessage(websocket.BinaryMessage, message)
+				client.Conn.WriteMessage(websocket.BinaryMessage, message)
 			} else {
 				// error?
 			}

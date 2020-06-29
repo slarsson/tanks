@@ -5,26 +5,24 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"github.com/slarsson/game/game"
+	"github.com/slarsson/game/network"
 )
 
 type Server struct {
-	Network    *Network
-	Game       *Game
-	Operations chan *Action
-}
-
-type Action struct {
-	MessageType int8
-	Client      *Client
+	Network    *network.Network
+	Game       *game.Game
+	Operations chan *network.Action
 }
 
 func NewServer() *Server {
-	n := NewNetwork()
+	n := network.NewNetwork()
 
 	s := &Server{
 		Network:    n,
-		Game:       newGame(n),
-		Operations: make(chan *Action),
+		Game:       game.NewGame(n),
+		Operations: make(chan *network.Action),
 	}
 
 	go s.Network.Start(s.Operations)
@@ -40,12 +38,12 @@ func (s *Server) Manager() {
 
 				switch message.MessageType {
 				case 0:
-					s.Game.addPlayer(message.Client)
+					s.Game.AddPlayer(message.Client)
 				case 1:
 					for k, v := range s.Game.Players {
 						if v.Client == message.Client {
 							fmt.Println("player to remove found!!!")
-							s.Game.removePlayer(k)
+							s.Game.RemovePlayer(k)
 
 							// TODO: send del message to all clients
 						}
@@ -96,7 +94,7 @@ func (s *Server) GameLoop() {
 		buf := make([]byte, 0, 30)
 		for _, p := range s.Game.Players {
 			if p.Client == nil {
-				p.moveBot(step)
+				//p.moveBot(step)
 			} else {
 				s.handleInputs(p.Client, p, step)
 			}
@@ -142,14 +140,14 @@ func (s *Server) GameLoop() {
 
 		//fmt.Println(buf)
 
-		s.Network.broadcast <- buf
+		s.Network.Broadcast <- buf
 
 		tt := time.Since(start) * 1000 //* time.Millisecond
 		fmt.Println("Executing time:", tt)
 	}
 }
 
-func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
+func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 	//func (c *Client) handleInputs(p *Player, dt float32) {
 	for len(c.NetworkInput) != 0 {
 		message := <-c.NetworkInput
@@ -219,7 +217,7 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 		p.Position.Y += dt * p.Velocity.Y
 
 		for _, v := range s.Game.Map.Obstacles {
-			tank := NewTankHullPolygon()
+			tank := game.NewTankHullPolygon()
 			tank.Rotate(p.Rotation, p.Position)
 			ok, mtv := tank.Collision(v)
 			if ok {
@@ -248,10 +246,10 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 				continue
 			}
 
-			poly1 := NewTankHullPolygon()
+			poly1 := game.NewTankHullPolygon()
 			poly1.Rotate(p.Rotation, p.Position)
 
-			poly2 := NewTankHullPolygon()
+			poly2 := game.NewTankHullPolygon()
 			poly2.Rotate(v.Rotation, v.Position)
 
 			ok, mtv := poly1.Collision(poly2)
@@ -271,10 +269,10 @@ func (s *Server) handleInputs(c *Client, p *Player, dt float32) {
 					p.Rotation += 0.002 * dt
 				}
 
-				poly1 = NewTankHullPolygon()
+				poly1 = game.NewTankHullPolygon()
 				poly1.Rotate(p.Rotation, p.Position)
 
-				poly2 = NewTankHullPolygon()
+				poly2 = game.NewTankHullPolygon()
 				poly2.Rotate(v.Rotation, v.Position)
 
 				ok, mtv = poly1.Collision(poly2)
