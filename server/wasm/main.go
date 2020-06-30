@@ -2,46 +2,40 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"syscall/js"
+
+	"github.com/slarsson/game/game"
 )
 
 type keys struct {
-	w     bool
-	a     bool
-	s     bool
-	d     bool
-	left  bool
-	right bool
+	w        bool
+	a        bool
+	s        bool
+	d        bool
+	left     bool
+	right    bool
+	spacebar bool
 }
 
-type Player struct {
-	ID             int
-	Position       *Vector3
-	Velocity       *Vector3
-	Rotation       float32
-	TurretRotation float32
+var controls = keys{
+	w:        false,
+	a:        false,
+	s:        false,
+	d:        false,
+	left:     false,
+	right:    false,
+	spacebar: false,
 }
 
-type Vector3 struct {
-	X float32
-	Y float32
-	Z float32
+var self = -1
+var players = make(map[int]*game.Player)
+
+func setSelf(this js.Value, args []js.Value) interface{} {
+	self = args[0].Int()
+	fmt.Println("WASM: self has been set to", self)
+	return js.ValueOf(nil)
 }
-
-func (v *Vector3) setPosition(x float32, y float32, z float32) {
-	v.X = x
-	v.Y = y
-	v.Z = z
-}
-
-func (v *Vector3) getPosition() []float32 {
-	return []float32{v.X, v.Y, v.Z}
-}
-
-var controls = keys{w: false, a: false, s: false, d: false}
-var players = make(map[int]*Player)
-
-var localPlayer = 8081
 
 func keypress(this js.Value, args []js.Value) interface{} {
 	key := args[0].String()
@@ -118,28 +112,31 @@ func update(this js.Value, args []js.Value) interface{} {
 	//fmt.Println(args)
 
 	for i := 0; i < len(args); i += 9 {
-		if _, ok := players[args[i].Int()]; ok {
-
-			players[args[i].Int()].Position.setPosition(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+		key := args[i].Int()
+		if _, ok := players[key]; ok {
+			if key == self {
+				continue
+			}
+			players[args[i].Int()].Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
 			players[args[i].Int()].Rotation = float32(args[i+7].Float())
 			players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
 
-			// predict next step ?
-			// dt := float32(50)
-			// p := players[args[i].Int()]
-			// p.Position.X += dt * p.Velocity.X
-			// p.Position.Y += dt * p.Velocity.Y
+			// // predict next step ?
+			// // dt := float32(50)
+			// // p := players[args[i].Int()]
+			// // p.Position.X += dt * p.Velocity.X
+			// // p.Position.Y += dt * p.Velocity.Y
 
 		} else {
 			fmt.Println("add new player?")
-			players[args[i].Int()] = &Player{
+			players[args[i].Int()] = &game.Player{
 				ID: args[i].Int(),
-				Position: &Vector3{
+				Position: &game.Vector3{
 					X: float32(args[i+1].Float()),
 					Y: float32(args[i+2].Float()),
 					Z: float32(args[i+3].Float()),
 				},
-				Velocity: &Vector3{
+				Velocity: &game.Vector3{
 					X: float32(0),
 					Y: float32(0),
 					Z: float32(0),
@@ -153,74 +150,82 @@ func update(this js.Value, args []js.Value) interface{} {
 	return js.ValueOf(nil)
 }
 
-func getp(this js.Value, args []js.Value) interface{} {
-
-	play := players[args[0].Int()]
-	// dt := float32(args[0].Float())
-	// play.Position.X += dt * play.Velocity.Y
-	// play.Position.Y += dt * play.Velocity.X
-	p := play.Position.getPosition()
-	return []interface{}{p[0], p[1], p[2], play.Rotation, play.TurretRotation}
-}
-
-func printState(this js.Value, args []js.Value) interface{} {
-	fmt.Println(controls)
+func getPosition(this js.Value, args []js.Value) interface{} {
+	if p, ok := players[args[0].Int()]; ok {
+		return []interface{}{p.Position.X, p.Position.Y, p.Position.Z, p.Rotation, p.TurretRotation}
+	}
 	return js.ValueOf(nil)
 }
 
-func test(this js.Value, x []js.Value) interface{} {
-	//js.Global().Set("output", js.ValueOf(x[0]))
-	fmt.Println("wtf")
-
-	for _, v := range x {
-		println(v.Int())
+func guessPosition(this js.Value, args []js.Value) interface{} {
+	dt := float32(args[0].Float())
+	for _, p := range players {
+		p.Position.X += dt * p.Velocity.X
+		p.Position.Y += dt * p.Velocity.Y
 	}
-
 	return js.ValueOf(nil)
 }
 
 func local(this js.Value, args []js.Value) interface{} {
+	//fmt.Println("varför är min dator fkn sämst?")
 
-	// dt := float32(args[0].Float())
-	// p := players[8081]
+	p, ok := players[args[0].Int()]
+	if !ok {
+		return js.ValueOf(nil)
+	}
 
-	// if controls.w {
-	// 	p.Position.Y += dt * 0.005
-	// }
+	dt := float32(args[1].Float())
 
-	// if controls.a {
-	// 	p.Position.X -= dt * 0.005
-	// }
+	// fmt.Println(p)
+	// fmt.Println(dt)
 
-	// if controls.s {
-	// 	p.Position.Y -= dt * 0.005
-	// }
+	if controls.w || controls.s {
+		fmt.Println("do update shiett..")
+		if controls.w {
+			p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
+			p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
+		} else {
+			p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
+			p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
+		}
+	} else {
+		p.Velocity.Y = 0
+		p.Velocity.X = 0
+	}
 
-	// if controls.d {
-	// 	p.Position.X += dt * 0.005
-	// }
+	if controls.a {
+		p.Rotation += 0.002 * dt
+	}
+
+	if controls.d {
+		p.Rotation -= 0.002 * dt
+	}
+
+	if controls.left {
+		p.TurretRotation += 0.002 * dt
+	}
+
+	if controls.right {
+		p.TurretRotation -= 0.002 * dt
+	}
+
+	p.Position.X += dt * p.Velocity.X
+	p.Position.Y += dt * p.Velocity.Y
 
 	return js.ValueOf(nil)
 }
 
-func registerCallbacks() {
-	js.Global().Set("poll", js.FuncOf(poll))
-
-	js.Global().Set("swag", js.FuncOf(test))
-
-	js.Global().Set("state", js.FuncOf(keypress))
-	js.Global().Set("wasmprint", js.FuncOf(printState))
-
-	js.Global().Set("wasmupdate", js.FuncOf(update))
-	js.Global().Set("wasmgetpos", js.FuncOf(getp))
-	js.Global().Set("wasmglocal", js.FuncOf(local))
-}
-
 func main() {
+	js.Global().Set("wasm__poll", js.FuncOf(poll))
+	js.Global().Set("wasm__keypress", js.FuncOf(keypress))
+	js.Global().Set("wasm__update", js.FuncOf(update))
+	js.Global().Set("wasm__get", js.FuncOf(getPosition))
+	js.Global().Set("wasm__local", js.FuncOf(local))
+	js.Global().Set("wasm__setSelf", js.FuncOf(setSelf))
+	js.Global().Set("wasm__guessPosition", js.FuncOf(guessPosition))
+
+	fmt.Println("WebAssembly init!")
+
 	c := make(chan struct{}, 0)
-
-	registerCallbacks()
-
-	fmt.Println("Hello, WebAssembly!")
 	<-c
 }

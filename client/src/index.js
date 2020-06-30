@@ -35,16 +35,15 @@ window.addEventListener('DOMContentLoaded', () => {
         go.run(result.instance);
 
         const wasm = {
-            test: swag,
-            print: wasmprint,
-            state: state,
-            poll: poll,
-            update: wasmupdate,
-            getPos: wasmgetpos,
-            local: wasmglocal
+            keypress: wasm__keypress,
+            poll: wasm__poll,
+            update: wasm__update,
+            getPos: wasm__get,
+            local: wasm__local,
+            setSelf: wasm__setSelf,
+            guessPosition: wasm__guessPosition
         }
 
-        wasm.test();
         new Render(wasm);
     });
 

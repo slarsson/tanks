@@ -8,7 +8,7 @@ class Vehicle {
     protected geometry: THREE.Geometry;
     protected material: THREE.MeshBasicMaterial;
     static readonly COLORS = [0xff0000, 0x00ff00, 0x0000ff]; 
-    private keys: Keypress;
+    //private keys: Keypress;
 
     private scene: THREE.Scene;
 
@@ -19,8 +19,8 @@ class Vehicle {
     protected gun: THREE.Mesh;
 
 
-    constructor(_scene: THREE.Scene, keys: Keypress) {
-        this.keys = keys;
+    constructor(_scene: THREE.Scene) {
+        //this.keys = keys;
         
         this.geometry = new THREE.BoxGeometry(2, 4, 1);
         this.material = new THREE.MeshPhongMaterial({color: 0xc2b280});
@@ -64,8 +64,8 @@ class Vehicle {
         this.update = this.update.bind(this);
     }
 
-    setPosition(v: THREE.Vector3) {
-        this.body.position.set(v.x, v.y, v.z);
+    setPosition(x: number, y: number, z: number) {
+        this.body.position.set(x, y, z);
     } 
 
     setRotation(rot: number) {
@@ -91,10 +91,10 @@ class Vehicle {
 
     update(dt: number): void {
         let x = 0.005 * dt;
-        if (this.keys.status.w) this.body.position.y += x;
-        if (this.keys.status.s) this.body.position.y -= x;
-        if (this.keys.status.a) this.body.position.x -= x;
-        if (this.keys.status.d) this.body.position.x += x; 
+        // if (this.keys.status.w) this.body.position.y += x;
+        // if (this.keys.status.s) this.body.position.y -= x;
+        // if (this.keys.status.a) this.body.position.x -= x;
+        // if (this.keys.status.d) this.body.position.x += x; 
         //console.log('do update..');
     } 
 

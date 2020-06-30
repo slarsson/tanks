@@ -9,6 +9,16 @@ type Vector3 struct {
 	Z float32
 }
 
+func (v *Vector3) Set(x float32, y float32, z float32) {
+	v.X = x
+	v.Y = y
+	v.Z = z
+}
+
+func (v *Vector3) Get() []float32 {
+	return []float32{v.X, v.Y, v.Z}
+}
+
 // Rotate rotates a vector around origo
 func (v *Vector3) Rotate(rot float32) *Vector3 {
 	sin := float32(math.Sin(float64(rot)))

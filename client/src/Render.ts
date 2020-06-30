@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Vehicle from './Vehicle';
-import TestVechicle from './TestVehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
 
@@ -10,116 +9,75 @@ import { helper, obstacleTest } from './dev';
 
 class Render {
 
-    conn: Connection;
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    renderer: THREE.WebGLRenderer;
-    timestamp: number;
-    key: Keypress;
+    public readonly BROADCAST_RATE = 50;
+
+    private wasm: any;
+    private conn: Connection;
+    private scene: THREE.Scene;
+    private camera: THREE.PerspectiveCamera;
+    private renderer: THREE.WebGLRenderer;
+    private timestamp: number;
     
-    vehicles: Map<number, Vehicle>;
-    self: number = -1;
-
-    wasm: any;
-
-    shoot: Particle;
+    private vehicles: Map<number, Vehicle>;
+    private self: number = -1;
+    private shoot: Particle;
 
     constructor(wasm: any) {
+        // wasm => object containing go functions
         this.wasm = wasm;
-        this.wasm.test(1, 2, 3);
         
-        // setup
+        // method binds
+        this.animate = this.animate.bind(this);
+        this.broadcast = this.broadcast.bind(this);
+        this.serverMessage = this.serverMessage.bind(this);
+        this.registerKey = this.registerKey.bind(this);
+        this.unregisterKey = this.unregisterKey.bind(this);
+
+        // setup scene + camera + renderer
         this.scene = new THREE.Scene();
 
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 2000);
         this.camera.rotation.x = Math.PI / 4;
         this.camera.position.y = -10;
         this.camera.position.z = 30;
-        //this.camera.lookAt(0, 0, 0);
         
         this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('root')?.appendChild(this.renderer.domElement);
-
-        this.key = new Keypress();
-
-        // method binds
-        this.animate = this.animate.bind(this);
-        this.test = this.test.bind(this);
-        this.worldTick = this.worldTick.bind(this);
         
-        // test
-        //this.player = new TestVechicle(this.scene, this.key);
+        // setup objects + testing..
         this.vehicles = new Map();
+        this.shoot = new Particle(this.scene);
         helper(this.scene);
         obstacleTest(this.scene);
-        this.shoot = new Particle(this.scene);
 
-        // websocket
-        this.conn = new Connection(this.worldTick
-            // (x: any) => this.wasm.update(...x) 
-            
-            //(state: any) => {
-            //console.log(state);
-            // //console.log(state);
-            // if (state.length == 0) return;
-            // if (state.length != this.vehicles.length) {
-            //     this.vehicles.push(new Vehicle(this.scene));
-            // }
-
-            // for (let i = 0; i < state.length; i++) {
-            //     this.vehicles[i].setPosition(new THREE.Vector3(state[i].x, state[i].y, state[i].z));
-            // }
-            ,
+        // init websocket connection
+        this.conn = new Connection(
+            this.serverMessage,
             () => {
-                
+                // test..
                 let arr = new Uint8Array(1)
                 arr[0] = 0;
                 this.conn.send(arr.buffer);
-                this.test();
+                this.broadcast();
             }
         );
 
+        // setup eventlisteners
+        window.addEventListener('keydown', this.registerKey);
+        window.addEventListener('keyup', this.unregisterKey);
 
-        window.addEventListener('keydown', (evt: KeyboardEvent) => {
-            //console.log(evt.key);
-            this.wasm.state(evt.key, true);
-
-            if (evt.key == 'c') {
-                this.vehicles.get(this.self)?.setColor(0xfc99cd);
-            }
-
-            if (evt.key == ' ') {
-                if (this.self != -1) {
-                    const v = this.vehicles.get(this.self);
-                    if (v != undefined) {
-                        //this.shoot.add(v.getGunOrigin());
-                        this.shoot.add2(v.getGunRotation());
-                    }
-                }
-                
-            }
-        });
-
-        window.addEventListener('keyup', (evt: KeyboardEvent) => {
-            //console.log(evt.key);
-            this.wasm.state(evt.key, false);
-        });
-
-        // init
+        // init, add to DOM and init renderloop
+        document.getElementById('root')?.appendChild(this.renderer.domElement);
         this.timestamp = performance.now();
         this.animate();
-        //this.test();
-
- 
-        //window.addEventListener('keyup', this.remove);
     }
 
-    worldTick(state: Float32Array, test: Uint8Array): void {
+    private serverMessage(state: Float32Array, test: Uint8Array): void {
         //console.log(state);
         if (test[0] == 10) {
             console.log('my ID:', test);
             this.self = test[1];
+            this.wasm.setSelf(this.self);
             //this.vehicles.get(test[1])?.setColor(0xf699cd);
 
             return;
@@ -136,57 +94,60 @@ class Render {
         this.wasm.update(...state);
     
         for (let i = 0; i < state.length; i += 9) {
-            if (this.vehicles.has(state[i])) {
-                const pos = this.wasm.getPos(state[i])
-                //console.log(pos[3]);
-                
-                this.vehicles.get(state[i])?.setPosition(new THREE.Vector3(pos[0], pos[1], pos[2]));
-                this.vehicles.get(state[i])?.setRotation(pos[3]);
-                this.vehicles.get(state[i])?.setTurretRotation(pos[4]);
-
-                //this.vehicles.get(state[i])?.setPosition(new THREE.Vector3(state[i+1], state[i+2], state[i+3]));
-                
-                //console.log(state[0]);
-                if (state[i] == this.self) {
-                    this.camera.position.x = pos[0];
-                    this.camera.position.y = pos[1] - 30;
-                }
-            } else {
-                this.vehicles.set(state[i], new Vehicle(this.scene, this.key));
-            }
-
-            //console.log(state[i], state[i+1], state[i+2]);
+            if (!this.vehicles.has(state[i])) {
+                this.vehicles.set(state[i], new Vehicle(this.scene));
+            }        
         }
     }
 
-    test(): void {
-
-
-
-
+    private broadcast(): void {
         this.conn.send(this.wasm.poll().buffer);
-
-        setTimeout(this.test, 50);
+        setTimeout(this.broadcast, this.BROADCAST_RATE);
     }
 
-    animate(): void {
+    private registerKey(evt: KeyboardEvent): void {
+        this.wasm.keypress(evt.key, true);
+
+        if (evt.key == 'c') {
+            this.vehicles.get(this.self)?.setColor(0xfc99cd);
+        }
+
+        if (evt.key == ' ') {
+            if (this.self != -1) {
+                const v = this.vehicles.get(this.self);
+                if (v != undefined) {
+                    //this.shoot.add(v.getGunOrigin());
+                    this.shoot.add2(v.getGunRotation());
+                }
+            }
+        }
+    }
+
+    private unregisterKey(evt: KeyboardEvent): void {
+        this.wasm.keypress(evt.key, false);
+    }
+
+    public animate(): void {
         requestAnimationFrame(this.animate);
         let now = performance.now();
         let dt = now - this.timestamp;
 
-       
-        this.wasm.local(dt)
         this.shoot.update(dt);
+        
+        //this.wasm.local(this.self, dt);
 
         const it = this.vehicles[Symbol.iterator]();
         for (let item of it) {
-            //if (item[0] == 8081) continue;
             const pos = this.wasm.getPos(item[0], dt)
-            item[1].setPosition(new THREE.Vector3(pos[0], pos[1], pos[2]));
+            item[1].setPosition(pos[0], pos[1], pos[2]);
+            item[1].setRotation(pos[3]);
+            item[1].setTurretRotation(pos[4]);
+            
+            if (item[0] == this.self) {
+                this.camera.position.x = pos[0];
+                this.camera.position.y = pos[1] - 30;
+            }
         }
-
-
-       
 
         this.renderer.render(this.scene, this.camera);    
         this.timestamp = now;

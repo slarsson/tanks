@@ -159,18 +159,13 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			fmt.Println("add new fkn player here")
 
 		case 1:
-
 			if message[1] == 1 || message[3] == 1 {
 				if message[1] == 1 {
 					p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
 					p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
-
-					//p.Velocity.Y += 0.0001 * dt
 				} else {
 					p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
 					p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
-
-					//p.Velocity.Y -= 0.0001 * dt
 				}
 			} else {
 				p.Velocity.Y = 0
@@ -193,25 +188,9 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 				p.TurretRotation -= 0.002 * dt
 			}
 
-			//fmt.Println(p.TurretRotation)
-
-			// if message[2] == 1 || message[4] == 1 {
-			// 	if message[2] == 1 {
-			// 		p.Velocity.X -= x
-			// 	} else {
-			// 		p.Velocity.X += x
-			// 	}
-			// } else {
-			// 	p.Velocity.X = 0
-			// }
-
 		default:
 			fmt.Println("unknown command")
 		}
-
-		// move the player
-		// prevX := p.Position.X
-		// prevY := p.Position.Y
 
 		p.Position.X += dt * p.Velocity.X
 		p.Position.Y += dt * p.Velocity.Y
@@ -257,8 +236,6 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 				continue
 			}
 
-			//fmt.Println(mtv)
-
 			if message[2] == 1 || message[4] == 1 {
 				fmt.Println("ROTATION WILL FUCK IT UP")
 				if message[2] == 1 {
@@ -295,35 +272,9 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			p.Position.X += dx
 			p.Position.Y += dy
 
-			// if true {
-			// 	//if math.Sqrt(math.Pow(float64(p.Position.X-v.Position.X), 2)+math.Pow(float64(p.Position.Y-v.Position.Y), 2)) < 5.7 {
-			// 	//fmt.Println(math.Sqrt(math.Pow(float64(p.Position.X-v.Position.X), 2)))
-			// 	// 	// p.Position.Y -= dt * p.Velocity.Y
-
-			// 	if !s.Game.crash(v, p) {
-			// 		continue
-			// 	}
-
-			// p.Position.X = prevX
-			// p.Position.Y = prevY
-
 			p.Velocity.X = 0
 			p.Velocity.Y = 0
-
-			// }
 		}
-
-		// fmt.Println(p.corners().A)
-		// // hit my hit
-		// if s.Game.crash(p) {
-		// 	fmt.Println("fkn crash")
-
-		// 	// p.Position.X -= dt * p.Velocity.X
-		// 	// p.Position.Y -= dt * p.Velocity.Y
-
-		// 	p.Velocity.X = 0
-		// 	p.Velocity.Y = 0
-		// }
 
 	}
 }
