@@ -149,6 +149,8 @@ class Render {
             }
         }
 
+        this.wasm.guessPosition(dt);
+
         this.renderer.render(this.scene, this.camera);    
         this.timestamp = now;
     }

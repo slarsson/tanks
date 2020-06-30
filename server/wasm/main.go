@@ -8,6 +8,8 @@ import (
 	"github.com/slarsson/game/game"
 )
 
+const UpdateRate = 50
+
 type keys struct {
 	w        bool
 	a        bool
@@ -113,13 +115,60 @@ func update(this js.Value, args []js.Value) interface{} {
 
 	for i := 0; i < len(args); i += 9 {
 		key := args[i].Int()
-		if _, ok := players[key]; ok {
+		if p, ok := players[key]; ok {
 			if key == self {
-				continue
+				//continue
 			}
-			players[args[i].Int()].Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
-			players[args[i].Int()].Rotation = float32(args[i+7].Float())
-			players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
+
+			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+			p.Rotation = float32(args[i+7].Float())
+			p.TurretRotation = float32(args[i+8].Float())
+
+			if key != self {
+				p.Position.X += UpdateRate * p.Velocity.X
+				p.Position.Y += UpdateRate * p.Velocity.Y
+
+				for _, v := range players {
+					if v.ID == p.ID || v.ID == self {
+						continue
+					}
+
+					poly1 := game.NewTankHullPolygon()
+					poly1.Rotate(p.Rotation, p.Position)
+
+					poly2 := game.NewTankHullPolygon()
+					poly2.Rotate(v.Rotation, v.Position)
+
+					ok, mtv := poly1.Collision(poly2)
+					if ok {
+						fmt.Println("CLIENT HAS CRASHED..")
+
+						dx := mtv.Vector.X * mtv.Magnitude
+						dy := mtv.Vector.Y * mtv.Magnitude
+
+						if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
+							dx = -dx
+						}
+
+						if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
+							dy = -dy
+						}
+
+						p.Position.X += dx
+						p.Position.Y += dy
+					}
+				}
+			}
+
+			// players[args[i].Int()].Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+			// players[args[i].Int()].Rotation = float32(args[i+7].Float())
+			// players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
+
+			// if key != self {
+			// 	players[args[i].Int()].Position.X += 150 * players[args[i].Int()].Velocity.X
+			// 	players[args[i].Int()].Position.Y += 150 * players[args[i].Int()].Velocity.Y
+			// 	//continue
+			// }
 
 			// // predict next step ?
 			// // dt := float32(50)
@@ -160,9 +209,13 @@ func getPosition(this js.Value, args []js.Value) interface{} {
 func guessPosition(this js.Value, args []js.Value) interface{} {
 	dt := float32(args[0].Float())
 	for _, p := range players {
+		if p.ID == self {
+			continue
+		}
 		p.Position.X += dt * p.Velocity.X
 		p.Position.Y += dt * p.Velocity.Y
 	}
+
 	return js.ValueOf(nil)
 }
 
