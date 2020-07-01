@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"syscall/js"
 
 	"github.com/slarsson/game/game"
@@ -110,6 +111,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 	}
 
 	if controls.spacebar {
+		addProjectile()
 		buf[7] = 1
 	}
 
@@ -117,6 +119,55 @@ func poll(this js.Value, args []js.Value) interface{} {
 	dst := uint8Array.New(len(buf))
 	js.CopyBytesToJS(dst, buf)
 	return dst
+}
+
+func addProjectile() {
+	var wtf int
+	for {
+		wtf = rand.Intn(10000) // fejk random?
+		_, ok := projectiles[wtf]
+		if !ok {
+			break
+		}
+	}
+
+	projectiles[wtf] = &game.Projectile{
+		Position:  &game.Vector3{X: 0, Y: 0, Z: 3},
+		Direction: &game.Vector3{X: 1, Y: 1, Z: 0},
+		Velocity:  0.001,
+		Owner:     nil,
+	}
+}
+
+func updateProjectiles(this js.Value, args []js.Value) interface{} {
+	buf := make([]interface{}, len(projectiles)*4)
+	//buf := make([]float32, len(projectiles)*3)
+
+	dt := float32(args[0].Float())
+
+	wtf := 0
+	for i, val := range projectiles {
+		val.Move(dt)
+		buf[wtf] = i
+		wtf++
+		buf[wtf] = val.Position.X
+		wtf++
+		buf[wtf] = val.Position.Y
+		wtf++
+		buf[wtf] = val.Position.Z
+		wtf++
+	}
+
+	//fmt.Println("size:", len(projectiles))
+	//fmt.Println(buf)
+
+	return buf
+	//return []interface{}buf
+	//return js.ValueOf([]int32{1, 2})
+	// float32array := js.Global().Get("Float32Array")
+	// dst := float32array.New(len(buf))
+	// js.CopyBytesToJS(dst, buf)
+	// return dst
 }
 
 func update(this js.Value, args []js.Value) interface{} {
@@ -384,6 +435,7 @@ func main() {
 	js.Global().Set("wasm__local", js.FuncOf(local))
 	js.Global().Set("wasm__setSelf", js.FuncOf(setSelf))
 	js.Global().Set("wasm__guessPosition", js.FuncOf(guessPosition))
+	js.Global().Set("wasm__updateProjectiles", js.FuncOf(updateProjectiles))
 
 	fmt.Println("WebAssembly init!")
 

@@ -41,10 +41,13 @@ window.addEventListener('DOMContentLoaded', () => {
             getPos: wasm__get,
             local: wasm__local,
             setSelf: wasm__setSelf,
-            guessPosition: wasm__guessPosition
+            guessPosition: wasm__guessPosition,
+            updateProjectiles: wasm__updateProjectiles
         }
 
         new Render(wasm);
+
+        (function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
     });
 
 

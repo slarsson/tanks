@@ -3,7 +3,7 @@ import Vehicle from './Vehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
 
-import Particle from './Particle';
+import Projectile from './Particle';
 
 import { helper, obstacleTest } from './dev';
 
@@ -20,7 +20,7 @@ class Render {
     
     private vehicles: Map<number, Vehicle>;
     private self: number = -1;
-    private shoot: Particle;
+    private shoot: Map<number, Projectile>;
 
     constructor(wasm: any) {
         // wasm => object containing go functions
@@ -46,7 +46,8 @@ class Render {
         
         // setup objects + testing..
         this.vehicles = new Map();
-        this.shoot = new Particle(this.scene);
+        this.shoot = new Map();
+        //this.shoot = new Particle(this.scene);
         helper(this.scene);
         obstacleTest(this.scene);
 
@@ -80,11 +81,11 @@ class Render {
                     this.vehicles.set(state[i], new Vehicle(this.scene));
                 } else if (state[i+9] == 1) {
                     // float comparision error? wtf?
-                    console.log('SHOOTING FFS');
-                    const v = this.vehicles.get(this.self);
-                    if (v != undefined) {
-                        this.shoot.add2(v.getGunRotation());
-                    }
+                    // console.log('SHOOTING FFS');
+                    // const v = this.vehicles.get(this.self);
+                    // if (v != undefined) {
+                    //     this.shoot.add2(v.getGunRotation());
+                    // }
                 }        
             }
             this.wasm.update(...state);
@@ -168,10 +169,12 @@ class Render {
         let now = performance.now();
         let dt = now - this.timestamp;
 
-        this.shoot.update(dt);
+        //this.shoot.update(dt);
         
         //this.wasm.local(this.self, dt);
         this.wasm.guessPosition(dt);
+
+
         const it = this.vehicles[Symbol.iterator]();
         for (let item of it) {
             const pos = this.wasm.getPos(item[0], dt)
@@ -185,7 +188,15 @@ class Render {
             }
         }
 
-        
+        let items = this.wasm.updateProjectiles(dt);
+        for (let i = 0; i < items.length; i += 4) {
+            if (!this.shoot.has(items[i])) {
+                this.shoot.set(items[i], new Projectile(this.scene));
+            } else {
+                this.shoot.get(items[i])?.set(items[i+1], items[i+2], items[i+3]);
+            }
+        }
+        //console.log(this.wasm.updateProjectiles(dt));
 
         this.renderer.render(this.scene, this.camera);    
         this.timestamp = now;
