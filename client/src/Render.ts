@@ -72,33 +72,69 @@ class Render {
         this.animate();
     }
 
-    private serverMessage(state: Float32Array, test: Uint8Array): void {
-        //console.log(state);
-        if (test[0] == 10) {
+    private serverMessage(mt: number, buffer: ArrayBuffer): void {
+        if (mt == 0) {
+            let state = new Float32Array(buffer);            
+            for (let i = 0; i < state.length; i += 10) {
+                if (!this.vehicles.has(state[i])) {
+                    this.vehicles.set(state[i], new Vehicle(this.scene));
+                } else if (state[i+9] == 1) {
+                    // float comparision error? wtf?
+                    console.log('SHOOTING FFS');
+                    const v = this.vehicles.get(this.self);
+                    if (v != undefined) {
+                        this.shoot.add2(v.getGunRotation());
+                    }
+                }        
+            }
+            this.wasm.update(...state);
+        }
+        
+        if (mt == 10) {
+            let test = new Uint32Array(buffer);
             console.log('my ID:', test);
-            this.self = test[1];
+            this.self = test[0];
             this.wasm.setSelf(this.self);
-            //this.vehicles.get(test[1])?.setColor(0xf699cd);
-
             return;
         } 
         
-        if (test[0] == 9) {
+        if (mt == 9) {
+            let test = new Uint32Array(buffer);
             console.log('remove ID:', test);
             //this.scene.remove(this.vehicles.get(test[1]))
             this.vehicles.get(test[1])?.dispose();
             this.vehicles.delete(test[1]);
             return;
         } 
-        
-        this.wasm.update(...state);
-    
-        for (let i = 0; i < state.length; i += 9) {
-            if (!this.vehicles.has(state[i])) {
-                this.vehicles.set(state[i], new Vehicle(this.scene));
-            }        
-        }
     }
+
+    // private serverMessage(state: Float32Array, test: Uint8Array): void {
+    //     // //console.log(state);
+    //     // if (test[0] == 10) {
+    //     //     console.log('my ID:', test);
+    //     //     this.self = test[1];
+    //     //     this.wasm.setSelf(this.self);
+    //     //     //this.vehicles.get(test[1])?.setColor(0xf699cd);
+
+    //     //     return;
+    //     // } 
+        
+    //     // if (test[0] == 9) {
+    //     //     console.log('remove ID:', test);
+    //     //     //this.scene.remove(this.vehicles.get(test[1]))
+    //     //     this.vehicles.get(test[1])?.dispose();
+    //     //     this.vehicles.delete(test[1]);
+    //     //     return;
+    //     // } 
+        
+    //     // this.wasm.update(...state);
+    
+    //     // for (let i = 0; i < state.length; i += 10) {
+    //     //     if (!this.vehicles.has(state[i])) {
+    //     //         this.vehicles.set(state[i], new Vehicle(this.scene));
+    //     //     }        
+    //     // }
+    // }
 
     private broadcast(): void {
         this.conn.send(this.wasm.poll().buffer);
@@ -112,15 +148,15 @@ class Render {
             this.vehicles.get(this.self)?.setColor(0xfc99cd);
         }
 
-        if (evt.key == ' ') {
-            if (this.self != -1) {
-                const v = this.vehicles.get(this.self);
-                if (v != undefined) {
-                    //this.shoot.add(v.getGunOrigin());
-                    this.shoot.add2(v.getGunRotation());
-                }
-            }
-        }
+        // if (evt.key == ' ') {
+        //     if (this.self != -1) {
+        //         const v = this.vehicles.get(this.self);
+        //         if (v != undefined) {
+        //             //this.shoot.add(v.getGunOrigin());
+        //             this.shoot.add2(v.getGunRotation());
+        //         }
+        //     }
+        // }
     }
 
     private unregisterKey(evt: KeyboardEvent): void {
@@ -135,7 +171,7 @@ class Render {
         this.shoot.update(dt);
         
         //this.wasm.local(this.self, dt);
-
+        this.wasm.guessPosition(dt);
         const it = this.vehicles[Symbol.iterator]();
         for (let item of it) {
             const pos = this.wasm.getPos(item[0], dt)
@@ -149,7 +185,7 @@ class Render {
             }
         }
 
-        this.wasm.guessPosition(dt);
+        
 
         this.renderer.render(this.scene, this.camera);    
         this.timestamp = now;

@@ -69,29 +69,11 @@ func (s *Server) GameLoop() {
 
 	for range ticker.C {
 		start := time.Now()
-		// xx := make([]byte, 0, 30)
-		// x1 := make([]byte, 4)
-		// x2 := make([]byte, 4)
-		// x3 := make([]byte, 4)
-		// x4 := make([]byte, 4)
-		// x5 := make([]byte, 4)
-		// x6 := make([]byte, 4)
-		// x7 := make([]byte, 4)
-		// x8 := make([]byte, 4)
-		// binary.LittleEndian.PutUint32(x1, 1)
-		// binary.LittleEndian.PutUint32(x2, 1)
-		// binary.LittleEndian.PutUint32(x3, 1)
-		// xx = append(xx, x1...)
-		// xx = append(xx, x2...)
-		// xx = append(xx, x3...)
-		// xx = append(xx, x4...)
-		// xx = append(xx, x5...)
-		// xx = append(xx, x6...)
-		// xx = append(xx, x7...)
-		// xx = append(xx, x8...)
-		// c.NetworkInput <- xx
 
 		buf := make([]byte, 0, 30)
+		mt := make([]byte, 4)
+		binary.LittleEndian.PutUint32(mt, 0)
+		buf = append(buf, mt...)
 		for _, p := range s.Game.Players {
 			if p.Client == nil {
 				//p.moveBot(step)
@@ -100,50 +82,12 @@ func (s *Server) GameLoop() {
 			}
 			//p.Client.handleInputs(p, step)
 
-			id := make([]byte, 4)
-			x := make([]byte, 4)
-			y := make([]byte, 4)
-			z := make([]byte, 4)
-
-			vx := make([]byte, 4)
-			vy := make([]byte, 4)
-			vz := make([]byte, 4)
-
-			rot := make([]byte, 4)
-			trot := make([]byte, 4)
-
-			binary.LittleEndian.PutUint32(id, math.Float32bits(float32(p.ID)))
-
-			binary.LittleEndian.PutUint32(x, math.Float32bits(p.Position.X))
-			binary.LittleEndian.PutUint32(y, math.Float32bits(p.Position.Y))
-			binary.LittleEndian.PutUint32(z, math.Float32bits(p.Position.Z))
-
-			binary.LittleEndian.PutUint32(vx, math.Float32bits(p.Velocity.X))
-			binary.LittleEndian.PutUint32(vy, math.Float32bits(p.Velocity.Y))
-			binary.LittleEndian.PutUint32(vz, math.Float32bits(p.Velocity.Z))
-
-			binary.LittleEndian.PutUint32(rot, math.Float32bits(p.Rotation))
-			binary.LittleEndian.PutUint32(trot, math.Float32bits(p.TurretRotation))
-
-			buf = append(buf, id...)
-			buf = append(buf, x...)
-			buf = append(buf, y...)
-			buf = append(buf, z...)
-
-			buf = append(buf, vx...)
-			buf = append(buf, vy...)
-			buf = append(buf, vz...)
-
-			buf = append(buf, rot...)
-			buf = append(buf, trot...)
+			p.AppendPlayerState(&buf)
 		}
-
-		//fmt.Println(buf)
 
 		s.Network.Broadcast <- buf
 
-		tt := time.Since(start) * 1000 //* time.Millisecond
-		fmt.Println("Executing time:", tt)
+		fmt.Println("Executing time:", time.Since(start)*1000)
 	}
 }
 
@@ -186,6 +130,12 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 
 			if message[6] == 1 {
 				p.TurretRotation -= 0.002 * dt
+			}
+
+			if message[7] == 1 {
+				p.Shoot = true
+			} else {
+				p.Shoot = false
 			}
 
 		default:

@@ -17,6 +17,7 @@ type Player struct {
 	Velocity       *Vector3
 	Rotation       float32
 	TurretRotation float32
+	Shoot          bool
 	Client         *network.Client
 }
 
@@ -56,6 +57,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
 		Rotation:       0,
 		TurretRotation: 0,
+		Shoot:          false,
 		Client:         client,
 	}
 

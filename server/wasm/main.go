@@ -32,6 +32,7 @@ var controls = keys{
 
 var self = -1
 var players = make(map[int]*game.Player)
+var projectiles = make(map[int]*game.Projectile)
 
 func setSelf(this js.Value, args []js.Value) interface{} {
 	self = args[0].Int()
@@ -72,11 +73,16 @@ func keypress(this js.Value, args []js.Value) interface{} {
 		return js.ValueOf(true)
 	}
 
+	if key == " " {
+		controls.spacebar = args[1].Bool()
+		return js.ValueOf(true)
+	}
+
 	return js.ValueOf(false)
 }
 
 func poll(this js.Value, args []js.Value) interface{} {
-	buf := make([]byte, 7)
+	buf := make([]byte, 8)
 	buf[0] = 1
 
 	if controls.w {
@@ -103,6 +109,10 @@ func poll(this js.Value, args []js.Value) interface{} {
 		buf[6] = 1
 	}
 
+	if controls.spacebar {
+		buf[7] = 1
+	}
+
 	uint8Array := js.Global().Get("Uint8Array")
 	dst := uint8Array.New(len(buf))
 	js.CopyBytesToJS(dst, buf)
@@ -111,9 +121,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 
 func update(this js.Value, args []js.Value) interface{} {
 
-	//fmt.Println(args)
-
-	for i := 0; i < len(args); i += 9 {
+	for i := 0; i < len(args); i += 10 {
 		key := args[i].Int()
 		if p, ok := players[key]; ok {
 			if key == self {
@@ -123,6 +131,11 @@ func update(this js.Value, args []js.Value) interface{} {
 			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
 			p.Rotation = float32(args[i+7].Float())
 			p.TurretRotation = float32(args[i+8].Float())
+
+			// fmt.Println(int(args[i+9].Float()))
+			// if args[i+9].Int() == 0 {
+			// 	fmt.Println("no shoot :(")
+			// }
 
 			if key != self {
 				p.Position.X += UpdateRate * p.Velocity.X
@@ -198,6 +211,101 @@ func update(this js.Value, args []js.Value) interface{} {
 
 	return js.ValueOf(nil)
 }
+
+// func update(this js.Value, args []js.Value) interface{} {
+// 	if len(args) == 0 {
+// 		return js.ValueOf(nil)
+// 	}
+
+// 	//fmt.Println("WWTTF", args)
+// 	key := args[0].Int()
+// 	if p, ok := players[key]; ok {
+// 		if key == self {
+// 			//continue
+// 		}
+
+// 		p.Position.Set(float32(args[1].Float()), float32(args[2].Float()), float32(args[3].Float()))
+// 		p.Rotation = float32(args[7].Float())
+// 		p.TurretRotation = float32(args[8].Float())
+
+// 		// fmt.Println(int(args[i+9].Float()))
+// 		// if args[i+9].Int() == 0 {
+// 		// 	fmt.Println("no shoot :(")
+// 		// }
+
+// 		if key != self {
+// 			p.Position.X += UpdateRate * p.Velocity.X
+// 			p.Position.Y += UpdateRate * p.Velocity.Y
+
+// 			for _, v := range players {
+// 				if v.ID == p.ID || v.ID == self {
+// 					continue
+// 				}
+
+// 				poly1 := game.NewTankHullPolygon()
+// 				poly1.Rotate(p.Rotation, p.Position)
+
+// 				poly2 := game.NewTankHullPolygon()
+// 				poly2.Rotate(v.Rotation, v.Position)
+
+// 				ok, mtv := poly1.Collision(poly2)
+// 				if ok {
+// 					fmt.Println("CLIENT HAS CRASHED..")
+
+// 					dx := mtv.Vector.X * mtv.Magnitude
+// 					dy := mtv.Vector.Y * mtv.Magnitude
+
+// 					if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
+// 						dx = -dx
+// 					}
+
+// 					if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
+// 						dy = -dy
+// 					}
+
+// 					p.Position.X += dx
+// 					p.Position.Y += dy
+// 				}
+// 			}
+// 		}
+
+// 		// players[args[i].Int()].Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+// 		// players[args[i].Int()].Rotation = float32(args[i+7].Float())
+// 		// players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
+
+// 		// if key != self {
+// 		// 	players[args[i].Int()].Position.X += 150 * players[args[i].Int()].Velocity.X
+// 		// 	players[args[i].Int()].Position.Y += 150 * players[args[i].Int()].Velocity.Y
+// 		// 	//continue
+// 		// }
+
+// 		// // predict next step ?
+// 		// // dt := float32(50)
+// 		// // p := players[args[i].Int()]
+// 		// // p.Position.X += dt * p.Velocity.X
+// 		// // p.Position.Y += dt * p.Velocity.Y
+
+// 	} else {
+// 		fmt.Println("add new player?")
+// 		players[args[0].Int()] = &game.Player{
+// 			ID: args[0].Int(),
+// 			Position: &game.Vector3{
+// 				X: float32(args[1].Float()),
+// 				Y: float32(args[2].Float()),
+// 				Z: float32(args[3].Float()),
+// 			},
+// 			Velocity: &game.Vector3{
+// 				X: float32(0),
+// 				Y: float32(0),
+// 				Z: float32(0),
+// 			},
+// 			Rotation:       0,
+// 			TurretRotation: 0,
+// 		}
+// 	}
+
+// 	return js.ValueOf(nil)
+// }
 
 func getPosition(this js.Value, args []js.Value) interface{} {
 	if p, ok := players[args[0].Int()]; ok {

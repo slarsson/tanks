@@ -20,8 +20,8 @@ class Projectile {
 
         this.scene = scene;
         this.scene.add(this.mesh);
-        this.f = Math.random() * 0.05;
-        this.decay = Math.random() * 0.00005;
+        this.f = 0.05;
+        this.decay = 0.001;
     }
 
     update(dt: number) {

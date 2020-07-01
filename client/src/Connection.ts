@@ -35,9 +35,24 @@ class Connection {
     }
 
     private message(payload: MessageEvent) {
-        //console.log(payload.data.Uint8Array);
+        this.target(new Uint32Array(payload.data.slice(0, 4)), payload.data.slice(4));
+        return;
         
-        this.target(new Float32Array(payload.data), new Uint32Array(payload.data));
+        //console.log(payload.data.Uint8Array);
+        let messageType = new Uint32Array(payload.data.slice(0, 4));
+        
+        //if (messageType[0] < 100) {
+            //console.log('messageType:', messageType);
+        //}
+        // console.log( new Uint32Array(payload.data));
+        // console.log(new Float32Array(buf));
+        if (messageType[0] == 0) {
+            console.log('fan ta postnord');
+            this.target(new Float32Array(payload.data.slice(4)), new Uint32Array());
+        } else {
+            console.log(payload.data);
+            this.target(new Float32Array(), new Uint32Array(payload.data));
+        }
 
         // let x = new Uint32Array(payload.data);
 
