@@ -42,7 +42,8 @@ window.addEventListener('DOMContentLoaded', () => {
             local: wasm__local,
             setSelf: wasm__setSelf,
             guessPosition: wasm__guessPosition,
-            updateProjectiles: wasm__updateProjectiles
+            updateProjectiles: wasm__updateProjectiles,
+            addProjectile: wasm__addProjectile
         }
 
         new Render(wasm);

@@ -19,21 +19,24 @@ type Player struct {
 	TurretRotation float32
 	Shoot          bool
 	Client         *network.Client
+	Controls       *Controls
 }
 
 type Game struct {
-	Map     *Map
-	Players map[int]*Player
-	mutex   *sync.RWMutex
-	Network *network.Network
+	Map         *Map
+	Players     map[int]*Player
+	Projectiles map[int]*Projectile
+	mutex       *sync.RWMutex
+	Network     *network.Network
 }
 
 func NewGame(n *network.Network) *Game {
 	return &Game{
-		Map:     NewMap(),
-		Players: make(map[int]*Player),
-		mutex:   &sync.RWMutex{},
-		Network: n,
+		Map:         NewMap(),
+		Players:     make(map[int]*Player),
+		Projectiles: make(map[int]*Projectile),
+		mutex:       &sync.RWMutex{},
+		Network:     n,
 	}
 }
 
@@ -59,6 +62,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 		TurretRotation: 0,
 		Shoot:          false,
 		Client:         client,
+		Controls:       NewControls(),
 	}
 
 	fmt.Printf("\033[1;34m%s\033[0m", "new player added with id", playerID, "\n")

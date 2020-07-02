@@ -16,6 +16,13 @@ const helper = (scene: THREE.Scene) => {
         new THREE.CylinderGeometry(1700, 1700, 2000, 50),  
         new THREE.MeshBasicMaterial({color: 0x5780EA, side: THREE.BackSide})
     ));
+
+    let plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100, 10),  
+        new THREE.MeshBasicMaterial( {color: 0xdf9e6f, side: THREE.DoubleSide} )
+    )
+    plane.position.z = -0.5;
+    scene.add(plane);
 };
 
 const obstacleTest = (scene: THREE.Scene) => {

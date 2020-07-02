@@ -22,7 +22,11 @@ class Render {
     private self: number = -1;
     private shoot: Map<number, Projectile>;
 
+    private SWAG: boolean;
+
     constructor(wasm: any) {
+        this.SWAG = true;
+        
         // wasm => object containing go functions
         this.wasm = wasm;
         
@@ -80,6 +84,8 @@ class Render {
                 if (!this.vehicles.has(state[i])) {
                     this.vehicles.set(state[i], new Vehicle(this.scene));
                 } else if (state[i+9] == 1) {
+                    console.log('ADD ANOTHER PROJECTILE FFS');
+                    this.wasm.addProjectile(state[i]); // float comparsion missmatch!?
                     // float comparision error? wtf?
                     // console.log('SHOOTING FFS');
                     // const v = this.vehicles.get(this.self);
@@ -88,7 +94,7 @@ class Render {
                     // }
                 }        
             }
-            this.wasm.update(...state);
+            this.wasm.update(...state, this.SWAG);
         }
         
         if (mt == 10) {
@@ -147,6 +153,7 @@ class Render {
 
         if (evt.key == 'c') {
             this.vehicles.get(this.self)?.setColor(0xfc99cd);
+            this.SWAG = !this.SWAG;
         }
 
         // if (evt.key == ' ') {
@@ -192,9 +199,8 @@ class Render {
         for (let i = 0; i < items.length; i += 4) {
             if (!this.shoot.has(items[i])) {
                 this.shoot.set(items[i], new Projectile(this.scene));
-            } else {
-                this.shoot.get(items[i])?.set(items[i+1], items[i+2], items[i+3]);
             }
+            this.shoot.get(items[i])?.set(items[i+1], items[i+2], items[i+3]);
         }
         //console.log(this.wasm.updateProjectiles(dt));
 

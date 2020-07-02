@@ -94,8 +94,14 @@ func (s *Server) GameLoop() {
 func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 	//func (c *Client) handleInputs(p *Player, dt float32) {
 	for len(c.NetworkInput) != 0 {
+
+		// swag
 		message := <-c.NetworkInput
 
+		// game.DecodeControls(message)
+		p.Controls.Decode(&message)
+		//p.Controls.Print()
+		p.Move(&s.Game.Players, dt)
 		//fmt.Println("handleInputs", message)
 
 		switch message[0] {
@@ -134,6 +140,8 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 
 			if message[7] == 1 {
 				p.Shoot = true
+
+				fmt.Println("add new projectile for ID:", p.ID)
 			} else {
 				p.Shoot = false
 			}

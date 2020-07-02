@@ -7,7 +7,7 @@ class Projectile {
 
     constructor(scene: THREE.Scene) {
         this.mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.2, 32, 32), 
+            new THREE.SphereGeometry(0.15, 32, 32), 
             new THREE.MeshBasicMaterial({color: 0xffffff})
         );
 
