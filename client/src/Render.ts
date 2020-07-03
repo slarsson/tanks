@@ -25,7 +25,7 @@ class Render {
     private SWAG: boolean;
 
     constructor(wasm: any) {
-        this.SWAG = true;
+        this.SWAG = false;
         
         // wasm => object containing go functions
         this.wasm = wasm;

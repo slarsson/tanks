@@ -24,15 +24,16 @@ func NewControls() *Controls {
 	}
 }
 
+// OBS OBS: first index assumed to be messagetype
 func (c *Controls) Decode(payload *[]byte) {
 	// TODO: bad data input => PANIC!?
-	c.Forward = ((*payload)[0] == 1)
-	c.Backward = ((*payload)[2] == 1)
-	c.RotateLeft = ((*payload)[1] == 1)
-	c.RotateRight = ((*payload)[3] == 1)
-	c.RotateTurretLeft = ((*payload)[4] == 1)
-	c.RotateTurretRight = ((*payload)[5] == 1)
-	c.Shoot = ((*payload)[6] == 1)
+	c.Forward = ((*payload)[1] == 1)
+	c.Backward = ((*payload)[3] == 1)
+	c.RotateLeft = ((*payload)[2] == 1)
+	c.RotateRight = ((*payload)[4] == 1)
+	c.RotateTurretLeft = ((*payload)[5] == 1)
+	c.RotateTurretRight = ((*payload)[6] == 1)
+	c.Shoot = ((*payload)[7] == 1)
 }
 
 func (c Controls) Print() {

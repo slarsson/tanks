@@ -40,6 +40,22 @@ func NewGame(n *network.Network) *Game {
 	}
 }
 
+func (g *Game) AddProjectile(p *Player) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
+	var id int
+	for {
+		id = rand.Intn(10000) // fejk random?
+		_, ok := g.Projectiles[id]
+		if !ok {
+			break
+		}
+	}
+
+	g.Projectiles[id] = p.NewProjectile()
+}
+
 func (g *Game) AddPlayer(client *network.Client) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()

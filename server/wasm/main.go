@@ -33,7 +33,9 @@ var controls = keys{
 
 var self = -1
 var players = make(map[int]*game.Player)
+var themap = game.NewMap()
 var projectiles = make(map[int]*game.Projectile)
+var oldstate = game.Vector3{X: 0, Y: 0, Z: 0}
 
 func setSelf(this js.Value, args []js.Value) interface{} {
 	self = args[0].Int()
@@ -119,7 +121,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 	dst := uint8Array.New(len(buf))
 	js.CopyBytesToJS(dst, buf)
 
-	//wtf()
+	wtf()
 
 	return dst
 }
@@ -283,6 +285,7 @@ func update(this js.Value, args []js.Value) interface{} {
 				},
 				Rotation:       0,
 				TurretRotation: 0,
+				Controls:       game.NewControls(),
 			}
 		}
 	}
@@ -297,37 +300,57 @@ func wtf() {
 		return
 	}
 
-	if controls.w || controls.s {
-		if controls.w {
-			p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * UpdateRate
-			p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * UpdateRate
-		} else {
-			p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * UpdateRate
-			p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * UpdateRate
-		}
-	} else {
-		p.Velocity.Y = 0
-		p.Velocity.X = 0
-	}
+	//fmt.Println(p.Controls)
 
-	p.Position.X += UpdateRate * p.Velocity.X
-	p.Position.Y += UpdateRate * p.Velocity.Y
+	// hack my hack
+	p.Controls.Forward = controls.w
+	p.Controls.Backward = controls.s
+	p.Controls.RotateLeft = controls.a
+	p.Controls.RotateRight = controls.d
+	p.Controls.RotateTurretLeft = controls.left
+	p.Controls.RotateTurretRight = controls.right
 
-	if controls.a {
-		p.Rotation += 0.002 * UpdateRate
-	}
+	p.Position.X = oldstate.X
+	p.Position.Y = oldstate.Y
 
-	if controls.d {
-		p.Rotation -= 0.002 * UpdateRate
-	}
+	p.Move(UpdateRate)
+	p.HandleCollsionWithPlayers(&players, UpdateRate)
+	p.HandleCollsionWithObjects(&themap.Obstacles)
 
-	if controls.left {
-		p.TurretRotation += 0.002 * UpdateRate
-	}
+	oldstate.X = p.Position.X
+	oldstate.Y = p.Position.Y
 
-	if controls.right {
-		p.TurretRotation -= 0.002 * UpdateRate
-	}
+	// if controls.w || controls.s {
+	// 	if controls.w {
+	// 		p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * UpdateRate
+	// 		p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * UpdateRate
+	// 	} else {
+	// 		p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * UpdateRate
+	// 		p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * UpdateRate
+	// 	}
+	// } else {
+	// 	p.Velocity.Y = 0
+	// 	p.Velocity.X = 0
+	// }
+
+	// p.Position.X += UpdateRate * p.Velocity.X
+	// p.Position.Y += UpdateRate * p.Velocity.Y
+
+	// if controls.a {
+	// 	p.Rotation += 0.002 * UpdateRate
+	// }
+
+	// if controls.d {
+	// 	p.Rotation -= 0.002 * UpdateRate
+	// }
+
+	// if controls.left {
+	// 	p.TurretRotation += 0.002 * UpdateRate
+	// }
+
+	// if controls.right {
+	// 	p.TurretRotation -= 0.002 * UpdateRate
+	// }
 
 	// OLD:
 	// fmt.Println("do updates...")

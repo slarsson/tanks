@@ -33,7 +33,7 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 	binary.LittleEndian.PutUint32(rotation, math.Float32bits(p.Rotation))
 	binary.LittleEndian.PutUint32(turretRotation, math.Float32bits(p.TurretRotation))
 
-	if p.Shoot {
+	if p.Controls.Shoot {
 		binary.LittleEndian.PutUint32(shoot, math.Float32bits(float32(1)))
 	} else {
 		binary.LittleEndian.PutUint32(shoot, math.Float32bits(float32(0)))
