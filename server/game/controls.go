@@ -1,6 +1,9 @@
 package game
 
-import "fmt"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 type Controls struct {
 	Forward           bool
@@ -34,6 +37,8 @@ func (c *Controls) Decode(payload *[]byte) {
 	c.RotateTurretLeft = ((*payload)[5] == 1)
 	c.RotateTurretRight = ((*payload)[6] == 1)
 	c.Shoot = ((*payload)[7] == 1)
+
+	fmt.Println(binary.LittleEndian.Uint32((*payload)[8:]))
 }
 
 func (c Controls) Print() {

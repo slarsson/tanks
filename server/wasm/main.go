@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
 	"math/rand"
@@ -36,6 +37,8 @@ var players = make(map[int]*game.Player)
 var themap = game.NewMap()
 var projectiles = make(map[int]*game.Projectile)
 var oldstate = game.Vector3{X: 0, Y: 0, Z: 0}
+
+var sequence = uint32(0)
 
 func setSelf(this js.Value, args []js.Value) interface{} {
 	self = args[0].Int()
@@ -116,6 +119,11 @@ func poll(this js.Value, args []js.Value) interface{} {
 		//addProjectile()
 		buf[7] = 1
 	}
+
+	sequence++
+	s := make([]byte, 4)
+	binary.LittleEndian.PutUint32(s, sequence)
+	buf = append(buf, s...)
 
 	uint8Array := js.Global().Get("Uint8Array")
 	dst := uint8Array.New(len(buf))
@@ -294,7 +302,7 @@ func update(this js.Value, args []js.Value) interface{} {
 }
 
 func wtf() {
-	fmt.Println("wtf?")
+	//fmt.Println("wtf?")
 	p, ok := players[self]
 	if !ok {
 		return
