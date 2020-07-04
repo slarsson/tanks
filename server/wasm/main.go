@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"math"
 	"math/rand"
 	"syscall/js"
 
@@ -22,6 +21,14 @@ type keys struct {
 	spacebar bool
 }
 
+// type LastState struct {
+// 	Position       *game.Vector3
+// 	SequenceNumber uint32
+// 	ShouldUpdate   bool
+// }
+
+var lasts = game.LastState{Position: game.Vector3{X: 0, Y: 0, Z: 0}, SequenceNumber: 0, ShouldUpdate: true}
+
 var controls = keys{
 	w:        false,
 	a:        false,
@@ -32,17 +39,21 @@ var controls = keys{
 	spacebar: false,
 }
 
-var self = -1
+var self = -1 // borde kunna tas bort!?
+var localPlayer = game.NewLocalPlayer()
+
 var players = make(map[int]*game.Player)
 var themap = game.NewMap()
 var projectiles = make(map[int]*game.Projectile)
-var oldstate = game.Vector3{X: 0, Y: 0, Z: 0}
+
+//var oldstate = game.Vector3{X: 0, Y: 0, Z: 0}
 
 var sequence = uint32(0)
 
 func setSelf(this js.Value, args []js.Value) interface{} {
 	self = args[0].Int()
-	fmt.Println("WASM: self has been set to", self)
+	localPlayer.ID = args[0].Int()
+	fmt.Println("WASM: local player has ID =", self)
 	return js.ValueOf(nil)
 }
 
@@ -131,6 +142,13 @@ func poll(this js.Value, args []js.Value) interface{} {
 
 	wtf()
 
+	if lasts.ShouldUpdate && self != -1 {
+		lasts.Position.X = players[self].Position.X
+		lasts.Position.Y = players[self].Position.Y
+		lasts.SequenceNumber = sequence
+		lasts.ShouldUpdate = false
+	}
+
 	return dst
 }
 
@@ -154,27 +172,6 @@ func addProjectile(this js.Value, args []js.Value) interface{} {
 	projectiles[wtf] = players[target].NewProjectile()
 	return js.ValueOf(nil)
 }
-
-// func addProjectile() {
-
-// 	var wtf int
-// 	for {
-// 		wtf = rand.Intn(10000) // fejk random?
-// 		_, ok := projectiles[wtf]
-// 		if !ok {
-// 			break
-// 		}
-// 	}
-
-// 	projectiles[wtf] = players[self].NewProjectile()
-
-// 	// projectiles[wtf] = &game.Projectile{
-// 	// 	Position:  &game.Vector3{X: 0, Y: 0, Z: 3},
-// 	// 	Direction: &game.Vector3{X: 1, Y: 1, Z: 0},
-// 	// 	Velocity:  0.001,
-// 	// 	Owner:     nil,
-// 	// }
-// }
 
 func updateProjectiles(this js.Value, args []js.Value) interface{} {
 	buf := make([]interface{}, len(projectiles)*4)
@@ -209,10 +206,41 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 
 func update(this js.Value, args []js.Value) interface{} {
 
-	for i := 0; i < len(args)-1; i += 10 {
+	for i := 0; i < len(args)-1; i += 11 {
 		key := args[i].Int()
 		if p, ok := players[key]; ok {
 			if key == self && !args[len(args)-1].Bool() {
+				//fmt.Println(lasts.SequenceNumber, uint32(args[i+10].Int()))
+				if lasts.SequenceNumber == uint32(args[i+10].Int()) {
+					//fmt.Println("do diff check")
+
+					x := float32(args[i+1].Float())
+					y := float32(args[i+2].Float())
+					fmt.Println(lasts.Position.Y, y)
+					//fmt.Println(x, lasts.Position.X)
+					// if x != lasts.Position.X || y != lasts.Position.Y {
+					// 	fmt.Println("diff error found!!!!")
+					// 	p.Position.Set(x, y, 0)
+					// 	p.Rotation = float32(args[i+7].Float())
+					// 	p.TurretRotation = float32(args[i+8].Float())
+					// 	//p.Position.Set(x, y, float32(args[i+3].Float()))
+					// }
+
+					if lasts.Compare(x, y, 0) {
+						fmt.Println("diff error found!!!!", x, y)
+						p.Position.Set(x, y, 0)
+						p.Rotation = float32(args[i+7].Float())
+						p.TurretRotation = float32(args[i+8].Float())
+						//p.Position.Set(x, y, float32(args[i+3].Float()))
+					}
+
+					lasts.ShouldUpdate = true
+				} else if (lasts.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
+					fmt.Println("missed nummer :(")
+					//lasts.SequenceNumber = 0
+					lasts.ShouldUpdate = true
+				}
+				//fmt.Println("SQ:", args[i+10].Int(), sequence)
 				continue
 			}
 
@@ -318,15 +346,15 @@ func wtf() {
 	p.Controls.RotateTurretLeft = controls.left
 	p.Controls.RotateTurretRight = controls.right
 
-	p.Position.X = oldstate.X
-	p.Position.Y = oldstate.Y
+	// p.Position.X = oldstate.X
+	// p.Position.Y = oldstate.Y
 
 	p.Move(UpdateRate)
 	p.HandleCollsionWithPlayers(&players, UpdateRate)
 	p.HandleCollsionWithObjects(&themap.Obstacles)
 
-	oldstate.X = p.Position.X
-	oldstate.Y = p.Position.Y
+	// oldstate.X = p.Position.X
+	// oldstate.Y = p.Position.Y
 
 	// if controls.w || controls.s {
 	// 	if controls.w {
@@ -515,50 +543,50 @@ func guessPosition(this js.Value, args []js.Value) interface{} {
 }
 
 func local(this js.Value, args []js.Value) interface{} {
-	//fmt.Println("varför är min dator fkn sämst?")
+	// //fmt.Println("varför är min dator fkn sämst?")
 
-	p, ok := players[args[0].Int()]
-	if !ok {
-		return js.ValueOf(nil)
-	}
+	// p, ok := players[args[0].Int()]
+	// if !ok {
+	// 	return js.ValueOf(nil)
+	// }
 
-	dt := float32(args[1].Float())
+	// dt := float32(args[1].Float())
 
-	// fmt.Println(p)
-	// fmt.Println(dt)
+	// // fmt.Println(p)
+	// // fmt.Println(dt)
 
-	if controls.w || controls.s {
-		fmt.Println("do update shiett..")
-		if controls.w {
-			p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
-			p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
-		} else {
-			p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
-			p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
-		}
-	} else {
-		p.Velocity.Y = 0
-		p.Velocity.X = 0
-	}
+	// if controls.w || controls.s {
+	// 	fmt.Println("do update shiett..")
+	// 	if controls.w {
+	// 		p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
+	// 		p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
+	// 	} else {
+	// 		p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
+	// 		p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
+	// 	}
+	// } else {
+	// 	p.Velocity.Y = 0
+	// 	p.Velocity.X = 0
+	// }
 
-	if controls.a {
-		p.Rotation += 0.002 * dt
-	}
+	// if controls.a {
+	// 	p.Rotation += 0.002 * dt
+	// }
 
-	if controls.d {
-		p.Rotation -= 0.002 * dt
-	}
+	// if controls.d {
+	// 	p.Rotation -= 0.002 * dt
+	// }
 
-	if controls.left {
-		p.TurretRotation += 0.002 * dt
-	}
+	// if controls.left {
+	// 	p.TurretRotation += 0.002 * dt
+	// }
 
-	if controls.right {
-		p.TurretRotation -= 0.002 * dt
-	}
+	// if controls.right {
+	// 	p.TurretRotation -= 0.002 * dt
+	// }
 
-	p.Position.X += dt * p.Velocity.X
-	p.Position.Y += dt * p.Velocity.Y
+	// p.Position.X += dt * p.Velocity.X
+	// p.Position.Y += dt * p.Velocity.Y
 
 	return js.ValueOf(nil)
 }

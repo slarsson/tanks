@@ -10,18 +10,6 @@ import (
 	"github.com/slarsson/game/network"
 )
 
-type Player struct {
-	ID             int
-	Name           string
-	Position       *Vector3
-	Velocity       *Vector3
-	Rotation       float32
-	TurretRotation float32
-	Shoot          bool
-	Client         *network.Client
-	Controls       *Controls
-}
-
 type Game struct {
 	Map         *Map
 	Players     map[int]*Player
@@ -76,7 +64,6 @@ func (g *Game) AddPlayer(client *network.Client) {
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
 		Rotation:       0,
 		TurretRotation: 0,
-		Shoot:          false,
 		Client:         client,
 		Controls:       NewControls(),
 	}

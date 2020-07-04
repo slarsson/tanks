@@ -99,6 +99,7 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			fmt.Println("do something else..")
 		case 1:
 			p.Controls.Decode(&message)
+			p.SetSequenceNumber(&message)
 			p.Move(dt)
 			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles)
 			p.HandleCollsionWithPlayers(&s.Game.Players, dt)

@@ -22,6 +22,7 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 	rotation := make([]byte, 4)
 	turretRotation := make([]byte, 4)
 	shoot := make([]byte, 4)
+	sq := make([]byte, 4)
 
 	binary.LittleEndian.PutUint32(id, math.Float32bits(float32(p.ID)))
 	binary.LittleEndian.PutUint32(px, math.Float32bits(p.Position.X))
@@ -39,6 +40,8 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 		binary.LittleEndian.PutUint32(shoot, math.Float32bits(float32(0)))
 	}
 
+	binary.LittleEndian.PutUint32(sq, math.Float32bits(float32(p.SequenceNumber)))
+
 	*buf = append(*buf, id...)
 	*buf = append(*buf, px...)
 	*buf = append(*buf, py...)
@@ -49,6 +52,7 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 	*buf = append(*buf, rotation...)
 	*buf = append(*buf, turretRotation...)
 	*buf = append(*buf, shoot...)
+	*buf = append(*buf, sq...)
 }
 
 // func (p Player) AppendPlayerShoot(buf *[]byte) {

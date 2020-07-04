@@ -1,7 +1,6 @@
 package game
 
 import (
-	"encoding/binary"
 	"fmt"
 )
 
@@ -38,7 +37,7 @@ func (c *Controls) Decode(payload *[]byte) {
 	c.RotateTurretRight = ((*payload)[6] == 1)
 	c.Shoot = ((*payload)[7] == 1)
 
-	fmt.Println(binary.LittleEndian.Uint32((*payload)[8:]))
+	//fmt.Println(binary.LittleEndian.Uint32((*payload)[8:]))
 }
 
 func (c Controls) Print() {

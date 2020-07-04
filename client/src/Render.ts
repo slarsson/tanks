@@ -80,7 +80,7 @@ class Render {
     private serverMessage(mt: number, buffer: ArrayBuffer): void {
         if (mt == 0) {
             let state = new Float32Array(buffer);            
-            for (let i = 0; i < state.length; i += 10) {
+            for (let i = 0; i < state.length; i += 11) {
                 if (!this.vehicles.has(state[i])) {
                     this.vehicles.set(state[i], new Vehicle(this.scene));
                 } else if (state[i+9] == 1) {

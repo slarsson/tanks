@@ -1,8 +1,11 @@
 package game
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
+
+	"github.com/slarsson/game/network"
 )
 
 // Constant to handle speed of movment
@@ -12,6 +15,35 @@ const (
 	RotationConstant       = 0.002
 	TurretRotationConstant = 0.002
 )
+
+type Player struct {
+	ID             int
+	Name           string
+	Position       *Vector3
+	Velocity       *Vector3
+	Rotation       float32
+	TurretRotation float32
+	Client         *network.Client
+	Controls       *Controls
+	SequenceNumber uint32
+}
+
+func NewLocalPlayer() *Player {
+	return &Player{
+		ID:             -1,
+		Name:           "uknownlocalplayer",
+		Position:       &Vector3{X: 0, Y: 0, Z: 0},
+		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
+		Rotation:       0,
+		TurretRotation: 0,
+		Client:         nil,
+		Controls:       NewControls(),
+	}
+}
+
+func (p *Player) SetSequenceNumber(payload *[]byte) {
+	p.SequenceNumber = binary.LittleEndian.Uint32((*payload)[8:])
+}
 
 func (p *Player) Move(dt float32) {
 	if p.Controls.Forward || p.Controls.Backward {
