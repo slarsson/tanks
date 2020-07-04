@@ -19,6 +19,7 @@ class Connection {
 
         this.target = target;
 
+        //this.socket = new WebSocket('ws://157.245.70.83')
         this.socket = new WebSocket('ws://localhost:1337')
         this.socket.binaryType = 'arraybuffer';
         this.socket.onopen = () => swag();

@@ -178,7 +178,6 @@ class Render {
 
         //this.shoot.update(dt);
         
-        //this.wasm.local(this.self, dt);
         this.wasm.guessPosition(dt);
 
 

@@ -39,7 +39,7 @@ window.addEventListener('DOMContentLoaded', () => {
             poll: wasm__poll,
             update: wasm__update,
             getPos: wasm__get,
-            local: wasm__local,
+            //local: wasm__local,
             setSelf: wasm__setSelf,
             guessPosition: wasm__guessPosition,
             updateProjectiles: wasm__updateProjectiles,
