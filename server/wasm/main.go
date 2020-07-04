@@ -9,89 +9,63 @@ import (
 	"github.com/slarsson/game/game"
 )
 
-const UpdateRate = 50
+const updateRate = 50
 
-type keys struct {
-	w        bool
-	a        bool
-	s        bool
-	d        bool
-	left     bool
-	right    bool
-	spacebar bool
+var prev = game.LastState{
+	Position:       game.Vector3{X: 0, Y: 0, Z: 0},
+	SequenceNumber: 0,
+	ShouldUpdate:   true,
 }
 
-// type LastState struct {
-// 	Position       *game.Vector3
-// 	SequenceNumber uint32
-// 	ShouldUpdate   bool
-// }
-
-var lasts = game.LastState{Position: game.Vector3{X: 0, Y: 0, Z: 0}, SequenceNumber: 0, ShouldUpdate: true}
-
-var controls = keys{
-	w:        false,
-	a:        false,
-	s:        false,
-	d:        false,
-	left:     false,
-	right:    false,
-	spacebar: false,
-}
-
-var self = -1 // borde kunna tas bort!?
 var localPlayer = game.NewLocalPlayer()
 
-var players = make(map[int]*game.Player)
-var themap = game.NewMap()
+var networkPlayers = make(map[int]*game.Player)
+var gameMap = game.NewMap()
 var projectiles = make(map[int]*game.Projectile)
-
-//var oldstate = game.Vector3{X: 0, Y: 0, Z: 0}
-
 var sequence = uint32(0)
 
 func setSelf(this js.Value, args []js.Value) interface{} {
-	self = args[0].Int()
 	localPlayer.ID = args[0].Int()
-	fmt.Println("WASM: local player has ID =", self)
+	fmt.Println("WASM: local player has ID =", localPlayer.ID)
 	return js.ValueOf(nil)
 }
 
 func keypress(this js.Value, args []js.Value) interface{} {
 	key := args[0].String()
+	status := args[1].Bool()
 
 	if key == "w" {
-		controls.w = args[1].Bool()
+		localPlayer.Controls.Forward = status
 		return js.ValueOf(true)
 	}
 
 	if key == "a" {
-		controls.a = args[1].Bool()
+		localPlayer.Controls.RotateLeft = status
 		return js.ValueOf(true)
 	}
 
 	if key == "s" {
-		controls.s = args[1].Bool()
+		localPlayer.Controls.Backward = status
 		return js.ValueOf(true)
 	}
 
 	if key == "d" {
-		controls.d = args[1].Bool()
+		localPlayer.Controls.RotateRight = status
 		return js.ValueOf(true)
 	}
 
 	if key == "ArrowLeft" {
-		controls.left = args[1].Bool()
+		localPlayer.Controls.RotateTurretLeft = status
 		return js.ValueOf(true)
 	}
 
 	if key == "ArrowRight" {
-		controls.right = args[1].Bool()
+		localPlayer.Controls.RotateTurretRight = status
 		return js.ValueOf(true)
 	}
 
 	if key == " " {
-		controls.spacebar = args[1].Bool()
+		localPlayer.Controls.Shoot = status
 		return js.ValueOf(true)
 	}
 
@@ -100,66 +74,191 @@ func keypress(this js.Value, args []js.Value) interface{} {
 
 func poll(this js.Value, args []js.Value) interface{} {
 	buf := make([]byte, 8)
+
+	// set MessageType = 1
 	buf[0] = 1
 
-	if controls.w {
+	if localPlayer.Controls.Forward {
 		buf[1] = 1
 	}
 
-	if controls.a {
+	if localPlayer.Controls.RotateLeft {
 		buf[2] = 1
 	}
 
-	if controls.s {
+	if localPlayer.Controls.Backward {
 		buf[3] = 1
 	}
 
-	if controls.d {
+	if localPlayer.Controls.RotateRight {
 		buf[4] = 1
 	}
 
-	if controls.left {
+	if localPlayer.Controls.RotateTurretLeft {
 		buf[5] = 1
 	}
 
-	if controls.right {
+	if localPlayer.Controls.RotateTurretRight {
 		buf[6] = 1
 	}
 
-	if controls.spacebar {
-		//addProjectile()
+	if localPlayer.Controls.Shoot {
 		buf[7] = 1
 	}
 
+	// increment sequence number and append to message
 	sequence++
 	s := make([]byte, 4)
 	binary.LittleEndian.PutUint32(s, sequence)
 	buf = append(buf, s...)
 
+	// update localPlayer with current input
+	// TODO: sync actions with server?
+	localPlayer.Move(updateRate)
+	localPlayer.HandleCollsionWithPlayers(&networkPlayers, updateRate)
+	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles)
+
+	// update last snapshoot of state for current sequence number
+	if prev.ShouldUpdate {
+		prev.Position.X = localPlayer.Position.X
+		prev.Position.Y = localPlayer.Position.Y
+		prev.SequenceNumber = sequence
+		prev.ShouldUpdate = false
+	}
+
+	// append to js array
 	uint8Array := js.Global().Get("Uint8Array")
 	dst := uint8Array.New(len(buf))
 	js.CopyBytesToJS(dst, buf)
-
-	wtf()
-
-	if lasts.ShouldUpdate && self != -1 {
-		lasts.Position.X = players[self].Position.X
-		lasts.Position.Y = players[self].Position.Y
-		lasts.SequenceNumber = sequence
-		lasts.ShouldUpdate = false
-	}
-
 	return dst
 }
 
-func addProjectile(this js.Value, args []js.Value) interface{} {
-	var target int
-	if args[0].Int() == -1 {
-		target = self
-	} else {
-		target = args[0].Int()
+func update(this js.Value, args []js.Value) interface{} {
+	for i := 0; i < len(args)-1; i += 11 {
+		key := args[i].Int()
+		if p, ok := networkPlayers[key]; ok {
+
+			// check if localPlayer position has deviated to much from the server
+			// reset the localPlayer to the current (should be the latest state) server position
+			if key == localPlayer.ID {
+				if prev.SequenceNumber == uint32(args[i+10].Int()) {
+					x := float32(args[i+1].Float())
+					y := float32(args[i+2].Float())
+					z := float32(args[i+3].Float())
+
+					if prev.Compare(x, y, z) {
+						localPlayer.Position.Set(x, y, z)
+						localPlayer.Rotation = float32(args[i+7].Float())
+						localPlayer.TurretRotation = float32(args[i+8].Float())
+					}
+
+					prev.ShouldUpdate = true
+				} else if (prev.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
+					fmt.Println("missed nummer / error :(")
+					prev.ShouldUpdate = true
+				}
+
+				continue
+			}
+
+			// update networkPlayer position / rotation
+			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+			p.Rotation = float32(args[i+7].Float())
+			p.TurretRotation = float32(args[i+8].Float())
+
+			// TEST: guess next position, should be done the other way around? interpolate from old to current?
+			// https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
+			// if key != self {
+			// 	p.Position.X += updateRate * p.Velocity.X
+			// 	p.Position.Y += updateRate * p.Velocity.Y
+
+			// 	for _, v := range networkPlayers {
+			// 		if v.ID == p.ID || v.ID == self {
+			// 			continue
+			// 		}
+
+			// 		poly1 := game.NewTankHullPolygon()
+			// 		poly1.Rotate(p.Rotation, p.Position)
+
+			// 		poly2 := game.NewTankHullPolygon()
+			// 		poly2.Rotate(v.Rotation, v.Position)
+
+			// 		ok, mtv := poly1.Collision(poly2)
+			// 		if ok {
+			// 			fmt.Println("CLIENT HAS CRASHED..")
+
+			// 			dx := mtv.Vector.X * mtv.Magnitude
+			// 			dy := mtv.Vector.Y * mtv.Magnitude
+
+			// 			if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
+			// 				dx = -dx
+			// 			}
+
+			// 			if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
+			// 				dy = -dy
+			// 			}
+
+			// 			p.Position.X += dx
+			// 			p.Position.Y += dy
+			// 		}
+			// 	}
+			// }
+
+		} else {
+			fmt.Println("add new player?")
+			networkPlayers[args[i].Int()] = &game.Player{
+				ID: args[i].Int(),
+				Position: &game.Vector3{
+					X: float32(args[i+1].Float()),
+					Y: float32(args[i+2].Float()),
+					Z: float32(args[i+3].Float()),
+				},
+				Velocity: &game.Vector3{
+					X: float32(0),
+					Y: float32(0),
+					Z: float32(0),
+				},
+				Rotation:       0,
+				TurretRotation: 0,
+				Controls:       game.NewControls(),
+			}
+		}
 	}
 
+	return js.ValueOf(nil)
+}
+
+func getPosition(this js.Value, args []js.Value) interface{} {
+	id := args[0].Int()
+
+	if id == localPlayer.ID {
+		return []interface{}{localPlayer.Position.X, localPlayer.Position.Y, localPlayer.Position.Z, localPlayer.Rotation, localPlayer.TurretRotation}
+	}
+
+	if p, ok := networkPlayers[id]; ok {
+		return []interface{}{p.Position.X, p.Position.Y, p.Position.Z, p.Rotation, p.TurretRotation}
+	}
+
+	return js.ValueOf(nil)
+}
+
+func guessPosition(this js.Value, args []js.Value) interface{} {
+	dt := float32(args[0].Float())
+	for _, p := range networkPlayers {
+		if p.ID == localPlayer.ID {
+			continue
+		}
+		p.Position.X += dt * p.Velocity.X
+		p.Position.Y += dt * p.Velocity.Y
+	}
+
+	return js.ValueOf(nil)
+}
+
+// Projectiles ...
+//
+// TODO: testing only..
+func addProjectile(this js.Value, args []js.Value) interface{} {
 	var wtf int
 	for {
 		wtf = rand.Intn(10000) // fejk random?
@@ -169,7 +268,14 @@ func addProjectile(this js.Value, args []js.Value) interface{} {
 		}
 	}
 
-	projectiles[wtf] = players[target].NewProjectile()
+	id := args[0].Int()
+
+	if id == localPlayer.ID {
+		projectiles[wtf] = localPlayer.NewProjectile()
+	} else {
+		projectiles[wtf] = networkPlayers[id].NewProjectile()
+	}
+
 	return js.ValueOf(nil)
 }
 
@@ -192,411 +298,15 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 		wtf++
 	}
 
-	//fmt.Println("size:", len(projectiles))
-	//fmt.Println(buf)
-
 	return buf
-	//return []interface{}buf
-	//return js.ValueOf([]int32{1, 2})
-	// float32array := js.Global().Get("Float32Array")
-	// dst := float32array.New(len(buf))
-	// js.CopyBytesToJS(dst, buf)
-	// return dst
 }
 
-func update(this js.Value, args []js.Value) interface{} {
-
-	for i := 0; i < len(args)-1; i += 11 {
-		key := args[i].Int()
-		if p, ok := players[key]; ok {
-			if key == self && !args[len(args)-1].Bool() {
-				//fmt.Println(lasts.SequenceNumber, uint32(args[i+10].Int()))
-				if lasts.SequenceNumber == uint32(args[i+10].Int()) {
-					//fmt.Println("do diff check")
-
-					x := float32(args[i+1].Float())
-					y := float32(args[i+2].Float())
-					fmt.Println(lasts.Position.Y, y)
-					//fmt.Println(x, lasts.Position.X)
-					// if x != lasts.Position.X || y != lasts.Position.Y {
-					// 	fmt.Println("diff error found!!!!")
-					// 	p.Position.Set(x, y, 0)
-					// 	p.Rotation = float32(args[i+7].Float())
-					// 	p.TurretRotation = float32(args[i+8].Float())
-					// 	//p.Position.Set(x, y, float32(args[i+3].Float()))
-					// }
-
-					if lasts.Compare(x, y, 0) {
-						fmt.Println("diff error found!!!!", x, y)
-						p.Position.Set(x, y, 0)
-						p.Rotation = float32(args[i+7].Float())
-						p.TurretRotation = float32(args[i+8].Float())
-						//p.Position.Set(x, y, float32(args[i+3].Float()))
-					}
-
-					lasts.ShouldUpdate = true
-				} else if (lasts.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
-					fmt.Println("missed nummer :(")
-					//lasts.SequenceNumber = 0
-					lasts.ShouldUpdate = true
-				}
-				//fmt.Println("SQ:", args[i+10].Int(), sequence)
-				continue
-			}
-
-			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
-			p.Rotation = float32(args[i+7].Float())
-			p.TurretRotation = float32(args[i+8].Float())
-
-			// fmt.Println(int(args[i+9].Float()))
-			// if args[i+9].Int() == 0 {
-			// 	fmt.Println("no shoot :(")
-			// }
-
-			if key != self {
-				p.Position.X += UpdateRate * p.Velocity.X
-				p.Position.Y += UpdateRate * p.Velocity.Y
-
-				for _, v := range players {
-					if v.ID == p.ID || v.ID == self {
-						continue
-					}
-
-					poly1 := game.NewTankHullPolygon()
-					poly1.Rotate(p.Rotation, p.Position)
-
-					poly2 := game.NewTankHullPolygon()
-					poly2.Rotate(v.Rotation, v.Position)
-
-					ok, mtv := poly1.Collision(poly2)
-					if ok {
-						fmt.Println("CLIENT HAS CRASHED..")
-
-						dx := mtv.Vector.X * mtv.Magnitude
-						dy := mtv.Vector.Y * mtv.Magnitude
-
-						if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-							dx = -dx
-						}
-
-						if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
-							dy = -dy
-						}
-
-						p.Position.X += dx
-						p.Position.Y += dy
-					}
-				}
-			}
-
-			// players[args[i].Int()].Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
-			// players[args[i].Int()].Rotation = float32(args[i+7].Float())
-			// players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
-
-			// if key != self {
-			// 	players[args[i].Int()].Position.X += 150 * players[args[i].Int()].Velocity.X
-			// 	players[args[i].Int()].Position.Y += 150 * players[args[i].Int()].Velocity.Y
-			// 	//continue
-			// }
-
-			// // predict next step ?
-			// // dt := float32(50)
-			// // p := players[args[i].Int()]
-			// // p.Position.X += dt * p.Velocity.X
-			// // p.Position.Y += dt * p.Velocity.Y
-
-		} else {
-			fmt.Println("add new player?")
-			players[args[i].Int()] = &game.Player{
-				ID: args[i].Int(),
-				Position: &game.Vector3{
-					X: float32(args[i+1].Float()),
-					Y: float32(args[i+2].Float()),
-					Z: float32(args[i+3].Float()),
-				},
-				Velocity: &game.Vector3{
-					X: float32(0),
-					Y: float32(0),
-					Z: float32(0),
-				},
-				Rotation:       0,
-				TurretRotation: 0,
-				Controls:       game.NewControls(),
-			}
-		}
-	}
-
-	return js.ValueOf(nil)
-}
-
-func wtf() {
-	//fmt.Println("wtf?")
-	p, ok := players[self]
-	if !ok {
-		return
-	}
-
-	//fmt.Println(p.Controls)
-
-	// hack my hack
-	p.Controls.Forward = controls.w
-	p.Controls.Backward = controls.s
-	p.Controls.RotateLeft = controls.a
-	p.Controls.RotateRight = controls.d
-	p.Controls.RotateTurretLeft = controls.left
-	p.Controls.RotateTurretRight = controls.right
-
-	// p.Position.X = oldstate.X
-	// p.Position.Y = oldstate.Y
-
-	p.Move(UpdateRate)
-	p.HandleCollsionWithPlayers(&players, UpdateRate)
-	p.HandleCollsionWithObjects(&themap.Obstacles)
-
-	// oldstate.X = p.Position.X
-	// oldstate.Y = p.Position.Y
-
-	// if controls.w || controls.s {
-	// 	if controls.w {
-	// 		p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * UpdateRate
-	// 		p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * UpdateRate
-	// 	} else {
-	// 		p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * UpdateRate
-	// 		p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * UpdateRate
-	// 	}
-	// } else {
-	// 	p.Velocity.Y = 0
-	// 	p.Velocity.X = 0
-	// }
-
-	// p.Position.X += UpdateRate * p.Velocity.X
-	// p.Position.Y += UpdateRate * p.Velocity.Y
-
-	// if controls.a {
-	// 	p.Rotation += 0.002 * UpdateRate
-	// }
-
-	// if controls.d {
-	// 	p.Rotation -= 0.002 * UpdateRate
-	// }
-
-	// if controls.left {
-	// 	p.TurretRotation += 0.002 * UpdateRate
-	// }
-
-	// if controls.right {
-	// 	p.TurretRotation -= 0.002 * UpdateRate
-	// }
-
-	// OLD:
-	// fmt.Println("do updates...")
-
-	// p.Position.X += UpdateRate * p.Velocity.X
-	// p.Position.Y += UpdateRate * p.Velocity.Y
-
-	// for _, v := range players {
-	// 	if v.ID == p.ID || v.ID == self {
-	// 		continue
-	// 	}
-
-	// 	poly1 := game.NewTankHullPolygon()
-	// 	poly1.Rotate(p.Rotation, p.Position)
-
-	// 	poly2 := game.NewTankHullPolygon()
-	// 	poly2.Rotate(v.Rotation, v.Position)
-
-	// 	ok, mtv := poly1.Collision(poly2)
-	// 	if ok {
-	// 		fmt.Println("CLIENT HAS CRASHED..")
-
-	// 		dx := mtv.Vector.X * mtv.Magnitude
-	// 		dy := mtv.Vector.Y * mtv.Magnitude
-
-	// 		if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-	// 			dx = -dx
-	// 		}
-
-	// 		if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
-	// 			dy = -dy
-	// 		}
-
-	// 		p.Position.X += dx
-	// 		p.Position.Y += dy
-	// 	}
-	// }
-
-}
-
-// func update(this js.Value, args []js.Value) interface{} {
-// 	if len(args) == 0 {
-// 		return js.ValueOf(nil)
-// 	}
-
-// 	//fmt.Println("WWTTF", args)
-// 	key := args[0].Int()
-// 	if p, ok := players[key]; ok {
-// 		if key == self {
-// 			//continue
-// 		}
-
-// 		p.Position.Set(float32(args[1].Float()), float32(args[2].Float()), float32(args[3].Float()))
-// 		p.Rotation = float32(args[7].Float())
-// 		p.TurretRotation = float32(args[8].Float())
-
-// 		// fmt.Println(int(args[i+9].Float()))
-// 		// if args[i+9].Int() == 0 {
-// 		// 	fmt.Println("no shoot :(")
-// 		// }
-
-// 		if key != self {
-// 			p.Position.X += UpdateRate * p.Velocity.X
-// 			p.Position.Y += UpdateRate * p.Velocity.Y
-
-// 			for _, v := range players {
-// 				if v.ID == p.ID || v.ID == self {
-// 					continue
-// 				}
-
-// 				poly1 := game.NewTankHullPolygon()
-// 				poly1.Rotate(p.Rotation, p.Position)
-
-// 				poly2 := game.NewTankHullPolygon()
-// 				poly2.Rotate(v.Rotation, v.Position)
-
-// 				ok, mtv := poly1.Collision(poly2)
-// 				if ok {
-// 					fmt.Println("CLIENT HAS CRASHED..")
-
-// 					dx := mtv.Vector.X * mtv.Magnitude
-// 					dy := mtv.Vector.Y * mtv.Magnitude
-
-// 					if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-// 						dx = -dx
-// 					}
-
-// 					if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
-// 						dy = -dy
-// 					}
-
-// 					p.Position.X += dx
-// 					p.Position.Y += dy
-// 				}
-// 			}
-// 		}
-
-// 		// players[args[i].Int()].Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
-// 		// players[args[i].Int()].Rotation = float32(args[i+7].Float())
-// 		// players[args[i].Int()].TurretRotation = float32(args[i+8].Float())
-
-// 		// if key != self {
-// 		// 	players[args[i].Int()].Position.X += 150 * players[args[i].Int()].Velocity.X
-// 		// 	players[args[i].Int()].Position.Y += 150 * players[args[i].Int()].Velocity.Y
-// 		// 	//continue
-// 		// }
-
-// 		// // predict next step ?
-// 		// // dt := float32(50)
-// 		// // p := players[args[i].Int()]
-// 		// // p.Position.X += dt * p.Velocity.X
-// 		// // p.Position.Y += dt * p.Velocity.Y
-
-// 	} else {
-// 		fmt.Println("add new player?")
-// 		players[args[0].Int()] = &game.Player{
-// 			ID: args[0].Int(),
-// 			Position: &game.Vector3{
-// 				X: float32(args[1].Float()),
-// 				Y: float32(args[2].Float()),
-// 				Z: float32(args[3].Float()),
-// 			},
-// 			Velocity: &game.Vector3{
-// 				X: float32(0),
-// 				Y: float32(0),
-// 				Z: float32(0),
-// 			},
-// 			Rotation:       0,
-// 			TurretRotation: 0,
-// 		}
-// 	}
-
-// 	return js.ValueOf(nil)
-// }
-
-func getPosition(this js.Value, args []js.Value) interface{} {
-	if p, ok := players[args[0].Int()]; ok {
-		return []interface{}{p.Position.X, p.Position.Y, p.Position.Z, p.Rotation, p.TurretRotation}
-	}
-	return js.ValueOf(nil)
-}
-
-func guessPosition(this js.Value, args []js.Value) interface{} {
-	dt := float32(args[0].Float())
-	for _, p := range players {
-		if p.ID == self {
-			continue
-		}
-		p.Position.X += dt * p.Velocity.X
-		p.Position.Y += dt * p.Velocity.Y
-	}
-
-	return js.ValueOf(nil)
-}
-
-func local(this js.Value, args []js.Value) interface{} {
-	// //fmt.Println("varför är min dator fkn sämst?")
-
-	// p, ok := players[args[0].Int()]
-	// if !ok {
-	// 	return js.ValueOf(nil)
-	// }
-
-	// dt := float32(args[1].Float())
-
-	// // fmt.Println(p)
-	// // fmt.Println(dt)
-
-	// if controls.w || controls.s {
-	// 	fmt.Println("do update shiett..")
-	// 	if controls.w {
-	// 		p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
-	// 		p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
-	// 	} else {
-	// 		p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * 0.0001 * dt
-	// 		p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * 0.0001 * dt
-	// 	}
-	// } else {
-	// 	p.Velocity.Y = 0
-	// 	p.Velocity.X = 0
-	// }
-
-	// if controls.a {
-	// 	p.Rotation += 0.002 * dt
-	// }
-
-	// if controls.d {
-	// 	p.Rotation -= 0.002 * dt
-	// }
-
-	// if controls.left {
-	// 	p.TurretRotation += 0.002 * dt
-	// }
-
-	// if controls.right {
-	// 	p.TurretRotation -= 0.002 * dt
-	// }
-
-	// p.Position.X += dt * p.Velocity.X
-	// p.Position.Y += dt * p.Velocity.Y
-
-	return js.ValueOf(nil)
-}
-
+// main exports functions to js
 func main() {
 	js.Global().Set("wasm__poll", js.FuncOf(poll))
 	js.Global().Set("wasm__keypress", js.FuncOf(keypress))
 	js.Global().Set("wasm__update", js.FuncOf(update))
 	js.Global().Set("wasm__get", js.FuncOf(getPosition))
-	js.Global().Set("wasm__local", js.FuncOf(local))
 	js.Global().Set("wasm__setSelf", js.FuncOf(setSelf))
 	js.Global().Set("wasm__guessPosition", js.FuncOf(guessPosition))
 	js.Global().Set("wasm__updateProjectiles", js.FuncOf(updateProjectiles))

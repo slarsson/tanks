@@ -21,7 +21,7 @@ func NewLastState() *LastState {
 
 func (l *LastState) Compare(x float32, y float32, z float32) bool {
 	if math.Abs(float64(l.Position.X-x)) > 0.001 || math.Abs(float64(l.Position.Y-y)) > 0.001 || math.Abs(float64(l.Position.Z-z)) > 0.001 {
-		fmt.Println("OFFSET ERROR")
+		fmt.Println("OFFSET ERROR", math.Abs(float64(l.Position.X-x)), math.Abs(float64(l.Position.Y-y)), math.Abs(float64(l.Position.Z-z)))
 		return true
 	}
 	return false
