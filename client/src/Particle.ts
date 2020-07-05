@@ -15,6 +15,10 @@ class Projectile {
         this.scene.add(this.mesh);
     }
 
+    dispose(): void {
+        this.scene.remove(this.mesh);
+    }
+
     set(x: number, y: number, z: number): void {
         //console.log(x, y);
         this.mesh.position.x = x

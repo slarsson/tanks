@@ -67,7 +67,10 @@ func (s *Server) GameLoop() {
 	// s.Game.addPlayer(c)
 
 	for range ticker.C {
-		start := time.Now()
+		//start := time.Now()
+
+		s.Game.PManager.UpdateAll(step)
+		//fmt.Println("antal:", len(s.Game.PManager.Projectiles))
 
 		buf := make([]byte, 0, 30)
 		mt := make([]byte, 4)
@@ -86,7 +89,7 @@ func (s *Server) GameLoop() {
 
 		s.Network.Broadcast <- buf
 
-		fmt.Println("Executing time:", time.Since(start)*1000)
+		//fmt.Println("Executing time:", time.Since(start)*1000)
 	}
 }
 
@@ -104,7 +107,8 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles)
 			p.HandleCollsionWithPlayers(&s.Game.Players, dt)
 			if p.Controls.Shoot {
-				s.Game.AddProjectile(p)
+				s.Game.PManager.NewProjectile(p)
+				//s.Game.AddProjectile(p)
 			}
 		default:
 			fmt.Println("unknown command")

@@ -280,22 +280,56 @@ func addProjectile(this js.Value, args []js.Value) interface{} {
 }
 
 func updateProjectiles(this js.Value, args []js.Value) interface{} {
-	buf := make([]interface{}, len(projectiles)*4)
+	buf := make([]interface{}, len(projectiles)*5)
 	//buf := make([]float32, len(projectiles)*3)
 
 	dt := float32(args[0].Float())
 
 	wtf := 0
 	for i, val := range projectiles {
+		if !val.IsAlive {
+			delete(projectiles, i)
+			buf[wtf] = i
+			wtf++
+			buf[wtf] = 0
+			wtf++
+			buf[wtf] = 0
+			wtf++
+			buf[wtf] = 0
+			wtf++
+			buf[wtf] = 0
+			wtf++
+			continue
+		}
+
+		x := val.Position.X
+		y := val.Position.Y
+		z := val.Position.Z
+
 		val.Move(dt)
+		val.CollisionTest()
 		buf[wtf] = i
 		wtf++
-		buf[wtf] = val.Position.X
+		buf[wtf] = x
 		wtf++
-		buf[wtf] = val.Position.Y
+		buf[wtf] = y
 		wtf++
-		buf[wtf] = val.Position.Z
+		buf[wtf] = z
 		wtf++
+		buf[wtf] = 1
+		wtf++
+
+		// val.Move(dt)
+		// val.CollisionTest()
+		// buf[wtf] = i
+		// wtf++
+		// buf[wtf] = val.Position.X
+		// wtf++
+		// buf[wtf] = val.Position.Y
+		// wtf++
+		// buf[wtf] = val.Position.Z
+		// wtf++
+
 	}
 
 	return buf

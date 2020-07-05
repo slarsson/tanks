@@ -14,6 +14,7 @@ type Game struct {
 	Map         *Map
 	Players     map[int]*Player
 	Projectiles map[int]*Projectile
+	PManager    *ProjectileManager
 	mutex       *sync.RWMutex
 	Network     *network.Network
 }
@@ -23,6 +24,7 @@ func NewGame(n *network.Network) *Game {
 		Map:         NewMap(),
 		Players:     make(map[int]*Player),
 		Projectiles: make(map[int]*Projectile),
+		PManager:    NewProjectileManager(),
 		mutex:       &sync.RWMutex{},
 		Network:     n,
 	}

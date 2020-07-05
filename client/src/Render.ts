@@ -195,7 +195,14 @@ class Render {
         }
 
         let items = this.wasm.updateProjectiles(dt);
-        for (let i = 0; i < items.length; i += 4) {
+        for (let i = 0; i < items.length; i += 5) {
+            if (items[i+4] == 0) {
+                console.log('remove:', items[i]);
+                this.shoot.get(items[i])?.dispose();
+                this.shoot.delete(items[i]);
+                continue
+            } 
+            
             if (!this.shoot.has(items[i])) {
                 this.shoot.set(items[i], new Projectile(this.scene));
             }
