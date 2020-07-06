@@ -69,7 +69,7 @@ func (s *Server) GameLoop() {
 	for range ticker.C {
 		//start := time.Now()
 
-		s.Game.PManager.UpdateAll(step)
+		s.Game.PManager.UpdateAll(step, &s.Game.Players)
 		//fmt.Println("antal:", len(s.Game.PManager.Projectiles))
 
 		buf := make([]byte, 0, 30)

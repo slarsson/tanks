@@ -308,6 +308,7 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 
 		val.Move(dt)
 		val.CollisionTest()
+		val.CollisionTestPlayers(&networkPlayers)
 		buf[wtf] = i
 		wtf++
 		buf[wtf] = x

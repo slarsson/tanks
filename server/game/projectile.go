@@ -42,11 +42,12 @@ func (pm *ProjectileManager) NewProjectile(p *Player) {
 	fmt.Println("new projectile added:", id)
 }
 
-func (pm *ProjectileManager) UpdateAll(dt float32) {
+func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player) {
 	for i, v := range pm.Projectiles {
 		//fmt.Println(v)
 		v.Move(dt)
 		v.CollisionTest()
+		v.CollisionTestPlayers(players)
 
 		if !v.IsAlive {
 			pm.Remove(i)
@@ -141,6 +142,8 @@ func (p *Projectile) CollisionTest() {
 	// //fmt.Println(wall)
 
 	// TEST
+
+	// basic fkn math: https://stackoverflow.com/a/565282/1671375
 	lastIdx := len(wall) - 1
 	var A *Vector3
 	var B *Vector3
@@ -167,4 +170,44 @@ func (p *Projectile) CollisionTest() {
 			break
 		}
 	}
+}
+
+func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) {
+	for _, v := range *players {
+		if v.ID == p.Owner.ID {
+			continue
+		}
+
+		poly := NewTankHullPolygon()
+		poly.Rotate(v.Rotation, v.Position)
+
+		lastIdx := len(*poly) - 1
+		var A *Vector3
+		var B *Vector3
+		C := p.LastPosition
+		D := p.Position
+		for i := 0; i <= lastIdx; i++ {
+			if i == lastIdx {
+				A = (*poly)[i]
+				B = (*poly)[0]
+			} else {
+				A = (*poly)[i]
+				B = (*poly)[i+1]
+			}
+
+			// golang can handle division with 0 (-/+Inf)
+			uA := ((D.X-C.X)*(A.Y-C.Y) - (D.Y-C.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
+			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
+
+			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
+				fmt.Println("TANK HIITT")
+				fmt.Println(p.Owner.ID, "killed", v.ID)
+
+				p.IsAlive = false
+				break
+			}
+		}
+	}
+
+	//fmt.Println("chekc playerz")
 }
