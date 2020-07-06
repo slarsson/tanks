@@ -172,6 +172,7 @@ func (p *Projectile) CollisionTest() {
 	}
 }
 
+// TODO: this will fuck up when using localPlayer !?!?!
 func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) {
 	for _, v := range *players {
 		if v.ID == p.Owner.ID {

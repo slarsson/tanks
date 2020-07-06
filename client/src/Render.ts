@@ -85,7 +85,7 @@ class Render {
                     this.vehicles.set(state[i], new Vehicle(this.scene));
                 } else if (state[i+9] == 1) {
                     console.log('ADD ANOTHER PROJECTILE FFS');
-                    this.wasm.addProjectile(state[i]); // float comparsion missmatch!?
+                    //this.wasm.addProjectile(state[i]); // float comparsion missmatch!?
                     // float comparision error? wtf?
                     // console.log('SHOOTING FFS');
                     // const v = this.vehicles.get(this.self);

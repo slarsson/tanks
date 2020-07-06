@@ -103,6 +103,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 	}
 
 	if localPlayer.Controls.Shoot {
+		addProjectile4Real(localPlayer)
 		buf[7] = 1
 	}
 
@@ -152,6 +153,11 @@ func update(this js.Value, args []js.Value) interface{} {
 						localPlayer.TurretRotation = float32(args[i+8].Float())
 					}
 
+					// TODO: this should not have to be done?
+					p.Position.Set(x, y, z)
+					p.Rotation = float32(args[i+7].Float())
+					p.TurretRotation = float32(args[i+8].Float())
+
 					prev.ShouldUpdate = true
 				} else if (prev.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
 					fmt.Println("missed nummer / error :(")
@@ -165,6 +171,11 @@ func update(this js.Value, args []js.Value) interface{} {
 			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
 			p.Rotation = float32(args[i+7].Float())
 			p.TurretRotation = float32(args[i+8].Float())
+
+			if args[i+9].Int() == 1 {
+				//fmt.Println("add to:", p)
+				addProjectile4Real(p)
+			}
 
 			// TEST: guess next position, should be done the other way around? interpolate from old to current?
 			// https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
@@ -259,6 +270,27 @@ func guessPosition(this js.Value, args []js.Value) interface{} {
 //
 // TODO: testing only..
 func addProjectile(this js.Value, args []js.Value) interface{} {
+	// var wtf int
+	// for {
+	// 	wtf = rand.Intn(10000) // fejk random?
+	// 	_, ok := projectiles[wtf]
+	// 	if !ok {
+	// 		break
+	// 	}
+	// }
+
+	// id := args[0].Int()
+
+	// if id == localPlayer.ID {
+	// 	projectiles[wtf] = localPlayer.NewProjectile()
+	// } else {
+	// 	//projectiles[wtf] = networkPlayers[id].NewProjectile()
+	// }
+
+	return js.ValueOf(nil)
+}
+
+func addProjectile4Real(p *game.Player) {
 	var wtf int
 	for {
 		wtf = rand.Intn(10000) // fejk random?
@@ -267,16 +299,7 @@ func addProjectile(this js.Value, args []js.Value) interface{} {
 			break
 		}
 	}
-
-	id := args[0].Int()
-
-	if id == localPlayer.ID {
-		projectiles[wtf] = localPlayer.NewProjectile()
-	} else {
-		projectiles[wtf] = networkPlayers[id].NewProjectile()
-	}
-
-	return js.ValueOf(nil)
+	projectiles[wtf] = p.NewProjectile()
 }
 
 func updateProjectiles(this js.Value, args []js.Value) interface{} {
@@ -287,6 +310,7 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 
 	wtf := 0
 	for i, val := range projectiles {
+		fmt.Println("owner:", val.Owner.ID)
 		if !val.IsAlive {
 			delete(projectiles, i)
 			buf[wtf] = i
