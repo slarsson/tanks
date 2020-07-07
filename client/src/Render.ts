@@ -78,9 +78,10 @@ class Render {
     }
 
     private serverMessage(mt: number, buffer: ArrayBuffer): void {
+        //console.log(mt);
         if (mt == 0) {
             let state = new Float32Array(buffer);            
-            for (let i = 0; i < state.length; i += 11) {
+            for (let i = 0; i < state.length; i += 12) {
                 if (!this.vehicles.has(state[i])) {
                     this.vehicles.set(state[i], new Vehicle(this.scene));
                 } else if (state[i+9] == 1) {
@@ -92,7 +93,9 @@ class Render {
                     // if (v != undefined) {
                     //     this.shoot.add2(v.getGunRotation());
                     // }
-                }        
+                } else if (state[i+11] == 0) {
+                    //console.log('player is dead');
+                }   
             }
             this.wasm.update(...state, this.SWAG);
         }
@@ -112,7 +115,21 @@ class Render {
             this.vehicles.get(test[1])?.dispose();
             this.vehicles.delete(test[1]);
             return;
-        } 
+        }
+        
+        if (mt == 99) {
+            let data = new Uint32Array(buffer);
+            console.log(data);
+            console.log('show kill log ?');
+
+            let div = document.createElement('div');
+            div.innerHTML = '<span>'+data[0]+'</span> KILLED <span>'+data[1]+'</span>';
+            document.getElementById('kills')?.appendChild(div);
+
+            setTimeout(() => {
+                div.remove()
+            }, 1000);
+        }
     }
 
     // private serverMessage(state: Float32Array, test: Uint8Array): void {
@@ -184,6 +201,12 @@ class Render {
         const it = this.vehicles[Symbol.iterator]();
         for (let item of it) {
             const pos = this.wasm.getPos(item[0], dt)
+            // //console.log(pos);
+            // if (pos.length == 0) {
+            //     item[1].dispose()
+            //     continue
+            // }
+
             item[1].setPosition(pos[0], pos[1], pos[2]);
             item[1].setRotation(pos[3]);
             item[1].setTurretRotation(pos[4]);
@@ -197,7 +220,7 @@ class Render {
         let items = this.wasm.updateProjectiles(dt);
         for (let i = 0; i < items.length; i += 5) {
             if (items[i+4] == 0) {
-                console.log('remove:', items[i]);
+                //console.log('remove:', items[i]);
                 this.shoot.get(items[i])?.dispose();
                 this.shoot.delete(items[i]);
                 continue

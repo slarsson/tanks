@@ -62,6 +62,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 	g.Players[playerID] = &Player{
 		ID:             playerID,
 		Name:           "player" + strconv.Itoa(playerID),
+		IsAlive:        true,
 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
 		Rotation:       0,

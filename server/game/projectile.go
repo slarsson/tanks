@@ -42,12 +42,17 @@ func (pm *ProjectileManager) NewProjectile(p *Player) {
 	fmt.Println("new projectile added:", id)
 }
 
-func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player) {
+func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player, m *Map, broadcast chan []byte) {
+
 	for i, v := range pm.Projectiles {
 		//fmt.Println(v)
 		v.Move(dt)
-		v.CollisionTest()
-		v.CollisionTestPlayers(players)
+		v.CollisionTest(m)
+
+		id := v.CollisionTestPlayers(players)
+		if id != -1 {
+			broadcast <- *v.KillMessage(id)
+		}
 
 		if !v.IsAlive {
 			pm.Remove(i)
@@ -93,7 +98,12 @@ func (p *Projectile) Move(dt float32) {
 	p.Position.Z += incr * p.Direction.Z
 }
 
-func (p *Projectile) CollisionTest() {
+func (p *Projectile) CollisionTest(m *Map) {
+	if m.OutOfBounds(p.Position) {
+		p.IsAlive = false
+		return
+	}
+
 	//fmt.Println("my p:", p.Position)
 
 	wall := Polygon{
@@ -163,7 +173,7 @@ func (p *Projectile) CollisionTest() {
 		uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 		if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-			fmt.Println("HIITT")
+			//fmt.Println("HIITT")
 			//p.Position.X = 1000
 
 			p.IsAlive = false
@@ -173,7 +183,7 @@ func (p *Projectile) CollisionTest() {
 }
 
 // TODO: this will fuck up when using localPlayer !?!?!
-func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) {
+func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 	for _, v := range *players {
 		if v.ID == p.Owner.ID {
 			continue
@@ -201,14 +211,15 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) {
 			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-				fmt.Println("TANK HIITT")
-				fmt.Println(p.Owner.ID, "killed", v.ID)
-
+				//fmt.Println("TANK HIITT")
+				//fmt.Println(p.Owner.ID, "killed", v.ID)
+				v.IsAlive = false
 				p.IsAlive = false
-				break
+				//break
+				return v.ID // might not be the correct player :()
 			}
 		}
 	}
-
+	return -1
 	//fmt.Println("chekc playerz")
 }

@@ -19,6 +19,7 @@ const (
 type Player struct {
 	ID             int
 	Name           string
+	IsAlive        bool
 	Position       *Vector3
 	Velocity       *Vector3
 	Rotation       float32
@@ -32,6 +33,7 @@ func NewLocalPlayer() *Player {
 	return &Player{
 		ID:             -1,
 		Name:           "uknownlocalplayer",
+		IsAlive:        true,
 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
 		Rotation:       0,

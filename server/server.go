@@ -69,7 +69,7 @@ func (s *Server) GameLoop() {
 	for range ticker.C {
 		//start := time.Now()
 
-		s.Game.PManager.UpdateAll(step, &s.Game.Players)
+		s.Game.PManager.UpdateAll(step, &s.Game.Players, s.Game.Map, s.Game.Network.Broadcast)
 		//fmt.Println("antal:", len(s.Game.PManager.Projectiles))
 
 		buf := make([]byte, 0, 30)
@@ -88,6 +88,7 @@ func (s *Server) GameLoop() {
 		}
 
 		s.Network.Broadcast <- buf
+		//s.Network.Broadcast <- *game.TestMessage()
 
 		//fmt.Println("Executing time:", time.Since(start)*1000)
 	}

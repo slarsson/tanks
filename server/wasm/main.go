@@ -103,6 +103,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 	}
 
 	if localPlayer.Controls.Shoot {
+		//localPlayer.IsAlive = false
 		addProjectile4Real(localPlayer)
 		buf[7] = 1
 	}
@@ -135,9 +136,13 @@ func poll(this js.Value, args []js.Value) interface{} {
 }
 
 func update(this js.Value, args []js.Value) interface{} {
-	for i := 0; i < len(args)-1; i += 11 {
+	for i := 0; i < len(args)-1; i += 12 {
 		key := args[i].Int()
 		if p, ok := networkPlayers[key]; ok {
+
+			// if p.IsAlive != (args[i+11].Int() != 0) {
+			// 	fmt.Println("something has changed!!")
+			// }
 
 			// check if localPlayer position has deviated to much from the server
 			// reset the localPlayer to the current (should be the latest state) server position
@@ -176,6 +181,12 @@ func update(this js.Value, args []js.Value) interface{} {
 				//fmt.Println("add to:", p)
 				addProjectile4Real(p)
 			}
+
+			// if args[i+11].Int() == 1 {
+			// 	p.IsAlive = true
+			// } else {
+			// 	p.IsAlive = false
+			// }
 
 			// TEST: guess next position, should be done the other way around? interpolate from old to current?
 			// https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
@@ -218,7 +229,8 @@ func update(this js.Value, args []js.Value) interface{} {
 		} else {
 			fmt.Println("add new player?")
 			networkPlayers[args[i].Int()] = &game.Player{
-				ID: args[i].Int(),
+				ID:      args[i].Int(),
+				IsAlive: true,
 				Position: &game.Vector3{
 					X: float32(args[i+1].Float()),
 					Y: float32(args[i+2].Float()),
@@ -243,10 +255,16 @@ func getPosition(this js.Value, args []js.Value) interface{} {
 	id := args[0].Int()
 
 	if id == localPlayer.ID {
+		// if !localPlayer.IsAlive {
+		// 	return []interface{}{}
+		// }
 		return []interface{}{localPlayer.Position.X, localPlayer.Position.Y, localPlayer.Position.Z, localPlayer.Rotation, localPlayer.TurretRotation}
 	}
 
 	if p, ok := networkPlayers[id]; ok {
+		// if !p.IsAlive {
+		// 	return []interface{}{}
+		// }
 		return []interface{}{p.Position.X, p.Position.Y, p.Position.Z, p.Rotation, p.TurretRotation}
 	}
 
@@ -310,7 +328,7 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 
 	wtf := 0
 	for i, val := range projectiles {
-		fmt.Println("owner:", val.Owner.ID)
+		//fmt.Println("owner:", val.Owner.ID)
 		if !val.IsAlive {
 			delete(projectiles, i)
 			buf[wtf] = i
@@ -331,7 +349,7 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 		z := val.Position.Z
 
 		val.Move(dt)
-		val.CollisionTest()
+		val.CollisionTest(gameMap)
 		val.CollisionTestPlayers(&networkPlayers)
 		buf[wtf] = i
 		wtf++

@@ -23,6 +23,7 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 	turretRotation := make([]byte, 4)
 	shoot := make([]byte, 4)
 	sq := make([]byte, 4)
+	alive := make([]byte, 4)
 
 	binary.LittleEndian.PutUint32(id, math.Float32bits(float32(p.ID)))
 	binary.LittleEndian.PutUint32(px, math.Float32bits(p.Position.X))
@@ -42,6 +43,12 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 
 	binary.LittleEndian.PutUint32(sq, math.Float32bits(float32(p.SequenceNumber)))
 
+	if p.IsAlive {
+		binary.LittleEndian.PutUint32(alive, math.Float32bits(float32(1)))
+	} else {
+		binary.LittleEndian.PutUint32(alive, math.Float32bits(float32(0)))
+	}
+
 	*buf = append(*buf, id...)
 	*buf = append(*buf, px...)
 	*buf = append(*buf, py...)
@@ -53,6 +60,7 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 	*buf = append(*buf, turretRotation...)
 	*buf = append(*buf, shoot...)
 	*buf = append(*buf, sq...)
+	*buf = append(*buf, alive...)
 }
 
 // func (p Player) AppendPlayerShoot(buf *[]byte) {
@@ -65,3 +73,32 @@ func (p Player) AppendPlayerState(buf *[]byte) {
 // 	*buf = append(*buf, id...)
 // 	*buf = append(*buf, test...)
 // }
+
+func (p *Projectile) KillMessage(kk int) *[]byte {
+	buf := make([]byte, 0, 12)
+	mt := make([]byte, 4)
+	killer := make([]byte, 4)
+	killed := make([]byte, 4)
+	binary.LittleEndian.PutUint32(mt, 99)
+	binary.LittleEndian.PutUint32(killer, uint32(p.Owner.ID))
+	binary.LittleEndian.PutUint32(killed, uint32(kk))
+	buf = append(buf, mt...)
+	buf = append(buf, killer...)
+	buf = append(buf, killed...)
+	return &buf
+}
+
+func TestMessage() *[]byte {
+	buf := make([]byte, 0, 12)
+
+	// mt := make([]byte, 4)
+	// killer := make([]byte, 4)
+	// killed := make([]byte, 4)
+
+	// binary.LittleEndian.PutUint32(mt, 99)
+	// binary.LittleEndian.PutUint32(killer, 99)
+	// binary.LittleEndian.PutUint32(mt, 99)
+
+	// buf = append(buf, mt...)
+	return &buf
+}
