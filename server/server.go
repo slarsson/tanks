@@ -107,10 +107,15 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			p.Move(dt)
 			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles)
 			p.HandleCollsionWithPlayers(&s.Game.Players, dt)
-			if p.Controls.Shoot {
-				s.Game.PManager.NewProjectile(p)
-				//s.Game.AddProjectile(p)
+			// if p.Controls.Shoot {
+			// 	s.Game.PManager.NewProjectile(p)
+			// 	//s.Game.AddProjectile(p)
+			// }
+
+			if projectile, ok := p.Shoot(); ok {
+				s.Game.PManager.Add(projectile)
 			}
+
 		default:
 			fmt.Println("unknown command")
 		}

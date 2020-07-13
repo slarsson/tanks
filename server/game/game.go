@@ -69,6 +69,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 		TurretRotation: 0,
 		Client:         client,
 		Controls:       NewControls(),
+		WaitTime:       0,
 	}
 
 	fmt.Printf("\033[1;34m%s\033[0m", "new player added with id", playerID, "\n")

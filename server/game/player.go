@@ -26,6 +26,7 @@ type Player struct {
 	TurretRotation float32
 	Client         *network.Client
 	Controls       *Controls
+	WaitTime       float32
 	SequenceNumber uint32
 }
 
@@ -40,6 +41,7 @@ func NewLocalPlayer() *Player {
 		TurretRotation: 0,
 		Client:         nil,
 		Controls:       NewControls(),
+		WaitTime:       0,
 	}
 }
 
@@ -48,7 +50,10 @@ func (p *Player) SetSequenceNumber(payload *[]byte) {
 }
 
 func (p *Player) Move(dt float32) {
+	p.WaitTime += dt
+
 	if p.Controls.Forward || p.Controls.Backward {
+		//if p.Velocity.Length() < 0.05 { // can still go over ..
 		if p.Controls.Forward {
 			p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * VelocityConstant * dt
 			p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * VelocityConstant * dt
@@ -56,6 +61,7 @@ func (p *Player) Move(dt float32) {
 			p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * VelocityConstant * dt
 			p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * VelocityConstant * dt
 		}
+		//}
 	} else {
 		p.Velocity.Y = 0
 		p.Velocity.X = 0
@@ -79,6 +85,14 @@ func (p *Player) Move(dt float32) {
 
 	p.Position.X += p.Velocity.X * dt
 	p.Position.Y += p.Velocity.Y * dt
+}
+
+func (p *Player) Shoot() (*Projectile, bool) {
+	if p.Controls.Shoot && p.WaitTime > 200 {
+		p.WaitTime = 0
+		return p.NewProjectile(), true
+	}
+	return nil, false
 }
 
 func (p *Player) HandleCollsionWithObjects(objects *[]*Polygon) {

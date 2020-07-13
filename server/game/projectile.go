@@ -42,6 +42,21 @@ func (pm *ProjectileManager) NewProjectile(p *Player) {
 	fmt.Println("new projectile added:", id)
 }
 
+func (pm *ProjectileManager) Add(p *Projectile) {
+	var id int
+	for {
+		id = rand.Intn(10000) // fejk random?
+		_, ok := pm.Projectiles[id]
+		if !ok {
+			break
+		}
+	}
+
+	pm.Projectiles[id] = p
+
+	fmt.Println("new projectile added:", id)
+}
+
 func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player, m *Map, broadcast chan []byte) {
 
 	for i, v := range pm.Projectiles {

@@ -40,3 +40,7 @@ func (v *Vector3) Norm() *Vector3 {
 	v.Z = v.Z * val
 	return v
 }
+
+func (v *Vector3) Length() float32 {
+	return float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+}

@@ -104,7 +104,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 
 	if localPlayer.Controls.Shoot {
 		//localPlayer.IsAlive = false
-		addProjectile4Real(localPlayer)
+		//addProjectile4Real(localPlayer)
 		buf[7] = 1
 	}
 
@@ -119,6 +119,17 @@ func poll(this js.Value, args []js.Value) interface{} {
 	localPlayer.Move(updateRate)
 	localPlayer.HandleCollsionWithPlayers(&networkPlayers, updateRate)
 	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles)
+	if pr, ok := localPlayer.Shoot(); ok {
+		var wtf int
+		for {
+			wtf = rand.Intn(10000) // fejk random?
+			_, ok := projectiles[wtf]
+			if !ok {
+				break
+			}
+		}
+		projectiles[wtf] = pr
+	}
 
 	// update last snapshoot of state for current sequence number
 	if prev.ShouldUpdate {
