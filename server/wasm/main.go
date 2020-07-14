@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"syscall/js"
+	"time"
 
 	"github.com/slarsson/game/game"
 )
@@ -15,6 +16,7 @@ var prev = game.LastState{
 	Position:       game.Vector3{X: 0, Y: 0, Z: 0},
 	SequenceNumber: 0,
 	ShouldUpdate:   true,
+	Timestamp:      time.Now(),
 }
 
 var localPlayer = game.NewLocalPlayer()
@@ -133,10 +135,12 @@ func poll(this js.Value, args []js.Value) interface{} {
 
 	// update last snapshoot of state for current sequence number
 	if prev.ShouldUpdate {
+		//fmt.Println(time.Now().Sub(prev.Timestamp))
 		prev.Position.X = localPlayer.Position.X
 		prev.Position.Y = localPlayer.Position.Y
 		prev.SequenceNumber = sequence
 		prev.ShouldUpdate = false
+		prev.Timestamp = time.Now()
 	}
 
 	// append to js array

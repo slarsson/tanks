@@ -105,6 +105,12 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			p.Controls.Decode(&message)
 			p.SetSequenceNumber(&message)
 			p.Move(dt)
+
+			if s.Game.Map.OutOfBounds(p.Position) {
+				fmt.Println("yeees")
+				p.Position.Set(0, 0, 0)
+			}
+
 			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles)
 			p.HandleCollsionWithPlayers(&s.Game.Players, dt)
 			// if p.Controls.Shoot {

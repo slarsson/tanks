@@ -41,6 +41,13 @@ func (v *Vector3) Norm() *Vector3 {
 	return v
 }
 
+func (v *Vector3) Mult(arg float32) *Vector3 {
+	v.X *= arg
+	v.Y *= arg
+	v.Z *= arg
+	return v
+}
+
 func (v *Vector3) Length() float32 {
 	return float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
 }

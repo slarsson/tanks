@@ -3,12 +3,14 @@ package game
 import (
 	"fmt"
 	"math"
+	"time"
 )
 
 type LastState struct {
 	Position       Vector3
 	SequenceNumber uint32
 	ShouldUpdate   bool
+	Timestamp      time.Time
 }
 
 func NewLastState() *LastState {

@@ -12,8 +12,9 @@ import (
 const (
 	VelocityConstant       = 0.0001
 	MaxVelocityContant     = 0.5
-	RotationConstant       = 0.002
+	RotationConstant       = 0.001
 	TurretRotationConstant = 0.002
+	MaxSpeed               = 0.03
 )
 
 type Player struct {
@@ -61,6 +62,12 @@ func (p *Player) Move(dt float32) {
 			p.Velocity.X += float32(math.Sin(float64(p.Rotation))) * VelocityConstant * dt
 			p.Velocity.Y -= float32(math.Cos(float64(p.Rotation))) * VelocityConstant * dt
 		}
+
+		if p.Velocity.Length() > MaxSpeed {
+			fmt.Println("2fast")
+			p.Velocity.Norm().Mult(MaxSpeed)
+		}
+
 		//}
 	} else {
 		p.Velocity.Y = 0
@@ -85,6 +92,7 @@ func (p *Player) Move(dt float32) {
 
 	p.Position.X += p.Velocity.X * dt
 	p.Position.Y += p.Velocity.Y * dt
+
 }
 
 func (p *Player) Shoot() (*Projectile, bool) {
@@ -92,6 +100,7 @@ func (p *Player) Shoot() (*Projectile, bool) {
 		p.WaitTime = 0
 		return p.NewProjectile(), true
 	}
+	//p.Controls.Shoot = false
 	return nil, false
 }
 
