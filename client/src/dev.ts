@@ -26,12 +26,44 @@ const helper = (scene: THREE.Scene) => {
 };
 
 const obstacleTest = (scene: THREE.Scene) => {
+    let jsonInput = `{
+        "name": "Biltema",
+		"blocks": [
+			{
+				"name": "wall",
+				"coords": [[0, 16, 0], [10, 16, 0], [10, 15, 0], [0, 15, 0]]
+			},
+			{
+				"name": "house1",
+				"coords": [[10, 10, 0], [20, 10, 0], [20, 0, 0], [10, 0, 0]]
+			}
+		]
+    }`;
+    
+    let wtf = JSON.parse(jsonInput);
+    console.log(JSON.parse(jsonInput));
+
+    for (const item of wtf.blocks) {
+        
+        // for (const lol of item.coords) {
+        //     console.log(lol);
+        // }
+    }
+
+    
     let wall = new THREE.Mesh(
         new THREE.BoxGeometry(10, 1, 5),
         new THREE.MeshPhongMaterial({color: 0x4d5858})
     );
     wall.position.set(5, 15.5, 2);
     scene.add(wall);
+
+    let house = new THREE.Mesh(
+        new THREE.BoxGeometry(10, 10, 5),
+        new THREE.MeshPhongMaterial({color: 0x4d5858})
+    );
+    house.position.set(15, 5, 2);
+    scene.add(house);
 };
 
 export {

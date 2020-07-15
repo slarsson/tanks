@@ -14,6 +14,10 @@ type MTV struct {
 	Magnitude float32
 }
 
+func (p *Polygon) Add(x float32, y float32, z float32) {
+	*p = append(*p, &Vector3{X: x, Y: y, Z: z})
+}
+
 // NewTankHullPolygon creates a new Polygon representing the hull of the tank
 func NewTankHullPolygon() *Polygon {
 	return &Polygon{

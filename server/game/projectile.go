@@ -121,12 +121,12 @@ func (p *Projectile) CollisionTest(m *Map) {
 
 	//fmt.Println("my p:", p.Position)
 
-	wall := Polygon{
-		&Vector3{X: 0, Y: 16, Z: 0},
-		&Vector3{X: 10, Y: 16, Z: 0},
-		&Vector3{X: 10, Y: 15, Z: 0},
-		&Vector3{X: 0, Y: 15, Z: 0},
-	}
+	// wall := Polygon{
+	// 	&Vector3{X: 0, Y: 16, Z: 0},
+	// 	&Vector3{X: 10, Y: 16, Z: 0},
+	// 	&Vector3{X: 10, Y: 15, Z: 0},
+	// 	&Vector3{X: 0, Y: 15, Z: 0},
+	// }
 
 	// lastIdx := len(wall) - 1
 	// var A *Vector3
@@ -169,31 +169,61 @@ func (p *Projectile) CollisionTest(m *Map) {
 	// TEST
 
 	// basic fkn math: https://stackoverflow.com/a/565282/1671375
-	lastIdx := len(wall) - 1
-	var A *Vector3
-	var B *Vector3
-	C := p.LastPosition
-	D := p.Position
-	for i := 0; i <= lastIdx; i++ {
-		if i == lastIdx {
-			A = wall[i]
-			B = wall[0]
-		} else {
-			A = wall[i]
-			B = wall[i+1]
+	// lastIdx := len(wall) - 1
+	// var A *Vector3
+	// var B *Vector3
+	// C := p.LastPosition
+	// D := p.Position
+	// for i := 0; i <= lastIdx; i++ {
+	// 	if i == lastIdx {
+	// 		A = wall[i]
+	// 		B = wall[0]
+	// 	} else {
+	// 		A = wall[i]
+	// 		B = wall[i+1]
+	// 	}
+
+	// 	// golang can handle division with 0 (-/+Inf)
+	// 	uA := ((D.X-C.X)*(A.Y-C.Y) - (D.Y-C.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
+	// 	uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
+
+	// 	if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
+	// 		//fmt.Println("HIITT")
+	// 		//p.Position.X = 1000
+
+	// 		p.IsAlive = false
+	// 		break
+	// 	}
+	// }
+
+	for _, obj := range m.Obstacles {
+		lastIdx := len(*obj) - 1
+		var A *Vector3
+		var B *Vector3
+		C := p.LastPosition
+		D := p.Position
+		for i := 0; i <= lastIdx; i++ {
+			if i == lastIdx {
+				A = (*obj)[i]
+				B = (*obj)[0]
+			} else {
+				A = (*obj)[i]
+				B = (*obj)[i+1]
+			}
+
+			// golang can handle division with 0 (-/+Inf)
+			uA := ((D.X-C.X)*(A.Y-C.Y) - (D.Y-C.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
+			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
+
+			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
+				//fmt.Println("HIITT")
+				//p.Position.X = 1000
+
+				p.IsAlive = false
+				break
+			}
 		}
 
-		// golang can handle division with 0 (-/+Inf)
-		uA := ((D.X-C.X)*(A.Y-C.Y) - (D.Y-C.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
-		uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
-
-		if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-			//fmt.Println("HIITT")
-			//p.Position.X = 1000
-
-			p.IsAlive = false
-			break
-		}
 	}
 }
 
@@ -228,7 +258,9 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
 				//fmt.Println("TANK HIITT")
 				//fmt.Println(p.Owner.ID, "killed", v.ID)
-				v.IsAlive = false
+				//v.IsAlive = false
+				v.Position.Set(rand.Float32()*60-30, rand.Float32()*60-30, 0)
+				//v.IsAlive = false
 				p.IsAlive = false
 				//break
 				return v.ID // might not be the correct player :()
