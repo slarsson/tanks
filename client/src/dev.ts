@@ -23,32 +23,39 @@ const helper = (scene: THREE.Scene) => {
     )
     plane.position.z = -0.5;
     scene.add(plane);
+
+    let plane2 = new THREE.Mesh(
+        new THREE.PlaneGeometry(140, 140, 10),  
+        new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide} )
+    )
+    plane2.position.z = -0.6;
+    scene.add(plane2);
 };
 
 const obstacleTest = (scene: THREE.Scene) => {
-    let jsonInput = `{
-        "name": "Biltema",
-		"blocks": [
-			{
-				"name": "wall",
-				"coords": [[0, 16, 0], [10, 16, 0], [10, 15, 0], [0, 15, 0]]
-			},
-			{
-				"name": "house1",
-				"coords": [[10, 10, 0], [20, 10, 0], [20, 0, 0], [10, 0, 0]]
-			}
-		]
-    }`;
+    // let jsonInput = `{
+    //     "name": "Biltema",
+	// 	"blocks": [
+	// 		{
+	// 			"name": "wall",
+	// 			"coords": [[0, 16, 0], [10, 16, 0], [10, 15, 0], [0, 15, 0]]
+	// 		},
+	// 		{
+	// 			"name": "house1",
+	// 			"coords": [[10, 10, 0], [20, 10, 0], [20, 0, 0], [10, 0, 0]]
+	// 		}
+	// 	]
+    // }`;
     
-    let wtf = JSON.parse(jsonInput);
-    console.log(JSON.parse(jsonInput));
+    // let wtf = JSON.parse(jsonInput);
+    // console.log(JSON.parse(jsonInput));
 
-    for (const item of wtf.blocks) {
+    // for (const item of wtf.blocks) {
         
-        // for (const lol of item.coords) {
-        //     console.log(lol);
-        // }
-    }
+    //     // for (const lol of item.coords) {
+    //     //     console.log(lol);
+    //     // }
+    // }
 
     
     let wall = new THREE.Mesh(
@@ -64,6 +71,36 @@ const obstacleTest = (scene: THREE.Scene) => {
     );
     house.position.set(15, 5, 2);
     scene.add(house);
+
+
+    // // wtf:
+    // let geometry = new THREE.BufferGeometry();
+    // // create a simple square shape. We duplicate the top left and bottom right
+    // // vertices because each vertex needs to appear once per triangle.
+    // let vertices = new Float32Array( [
+    //     0, 16, 1, // first
+    //     10, 16, 1, 
+    //     10, 15, 1,
+        
+    //     0, 16, 1, // first
+    //     10, 15, 1, // last of prev verticies
+    //     0, 15, 1,
+
+        
+    //     // -10.0, -1.0,  1.0,
+    //     // 1.0, -1.0,  1.0,
+    //     // 1.0,  5.0,  1.0,
+
+    //     // 1.0,  1.0,  1.0,
+    //     // -1.0,  1.0,  1.0,
+    //     // -1.0, -1.0,  1.0
+    // ] );
+
+    // // itemSize = 3 because there are 3 values (components) per vertex
+    // geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+    // let material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+    // let mesh = new THREE.Mesh( geometry, material );
+    // scene.add(mesh);
 };
 
 export {

@@ -10,6 +10,10 @@ import (
 	"github.com/slarsson/game/network"
 )
 
+const (
+	RespawnTime = 2000
+)
+
 type Game struct {
 	Map         *Map
 	Players     map[int]*Player

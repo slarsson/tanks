@@ -18,6 +18,8 @@ class Vehicle {
     protected hull: THREE.Mesh;
     protected gun: THREE.Mesh;
 
+    private isAlive: boolean = true;
+
 
     constructor(_scene: THREE.Scene) {
         //this.keys = keys;
@@ -100,6 +102,20 @@ class Vehicle {
 
     dispose(): void {
         this.scene.remove(this.body);
+    }
+
+    kill(): void {
+        if (this.isAlive) {
+            this.isAlive = false;
+            this.scene.remove(this.body);
+        }
+    }
+
+    respawn(): void {
+        if (!this.isAlive) {
+            this.isAlive = true;
+            this.scene.add(this.body);
+        }
     }
 }
 

@@ -3,15 +3,18 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"math/rand"
 	"syscall/js"
 	"time"
 
 	"github.com/slarsson/game/game"
 )
 
+// updateRate: is the rate (time in ms) which updates are sent to the server
+// this value should match the server tickrate (the rate updates are sent from the server to the client)
 const updateRate = 50
 
+// prev: is a snapshoot of previously state
+// used to detect if server and client game state has deviated from each other
 var prev = game.LastState{
 	Position:       game.Vector3{X: 0, Y: 0, Z: 0},
 	SequenceNumber: 0,
@@ -19,19 +22,35 @@ var prev = game.LastState{
 	Timestamp:      time.Now(),
 }
 
+// localPlayer: Player object for local state
 var localPlayer = game.NewLocalPlayer()
 
+// networkPlayers: is a map contaning all players in the game (including localPlayer as seen by server)
 var networkPlayers = make(map[int]*game.Player)
+
+// gameMap: the game map
 var gameMap = game.NewMap()
+
+// ...
 var projectiles = make(map[int]*game.Projectile)
+
+// sequence: is the sequence number, incremented and sent to the server on every tick
 var sequence = uint32(0)
 
-func setSelf(this js.Value, args []js.Value) interface{} {
+// setSelf: sets the ID of the localPlayer.
+//
+// args[0]: Int  # ID of localPlayer
+func setSelf(_ js.Value, args []js.Value) interface{} {
 	localPlayer.ID = args[0].Int()
 	fmt.Println("WASM: local player has ID =", localPlayer.ID)
 	return js.ValueOf(nil)
 }
 
+// keypress: maps keypresses to actions.
+// Returns TRUE if key exists otherwise FALSE.
+//
+// args[0]: String  # the JavaScript KeyboardEvent "key" value (w, a, ArrowLeft, ..)
+// args[1]: Bool    # true or false, if the key is pressed or released
 func keypress(this js.Value, args []js.Value) interface{} {
 	key := args[0].String()
 	status := args[1].Bool()
@@ -74,6 +93,7 @@ func keypress(this js.Value, args []js.Value) interface{} {
 	return js.ValueOf(false)
 }
 
+// poll: gets the current state (the message sent to the server).
 func poll(this js.Value, args []js.Value) interface{} {
 	buf := make([]byte, 8)
 
@@ -105,8 +125,6 @@ func poll(this js.Value, args []js.Value) interface{} {
 	}
 
 	if localPlayer.Controls.Shoot {
-		//localPlayer.IsAlive = false
-		//addProjectile4Real(localPlayer)
 		buf[7] = 1
 	}
 
@@ -116,32 +134,7 @@ func poll(this js.Value, args []js.Value) interface{} {
 	binary.LittleEndian.PutUint32(s, sequence)
 	buf = append(buf, s...)
 
-	// update localPlayer with current input
-	// TODO: sync actions with server?
-	localPlayer.Move(updateRate)
-	localPlayer.HandleCollsionWithPlayers(&networkPlayers, updateRate)
-	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles)
-	if pr, ok := localPlayer.Shoot(); ok {
-		var wtf int
-		for {
-			wtf = rand.Intn(10000) // fejk random?
-			_, ok := projectiles[wtf]
-			if !ok {
-				break
-			}
-		}
-		projectiles[wtf] = pr
-	}
-
-	// update last snapshoot of state for current sequence number
-	if prev.ShouldUpdate {
-		//fmt.Println(time.Now().Sub(prev.Timestamp))
-		prev.Position.X = localPlayer.Position.X
-		prev.Position.Y = localPlayer.Position.Y
-		prev.SequenceNumber = sequence
-		prev.ShouldUpdate = false
-		prev.Timestamp = time.Now()
-	}
+	updateLocalPlayer()
 
 	// append to js array
 	uint8Array := js.Global().Get("Uint8Array")
@@ -150,247 +143,37 @@ func poll(this js.Value, args []js.Value) interface{} {
 	return dst
 }
 
-func update(this js.Value, args []js.Value) interface{} {
-	for i := 0; i < len(args)-1; i += 12 {
-		key := args[i].Int()
-		if p, ok := networkPlayers[key]; ok {
-
-			// if p.IsAlive != (args[i+11].Int() != 0) {
-			// 	fmt.Println("something has changed!!")
-			// }
-
-			// check if localPlayer position has deviated to much from the server
-			// reset the localPlayer to the current (should be the latest state) server position
-			if key == localPlayer.ID {
-				if prev.SequenceNumber == uint32(args[i+10].Int()) {
-					x := float32(args[i+1].Float())
-					y := float32(args[i+2].Float())
-					z := float32(args[i+3].Float())
-
-					if prev.Compare(x, y, z) {
-						localPlayer.Position.Set(x, y, z)
-						localPlayer.Rotation = float32(args[i+7].Float())
-						localPlayer.TurretRotation = float32(args[i+8].Float())
-					}
-
-					// TODO: this should not have to be done?
-					p.Position.Set(x, y, z)
-					p.Rotation = float32(args[i+7].Float())
-					p.TurretRotation = float32(args[i+8].Float())
-
-					prev.ShouldUpdate = true
-				} else if (prev.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
-					fmt.Println("missed nummer / error :(")
-					prev.ShouldUpdate = true
-				}
-
-				continue
-			}
-
-			// update networkPlayer position / rotation
-			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
-			p.Rotation = float32(args[i+7].Float())
-			p.TurretRotation = float32(args[i+8].Float())
-
-			if args[i+9].Int() == 1 {
-				//fmt.Println("add to:", p)
-				addProjectile4Real(p)
-			}
-
-			// if args[i+11].Int() == 1 {
-			// 	p.IsAlive = true
-			// } else {
-			// 	p.IsAlive = false
-			// }
-
-			// TEST: guess next position, should be done the other way around? interpolate from old to current?
-			// https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
-			// if key != self {
-			// 	p.Position.X += updateRate * p.Velocity.X
-			// 	p.Position.Y += updateRate * p.Velocity.Y
-
-			// 	for _, v := range networkPlayers {
-			// 		if v.ID == p.ID || v.ID == self {
-			// 			continue
-			// 		}
-
-			// 		poly1 := game.NewTankHullPolygon()
-			// 		poly1.Rotate(p.Rotation, p.Position)
-
-			// 		poly2 := game.NewTankHullPolygon()
-			// 		poly2.Rotate(v.Rotation, v.Position)
-
-			// 		ok, mtv := poly1.Collision(poly2)
-			// 		if ok {
-			// 			fmt.Println("CLIENT HAS CRASHED..")
-
-			// 			dx := mtv.Vector.X * mtv.Magnitude
-			// 			dy := mtv.Vector.Y * mtv.Magnitude
-
-			// 			if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-			// 				dx = -dx
-			// 			}
-
-			// 			if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
-			// 				dy = -dy
-			// 			}
-
-			// 			p.Position.X += dx
-			// 			p.Position.Y += dy
-			// 		}
-			// 	}
-			// }
-
-		} else {
-			fmt.Println("add new player?")
-			networkPlayers[args[i].Int()] = &game.Player{
-				ID:      args[i].Int(),
-				IsAlive: true,
-				Position: &game.Vector3{
-					X: float32(args[i+1].Float()),
-					Y: float32(args[i+2].Float()),
-					Z: float32(args[i+3].Float()),
-				},
-				Velocity: &game.Vector3{
-					X: float32(0),
-					Y: float32(0),
-					Z: float32(0),
-				},
-				Rotation:       0,
-				TurretRotation: 0,
-				Controls:       game.NewControls(),
-			}
-		}
-	}
-
-	return js.ValueOf(nil)
-}
-
 func getPosition(this js.Value, args []js.Value) interface{} {
 	id := args[0].Int()
 
 	if id == localPlayer.ID {
-		// if !localPlayer.IsAlive {
-		// 	return []interface{}{}
-		// }
-		return []interface{}{localPlayer.Position.X, localPlayer.Position.Y, localPlayer.Position.Z, localPlayer.Rotation, localPlayer.TurretRotation}
+		return []interface{}{
+			localPlayer.Position.X,
+			localPlayer.Position.Y,
+			localPlayer.Position.Z,
+			localPlayer.Rotation,
+			localPlayer.TurretRotation,
+		}
 	}
 
 	if p, ok := networkPlayers[id]; ok {
-		// if !p.IsAlive {
-		// 	return []interface{}{}
-		// }
-		return []interface{}{p.Position.X, p.Position.Y, p.Position.Z, p.Rotation, p.TurretRotation}
+		return []interface{}{
+			p.Position.X,
+			p.Position.Y,
+			p.Position.Z,
+			p.Rotation,
+			p.TurretRotation,
+		}
 	}
 
 	return js.ValueOf(nil)
 }
 
-func guessPosition(this js.Value, args []js.Value) interface{} {
-	dt := float32(args[0].Float())
-	for _, p := range networkPlayers {
-		if p.ID == localPlayer.ID {
-			continue
-		}
-		p.Position.X += dt * p.Velocity.X
-		p.Position.Y += dt * p.Velocity.Y
-	}
-
+func removePlayer(this js.Value, args []js.Value) interface{} {
+	key := args[0].Int()
+	fmt.Println("WASM: remove id:", key)
+	delete(networkPlayers, key)
 	return js.ValueOf(nil)
-}
-
-// Projectiles ...
-//
-// TODO: testing only..
-func addProjectile(this js.Value, args []js.Value) interface{} {
-	// var wtf int
-	// for {
-	// 	wtf = rand.Intn(10000) // fejk random?
-	// 	_, ok := projectiles[wtf]
-	// 	if !ok {
-	// 		break
-	// 	}
-	// }
-
-	// id := args[0].Int()
-
-	// if id == localPlayer.ID {
-	// 	projectiles[wtf] = localPlayer.NewProjectile()
-	// } else {
-	// 	//projectiles[wtf] = networkPlayers[id].NewProjectile()
-	// }
-
-	return js.ValueOf(nil)
-}
-
-func addProjectile4Real(p *game.Player) {
-	var wtf int
-	for {
-		wtf = rand.Intn(10000) // fejk random?
-		_, ok := projectiles[wtf]
-		if !ok {
-			break
-		}
-	}
-	projectiles[wtf] = p.NewProjectile()
-}
-
-func updateProjectiles(this js.Value, args []js.Value) interface{} {
-	buf := make([]interface{}, len(projectiles)*5)
-	//buf := make([]float32, len(projectiles)*3)
-
-	dt := float32(args[0].Float())
-
-	wtf := 0
-	for i, val := range projectiles {
-		//fmt.Println("owner:", val.Owner.ID)
-		if !val.IsAlive {
-			delete(projectiles, i)
-			buf[wtf] = i
-			wtf++
-			buf[wtf] = 0
-			wtf++
-			buf[wtf] = 0
-			wtf++
-			buf[wtf] = 0
-			wtf++
-			buf[wtf] = 0
-			wtf++
-			continue
-		}
-
-		x := val.Position.X
-		y := val.Position.Y
-		z := val.Position.Z
-
-		val.Move(dt)
-		val.CollisionTest(gameMap)
-		val.CollisionTestPlayers(&networkPlayers)
-		buf[wtf] = i
-		wtf++
-		buf[wtf] = x
-		wtf++
-		buf[wtf] = y
-		wtf++
-		buf[wtf] = z
-		wtf++
-		buf[wtf] = 1
-		wtf++
-
-		// val.Move(dt)
-		// val.CollisionTest()
-		// buf[wtf] = i
-		// wtf++
-		// buf[wtf] = val.Position.X
-		// wtf++
-		// buf[wtf] = val.Position.Y
-		// wtf++
-		// buf[wtf] = val.Position.Z
-		// wtf++
-
-	}
-
-	return buf
 }
 
 // main exports functions to js
@@ -400,11 +183,11 @@ func main() {
 	js.Global().Set("wasm__update", js.FuncOf(update))
 	js.Global().Set("wasm__get", js.FuncOf(getPosition))
 	js.Global().Set("wasm__setSelf", js.FuncOf(setSelf))
-	js.Global().Set("wasm__guessPosition", js.FuncOf(guessPosition))
 	js.Global().Set("wasm__updateProjectiles", js.FuncOf(updateProjectiles))
 	js.Global().Set("wasm__addProjectile", js.FuncOf(addProjectile))
+	js.Global().Set("wasm__removePlayer", js.FuncOf(removePlayer))
 
-	fmt.Println("WebAssembly init!")
+	fmt.Println("WASM: WebAssembly init!")
 
 	c := make(chan struct{}, 0)
 	<-c

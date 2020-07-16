@@ -94,8 +94,11 @@ class Render {
                     //     this.shoot.add2(v.getGunRotation());
                     // }
                 } else if (state[i+11] == 0) {
-                    //console.log('player is dead');
-                }   
+                    console.log('player is dead');
+                    this.vehicles.get(state[i])?.kill();
+                } else {
+                    this.vehicles.get(state[i])?.respawn();
+                }  
             }
             this.wasm.update(...state, this.SWAG);
         }
@@ -111,9 +114,10 @@ class Render {
         if (mt == 9) {
             let test = new Uint32Array(buffer);
             console.log('remove ID:', test);
+            this.wasm.removePlayer(test[0]);
             //this.scene.remove(this.vehicles.get(test[1]))
-            this.vehicles.get(test[1])?.dispose();
-            this.vehicles.delete(test[1]);
+            this.vehicles.get(test[0])?.dispose();
+            this.vehicles.delete(test[0]);
             return;
         }
         
@@ -161,6 +165,8 @@ class Render {
     // }
 
     private broadcast(): void {
+        //this.wasm.poll()
+        //console.log(this.wasm.poll());
         this.conn.send(this.wasm.poll().buffer);
         setTimeout(this.broadcast, this.BROADCAST_RATE);
     }
@@ -195,7 +201,7 @@ class Render {
 
         //this.shoot.update(dt);
         
-        this.wasm.guessPosition(dt);
+        //this.wasm.guessPosition(dt);
 
 
         const it = this.vehicles[Symbol.iterator]();

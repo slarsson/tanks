@@ -102,26 +102,33 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 		case 0:
 			fmt.Println("do something else..")
 		case 1:
-			p.Controls.Decode(&message)
 			p.SetSequenceNumber(&message)
-			p.Move(dt)
 
-			if s.Game.Map.OutOfBounds(p.Position) {
-				fmt.Println("yeees")
-				p.Position.Set(0, 0, 0)
+			if !p.IsAlive {
+				if p.RespawnTime > game.RespawnTime {
+					p.Respawn()
+				} else {
+					p.RespawnTime += dt
+				}
+				return
 			}
 
+			p.Controls.Decode(&message)
+			p.Move(dt)
 			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles)
 			p.HandleCollsionWithPlayers(&s.Game.Players, dt)
-			// if p.Controls.Shoot {
-			// 	s.Game.PManager.NewProjectile(p)
-			// 	//s.Game.AddProjectile(p)
-			// }
 
-			if projectile, ok := p.Shoot(); ok {
-				s.Game.PManager.Add(projectile)
+			if s.Game.Map.OutOfBounds(p.Position) {
+				p.OutOfMapTime += dt
+				if p.OutOfMapTime > 1500 {
+					p.Kill()
+				}
+			} else {
+				p.OutOfMapTime = 0
+				if projectile, ok := p.Shoot(); ok {
+					s.Game.PManager.Add(projectile)
+				}
 			}
-
 		default:
 			fmt.Println("unknown command")
 		}

@@ -230,7 +230,7 @@ func (p *Projectile) CollisionTest(m *Map) {
 // TODO: this will fuck up when using localPlayer !?!?!
 func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 	for _, v := range *players {
-		if v.ID == p.Owner.ID {
+		if v.ID == p.Owner.ID || !v.IsAlive {
 			continue
 		}
 
@@ -256,11 +256,11 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-				//fmt.Println("TANK HIITT")
+				fmt.Println("TANK HIITT")
 				//fmt.Println(p.Owner.ID, "killed", v.ID)
 				//v.IsAlive = false
-				v.Position.Set(rand.Float32()*60-30, rand.Float32()*60-30, 0)
-				//v.IsAlive = false
+				//v.Position.Set(rand.Float32()*60-30, rand.Float32()*60-30, 0)
+				v.IsAlive = false
 				p.IsAlive = false
 				//break
 				return v.ID // might not be the correct player :()

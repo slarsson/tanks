@@ -21,9 +21,17 @@ func NewLastState() *LastState {
 	}
 }
 
-func (l *LastState) Compare(x float32, y float32, z float32) bool {
-	if math.Abs(float64(l.Position.X-x)) > 0.001 || math.Abs(float64(l.Position.Y-y)) > 0.001 || math.Abs(float64(l.Position.Z-z)) > 0.001 {
-		fmt.Println("OFFSET ERROR", math.Abs(float64(l.Position.X-x)), math.Abs(float64(l.Position.Y-y)), math.Abs(float64(l.Position.Z-z)))
+// func (l *LastState) Compare(x float32, y float32, z float32) bool {
+// 	if math.Abs(float64(l.Position.X-x)) > 0.001 || math.Abs(float64(l.Position.Y-y)) > 0.001 || math.Abs(float64(l.Position.Z-z)) > 0.001 {
+// 		fmt.Println("OFFSET ERROR", math.Abs(float64(l.Position.X-x)), math.Abs(float64(l.Position.Y-y)), math.Abs(float64(l.Position.Z-z)))
+// 		return true
+// 	}
+// 	return false
+// }
+
+func (l *LastState) Compare(vec *Vector3) bool {
+	if math.Abs(float64(l.Position.X-vec.X)) > 0.001 || math.Abs(float64(l.Position.Y-vec.Y)) > 0.001 || math.Abs(float64(l.Position.Z-vec.Z)) > 0.001 {
+		fmt.Println("OFFSET ERROR", math.Abs(float64(l.Position.X-vec.X)), math.Abs(float64(l.Position.Y-vec.Y)), math.Abs(float64(l.Position.Z-vec.Z)))
 		return true
 	}
 	return false

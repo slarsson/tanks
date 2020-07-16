@@ -15,6 +15,12 @@ func (v *Vector3) Set(x float32, y float32, z float32) {
 	v.Z = z
 }
 
+func (v *Vector3) SetFromVector(vec *Vector3) {
+	v.X = vec.X
+	v.Y = vec.Y
+	v.Z = vec.Z
+}
+
 func (v *Vector3) Get() []float32 {
 	return []float32{v.X, v.Y, v.Z}
 }

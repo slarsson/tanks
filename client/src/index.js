@@ -39,9 +39,9 @@ window.addEventListener('DOMContentLoaded', () => {
             poll: wasm__poll,
             update: wasm__update,
             getPos: wasm__get,
-            //local: wasm__local,
+            removePlayer: wasm__removePlayer,
             setSelf: wasm__setSelf,
-            guessPosition: wasm__guessPosition,
+            //guessPosition: wasm__guessPosition,
             updateProjectiles: wasm__updateProjectiles,
             addProjectile: wasm__addProjectile
         }

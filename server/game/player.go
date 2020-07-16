@@ -15,6 +15,7 @@ const (
 	RotationConstant       = 0.001
 	TurretRotationConstant = 0.002
 	MaxSpeed               = 0.03
+	ShootWaitTime          = 500
 )
 
 type Player struct {
@@ -28,6 +29,8 @@ type Player struct {
 	Client         *network.Client
 	Controls       *Controls
 	WaitTime       float32
+	OutOfMapTime   float32
+	RespawnTime    float32
 	SequenceNumber uint32
 }
 
@@ -43,6 +46,8 @@ func NewLocalPlayer() *Player {
 		Client:         nil,
 		Controls:       NewControls(),
 		WaitTime:       0,
+		OutOfMapTime:   0,
+		RespawnTime:    0,
 	}
 }
 
@@ -54,7 +59,6 @@ func (p *Player) Move(dt float32) {
 	p.WaitTime += dt
 
 	if p.Controls.Forward || p.Controls.Backward {
-		//if p.Velocity.Length() < 0.05 { // can still go over ..
 		if p.Controls.Forward {
 			p.Velocity.X -= float32(math.Sin(float64(p.Rotation))) * VelocityConstant * dt
 			p.Velocity.Y += float32(math.Cos(float64(p.Rotation))) * VelocityConstant * dt
@@ -64,11 +68,8 @@ func (p *Player) Move(dt float32) {
 		}
 
 		if p.Velocity.Length() > MaxSpeed {
-			fmt.Println("2fast")
 			p.Velocity.Norm().Mult(MaxSpeed)
 		}
-
-		//}
 	} else {
 		p.Velocity.Y = 0
 		p.Velocity.X = 0
@@ -95,12 +96,29 @@ func (p *Player) Move(dt float32) {
 
 }
 
+func (p *Player) Respawn() {
+	p.IsAlive = true
+	p.RespawnTime = 0
+	p.Velocity.Set(0, 0, 0)
+	p.Position.Set(0, 0, 0)
+}
+
+func (p *Player) Reset() {
+	p.Velocity.Set(0, 0, 0)
+	p.Position.Set(0, 0, 0)
+	p.Rotation = 0
+	p.TurretRotation = 0
+}
+
+func (p *Player) Kill() {
+	p.IsAlive = false
+}
+
 func (p *Player) Shoot() (*Projectile, bool) {
-	if p.Controls.Shoot && p.WaitTime > 200 {
+	if p.Controls.Shoot && p.WaitTime > ShootWaitTime {
 		p.WaitTime = 0
 		return p.NewProjectile(), true
 	}
-	//p.Controls.Shoot = false
 	return nil, false
 }
 
@@ -133,7 +151,7 @@ func (p *Player) HandleCollsionWithObjects(objects *[]*Polygon) {
 
 func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32) {
 	for i, v := range *players {
-		if i == p.ID {
+		if i == p.ID || !v.IsAlive {
 			continue
 		}
 
@@ -187,4 +205,10 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 		p.Velocity.X = 0
 		p.Velocity.Y = 0
 	}
+}
+
+func (p *Player) SyncState(target *Player) {
+	p.Position.SetFromVector(target.Position)
+	p.Rotation = target.Rotation
+	p.TurretRotation = target.TurretRotation
 }
