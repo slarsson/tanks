@@ -1,35 +1,37 @@
 import * as THREE from 'three';
 
+import Container from './Container';
+
 const helper = (scene: THREE.Scene) => {
     scene.add(new THREE.AxesHelper(15));
 
-    let l1 = new THREE.PointLight(0xff0000, 0.5, 100);
-    l1.position.set(10, 10, 0);
-    scene.add(l1);
+    // let l1 = new THREE.PointLight(0xff0000, 0.5, 100);
+    // l1.position.set(10, 10, 0);
+    // scene.add(l1);
 
-    let l2 = new THREE.DirectionalLight(0xefefff, 1.4);
-    l2.position.set(1, 1, 1).normalize();
-    l2.castShadow = true;
-    scene.add(l2);
+    // let l2 = new THREE.DirectionalLight(0xefefff, 1.4);
+    // l2.position.set(1, 1, 1).normalize();
+    // l2.castShadow = true;
+    // scene.add(l2);
 
     scene.add(new THREE.Mesh(
         new THREE.CylinderGeometry(1700, 1700, 2000, 50),  
         new THREE.MeshBasicMaterial({color: 0x5780EA, side: THREE.BackSide})
     ));
 
-    let plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100, 10),  
-        new THREE.MeshBasicMaterial( {color: 0xdf9e6f, side: THREE.DoubleSide} )
-    )
-    plane.position.z = -0.5;
-    scene.add(plane);
+    // let plane = new THREE.Mesh(
+    //     new THREE.PlaneGeometry(100, 100, 10),  
+    //     new THREE.MeshBasicMaterial( {color: 0xdf9e6f, side: THREE.DoubleSide} )
+    // )
+    // plane.position.z = -0.5;
+    // scene.add(plane);
 
-    let plane2 = new THREE.Mesh(
-        new THREE.PlaneGeometry(140, 140, 10),  
-        new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide} )
-    )
-    plane2.position.z = -0.6;
-    scene.add(plane2);
+    // let plane2 = new THREE.Mesh(
+    //     new THREE.PlaneGeometry(140, 140, 10),  
+    //     new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide} )
+    // )
+    // plane2.position.z = -0.6;
+    // scene.add(plane2);
 };
 
 const obstacleTest = (scene: THREE.Scene) => {
@@ -58,19 +60,59 @@ const obstacleTest = (scene: THREE.Scene) => {
     // }
 
     
-    let wall = new THREE.Mesh(
-        new THREE.BoxGeometry(10, 1, 5),
-        new THREE.MeshPhongMaterial({color: 0x4d5858})
-    );
-    wall.position.set(5, 15.5, 2);
-    scene.add(wall);
+    // let wall = new THREE.Mesh(
+    //     new THREE.BoxGeometry(10, 1, 5),
+    //     new THREE.MeshPhongMaterial({color: 0x4d5858})
+    // );
+    // wall.position.set(5, 15.5, 2);
+    // scene.add(wall);
 
-    let house = new THREE.Mesh(
-        new THREE.BoxGeometry(10, 10, 5),
-        new THREE.MeshPhongMaterial({color: 0x4d5858})
-    );
-    house.position.set(15, 5, 2);
-    scene.add(house);
+    let c1 = new Container(scene, 25, 10);
+        c1.setPosition(40, 0, 0);
+    let c2 = new Container(scene, 5, 5);
+        c2.setPosition(-20, 15, 0);
+    // let c3 = new Container(scene, 2, 1);
+    //     c3.setPosition(0, 30, 0);
+
+
+        let loader = new THREE.TextureLoader();
+
+        loader.load(
+            'postnord.png',
+            //'warning.jpeg',
+
+            // onLoad callback
+            function ( texture ) {
+                //console.log(texture);
+                let c3 = new Container(scene, 2, 1);
+                c3.setPosition(0, 30, 0);
+                c3.test(texture);
+
+
+
+               
+                // // in this example we create the material when the texture is loaded
+                // var material = new THREE.MeshBasicMaterial( {
+                //     map: texture
+                // } );
+            },
+
+            // onProgress callback currently not supported
+            undefined,
+
+            // onError callback
+            function ( err ) {
+                console.error( 'An error happened.' );
+            }
+        );
+
+
+    // let house = new THREE.Mesh(
+    //     new THREE.BoxGeometry(10, 10, 5),
+    //     new THREE.MeshPhongMaterial({color: 0x4d5858})
+    // );
+    // house.position.set(15, 5, 2);
+    // scene.add(house);
 
 
     // // wtf:

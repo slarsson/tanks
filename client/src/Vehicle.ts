@@ -36,12 +36,13 @@ class Vehicle {
             new THREE.BoxGeometry(3, 6, 1),
             this.material
         );
+        this.hull.position.z = 0.5;
 
         this.turretMesh = new THREE.Mesh(
             new THREE.BoxGeometry(2, 2, 1),
             new THREE.MeshPhongMaterial({color: 0xc2b280})
         );
-        this.turretMesh.position.z = 1;
+        this.turretMesh.position.z = 1.5;
 
         this.gun = new THREE.Mesh(
             new THREE.CylinderGeometry(0.2, 0.2, 4, 16),

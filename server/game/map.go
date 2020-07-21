@@ -10,49 +10,108 @@ type Map struct {
 	Boundaries [4]float32 // maxX, minX, maxY, minY
 }
 
-type MapDataBlock struct {
-	Name   string      `json:"name"`
-	Coords [][]float32 `json:"coords"` // clockwise rotation !!
+type MapData struct {
+	Name       string           `json:"name"`
+	Boundaries [4]float32       `json:"boundaries"`
+	Containers []ContainerGroup `json:"containers"`
 }
 
-type MapData struct {
-	Name   string         `json:"name"`
-	Blocks []MapDataBlock `json:"blocks"`
+type ContainerGroup struct {
+	Position Vector3 `json:"position"`
+	Total    int     `json:"total"`
+	Bottom   int     `json:"bottom"`
 }
 
 func NewMap() *Map {
 	data := []byte(`{
-		"name": "Biltema",
-		"blocks": [
+		"name": "Port of Nrkp",
+		"boundaries": [50, -50, 50, -50], 
+		"containers": [
 			{
-				"name": "wall",
-				"coords": [[0, 16, 0], [10, 16, 0], [10, 15, 0], [0, 15, 0]]
+				"position": {
+					"x": 40,
+					"y": 0,
+					"z": 0
+				},
+				"total": 25,
+				"bottom": 10
 			},
 			{
-				"name": "house1",
-				"coords": [[10, 10, 0], [20, 10, 0], [20, 0, 0], [10, 0, 0]]
+				"position": {
+					"x": -20,
+					"y": 15,
+					"z": 0
+				},
+				"total": 5,
+				"bottom": 5
+			},
+			{
+				"position": {
+					"x": 0,
+					"y": 30,
+					"z": 0
+				},
+				"total": 2,
+				"bottom": 1
 			}
 		]
 	}`)
 
-	var jsonData MapData
-	err := json.Unmarshal(data, &jsonData)
+	var manifest MapData
+	err := json.Unmarshal(data, &manifest)
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Println(jsonData)
+	fmt.Println(manifest.Boundaries)
 
-	x := []*Polygon{}
+	obstacles := []*Polygon{}
 
-	for _, arr := range jsonData.Blocks {
-		poly := &Polygon{}
-		for _, point := range arr.Coords {
-			poly.Add(point[0], point[1], 0)
-			//poly = append(*poly, &Vector3{X: point[0], Y: point[1], Z: 0})
+	for _, val := range manifest.Containers {
+		//fmt.Println(val)
+		//poly := &Polygon{}
+
+		yy := 0.5 * float32(val.Bottom) * 3.75
+		xx := 0.5 * float32(8)
+		//fmt.Println("size1:", s1, s2)
+
+		c1 := &Vector3{
+			X: val.Position.X - xx,
+			Y: val.Position.Y + yy,
+			Z: 0,
 		}
-		x = append(x, poly)
+
+		c2 := &Vector3{
+			X: val.Position.X + xx,
+			Y: val.Position.Y + yy,
+			Z: 0,
+		}
+
+		c3 := &Vector3{
+			X: val.Position.X + xx,
+			Y: val.Position.Y - yy,
+			Z: 0,
+		}
+
+		c4 := &Vector3{
+			X: val.Position.X - xx,
+			Y: val.Position.Y - yy,
+			Z: 0,
+		}
+
+		obstacles = append(obstacles, &Polygon{c1, c2, c3, c4})
 	}
-	fmt.Println(x[0])
+
+	// x := []*Polygon{}
+
+	// for _, arr := range jsonData.Blocks {
+	// 	poly := &Polygon{}
+	// 	for _, point := range arr.Coords {
+	// 		poly.Add(point[0], point[1], 0)
+	// 		//poly = append(*poly, &Vector3{X: point[0], Y: point[1], Z: 0})
+	// 	}
+	// 	x = append(x, poly)
+	// }
+	// fmt.Println(x[0])
 
 	// test := &Polygon{
 	// 	&Vector3{X: 0, Y: 16, Z: 0},
@@ -62,9 +121,9 @@ func NewMap() *Map {
 	// }
 
 	return &Map{
-		Obstacles: x,
-		//Obstacles:  []*Polygon{test},
-		Boundaries: [4]float32{50, -50, 50, -50},
+		Obstacles: obstacles,
+		//Boundaries: [4]float32{50, -50, 50, -50},
+		Boundaries: manifest.Boundaries,
 	}
 }
 

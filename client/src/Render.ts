@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Vehicle from './Vehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
+import GameMap from './Map'
 
 import Projectile from './Particle';
 
@@ -42,15 +43,16 @@ class Render {
 
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 2000);
         this.camera.rotation.x = Math.PI / 4;
-        this.camera.position.y = -10;
-        this.camera.position.z = 30;
+        this.camera.position.y = -140;
+        this.camera.position.z = 60;
         
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         
         // setup objects + testing..
         this.vehicles = new Map();
         this.shoot = new Map();
+        new GameMap(this.scene);
         //this.shoot = new Particle(this.scene);
         helper(this.scene);
         obstacleTest(this.scene);

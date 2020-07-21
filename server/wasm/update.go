@@ -74,7 +74,7 @@ func update(this js.Value, args []js.Value) interface{} {
 					prev.ShouldUpdate = true
 				} else if (prev.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
 					fmt.Println("WASM: missed nummer / error :(")
-					localPlayer.SyncState(p)
+					//localPlayer.SyncState(p)
 					prev.ShouldUpdate = true
 				}
 
