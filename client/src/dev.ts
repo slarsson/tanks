@@ -14,10 +14,10 @@ const helper = (scene: THREE.Scene) => {
     // l2.castShadow = true;
     // scene.add(l2);
 
-    scene.add(new THREE.Mesh(
-        new THREE.CylinderGeometry(1700, 1700, 2000, 50),  
-        new THREE.MeshBasicMaterial({color: 0x5780EA, side: THREE.BackSide})
-    ));
+    // scene.add(new THREE.Mesh(
+    //     new THREE.CylinderGeometry(1700, 1700, 2000, 50),  
+    //     new THREE.MeshBasicMaterial({color: 0x5780EA, side: THREE.BackSide})
+    // ));
 
     // let plane = new THREE.Mesh(
     //     new THREE.PlaneGeometry(100, 100, 10),  

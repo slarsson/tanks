@@ -72,12 +72,12 @@ class GameMap {
         }
         
         {
-            let w = 5;
+            let w = 2;
             let color = 0xffff00;
 
-            let yTop = new THREE.PlaneGeometry(xLength, w, 0);
+            let yTop = new THREE.PlaneGeometry(xLength+2*w, w, 0);
                 yTop.translate(0, this.manifest.boundaries[2] + (0.5 * w), 0);
-            let yBottom = new THREE.PlaneGeometry(xLength, w, 0);
+            let yBottom = new THREE.PlaneGeometry(xLength+2*w, w, 0);
                 yBottom.translate(0, this.manifest.boundaries[3] - (0.5 * w), 0);
             let xTop = new THREE.PlaneGeometry(w, yLength, 0);
                 xTop.translate(this.manifest.boundaries[0] + (0.5 * w), 0, 0);
@@ -188,15 +188,15 @@ class GameMap {
             );
         }
 
-        {
-            let mesh = new THREE.PlaneGeometry(1000, 1000, 10);
-                mesh.translate(0, 0, -0.1);
+        // {
+        //     let mesh = new THREE.PlaneGeometry(1000, 1000, 10);
+        //         mesh.translate(0, 0, -0.1);
 
-            this.scene.add(new THREE.Mesh(
-                mesh,
-                new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide})
-            ));
-        }
+        //     this.scene.add(new THREE.Mesh(
+        //         mesh,
+        //         new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide})
+        //     ));
+        // }
 
         {
             let light = new THREE.AmbientLight(0x404040, 2); // soft white light

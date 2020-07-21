@@ -46,8 +46,9 @@ class Render {
         this.camera.position.y = -140;
         this.camera.position.z = 60;
         
-        this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setClearColor(0x000000, 0);
         
         // setup objects + testing..
         this.vehicles = new Map();
