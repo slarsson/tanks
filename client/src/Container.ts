@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { Assets } from './AssetsTest';
+import { Vector2 } from 'three';
 
 class Item {
     
     private static readonly COLORS = [
         0xff6600, // Hapag-Lloyd
-        0x01a0d7, // POSTNORD
+        0x00a0d6, // POSTNORD
         0x04246A, // CMA CGM
         0xa6de7b, // CHINA SHIPPING
         0xbd4805, // unknown
@@ -16,13 +18,73 @@ class Item {
     
     constructor(scene: THREE.Group) {
         this.scene = scene;
+        
+        let g = new THREE.BoxGeometry(8, 3.75, 3.75);
+        
+        let m = new THREE.MeshPhongMaterial({color: 0x00a0d6});
+
+        
+        let t = Assets.textures?.postnord.clone();
+        if (t != undefined) {
+            t.needsUpdate = true;
+            m = new THREE.MeshPhongMaterial({map: t, side: THREE.DoubleSide});
+        }
+
+        let zero = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)]; 
+        g.faceVertexUvs[0][0] = zero;
+        g.faceVertexUvs[0][1] = zero;
+        g.faceVertexUvs[0][2] = zero;
+        g.faceVertexUvs[0][3] = zero;
+        g.faceVertexUvs[0][8] = zero;
+        g.faceVertexUvs[0][9] = zero;
+        g.faceVertexUvs[0][10] = zero;
+        g.faceVertexUvs[0][11] = zero;
+
+        let st = [
+            new Vector2(0.32, 0),
+            new Vector2(1, 0),
+            new Vector2(1, 1),
+            new Vector2(0.32, 1)
+        ];
+
+        g.faceVertexUvs[0][4] = [st[1], st[2], st[0]];
+        g.faceVertexUvs[0][5] = [st[2], st[3], st[0]];
+
+        g.faceVertexUvs[0][6] = [st[3], st[0], st[2]];
+        g.faceVertexUvs[0][7] = [st[0], st[1], st[2]];
+
+        
+        // front
+        // g.faceVertexUvs[0][6][0].set(0.32, 1);
+        // g.faceVertexUvs[0][6][1].set(0.32, 0);
+        // g.faceVertexUvs[0][6][2].set(1, 1);
+
+        // g.faceVertexUvs[0][7][0].set(0.32, 0);
+        // g.faceVertexUvs[0][7][1].set(1, 0);
+        // g.faceVertexUvs[0][7][2].set(1, 1);
+
+        // // back
+        // g.faceVertexUvs[0][4][0].set(1, 0);
+        // g.faceVertexUvs[0][4][1].set(1, 1);
+        // g.faceVertexUvs[0][4][2].set(0.32, 0);
+
+        // g.faceVertexUvs[0][5][0].set(1, 1);
+        // g.faceVertexUvs[0][5][1].set(0.32, 1);
+        // g.faceVertexUvs[0][5][2].set(0.32, 0);
+
+
         this.mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(8, 3.75, 3.75),
-            new THREE.MeshPhongMaterial({color: Item.COLORS[Math.trunc(Math.random()*Item.COLORS.length)]})
-            //new THREE.MeshPhongMaterial({color: Number.parseInt(Math.floor(Math.random()*16777215).toString(16), 16)})
+            g,
+            m
         );
+            
+        //console.log(g.faceVertexUvs);
 
         scene.add(this.mesh);
+
+        //this.mesh.rotation.z = Math.PI;
+        // let f = () => {this.mesh.rotation.z += 0.1; setTimeout(() => f(), 50)};
+        // f();
     }
 
     public setPosition(x: number, y: number, z: number): void {
@@ -87,6 +149,7 @@ class Container {
 
     public setPosition(x: number, y: number, z: number): void {
         this.group.position.set(x, y, z);
+        //this.group.rotation.z = Math.random() * Math.PI * 2;
     }
 
     public test(tex: THREE.Texture): void {

@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 
+import { Assets } from './AssetsTest';
+import Container from './Container';
+
 interface ContainersTest {
     position: {x: number, y: number, z: number};
     total: number;
@@ -19,7 +22,6 @@ class GameMap {
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
-        //"boundaries": [150, -50, 50, -50], 
         this.manifest = JSON.parse(`{
             "name": "Port of Nrkp",
             "boundaries": [50, -50, 50, -50],
@@ -54,6 +56,13 @@ class GameMap {
             ]
         }`);
 
+        // let c = new Container(this.scene, 1, 1);
+        // c.setPosition(0, 0, 5);
+        for (const item of this.manifest.containers) {
+            let c = new Container(this.scene, item.total, item.bottom);
+                c.setPosition(item.position.x, item.position.y, item.position.z);
+        }
+
         let xLength = Math.abs(this.manifest.boundaries[0] - this.manifest.boundaries[1]);
         let yLength = Math.abs(this.manifest.boundaries[2] - this.manifest.boundaries[3]);
 
@@ -73,7 +82,6 @@ class GameMap {
         
         {
             let w = 2;
-            let color = 0xffff00;
 
             let yTop = new THREE.PlaneGeometry(xLength+2*w, w, 0);
                 yTop.translate(0, this.manifest.boundaries[2] + (0.5 * w), 0);
@@ -83,120 +91,25 @@ class GameMap {
                 xTop.translate(this.manifest.boundaries[0] + (0.5 * w), 0, 0);
             let xBottom = new THREE.PlaneGeometry(w, yLength, 0);
                 xBottom.translate(this.manifest.boundaries[1] - (0.5 * w), 0, 0);
+            
+            if (Assets.textures?.warning != undefined) {
+                let yTexture = Assets.textures?.warning.clone();
+                    yTexture.wrapS = THREE.RepeatWrapping;
+                    yTexture.wrapT = THREE.RepeatWrapping;
+                    yTexture.repeat.set((xLength / w), 1);
+                    yTexture.needsUpdate = true;
+                let xTexture = Assets.textures?.warning.clone();
+                    xTexture.wrapS = THREE.RepeatWrapping;
+                    xTexture.wrapT = THREE.RepeatWrapping;
+                    xTexture.repeat.set(1, (yLength / w));    
+                    xTexture.needsUpdate = true;
                 
-            // this.scene.add(new THREE.Mesh(yTop, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide})));
-            //this.scene.add(new THREE.Mesh(yBottom, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide})));
-            //this.scene.add(new THREE.Mesh(xTop, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide})));
-            //this.scene.add(new THREE.Mesh(xBottom, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide})));
-        
-
-            let mesh = new THREE.Mesh(yTop, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide}));
-            this.scene.add(mesh);
-
-            let mesh2 = new THREE.Mesh(xTop, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide}));
-            this.scene.add(mesh2);
-
-            let mesh3 = new THREE.Mesh(yBottom, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide}));
-            this.scene.add(mesh3);
-
-            let mesh4 = new THREE.Mesh(xBottom, new THREE.MeshBasicMaterial({color: color, side: THREE.DoubleSide}));
-            this.scene.add(mesh4);
-
-            let loader = new THREE.TextureLoader();
-
-            // load a resource
-            loader.load(
-                //'postnord.png',
-                'warning2.png',
-
-                // onLoad callback
-                function ( texture ) {
-                    console.log('fmt:', texture.format);
-                   
-                    texture.wrapS = THREE.RepeatWrapping;
-                    texture.wrapT = THREE.RepeatWrapping;
-                    texture.minFilter = THREE.LinearFilter;
-                    
-                    
-                    texture.repeat.set(xLength / w, 1);
-                    //texture.rotation = Math.PI / 4;
-
-                    mesh.material = new THREE.MeshBasicMaterial({
-                        //color: color, 
-                        //opacity: 0.5,
-                        //transparent: true,
-                        //side: THREE.DoubleSide,
-                        map: texture
-                    });
-
-                    let t2 = texture.clone();
-                    t2.needsUpdate = true;
-                    console.log(t2);
-                    t2.repeat.set(1, yLength / w);
-
-                    mesh2.material = new THREE.MeshBasicMaterial({
-                        //color: color, 
-                        //opacity: 0.5,
-                        //transparent: true,
-                        side: THREE.DoubleSide,
-                        map: t2
-                    });
-
-                    let t3 = texture.clone();
-                    t3.needsUpdate = true;
-                    //console.log(t2);
-                    //t2.repeat.set(1, yLength / w);
-                    mesh3.material = new THREE.MeshBasicMaterial({
-                        //color: color, 
-                        //opacity: 0.5,
-                        //transparent: true,
-                        side: THREE.DoubleSide,
-                        map: t3
-                    });
-
-                    let t4 = texture.clone();
-                    t4.needsUpdate = true;
-                    //console.log(t2);
-                    t4.repeat.set(1, yLength / w);
-                    mesh4.material = new THREE.MeshBasicMaterial({
-                        //color: color, 
-                        //opacity: 0.5,
-                        //transparent: true,
-                        side: THREE.DoubleSide,
-                        map: t4
-                    });
-
-
-                    
-                    // mesh.material.color.set(0x000000);
-                    // console.log(mesh.material);
-
-                   
-                    // // in this example we create the material when the texture is loaded
-                    // var material = new THREE.MeshBasicMaterial( {
-                    //     map: texture
-                    // } );
-                },
-
-                // onProgress callback currently not supported
-                undefined,
-
-                // onError callback
-                function ( err ) {
-                    console.error( 'An error happened.' );
-                }
-            );
+                this.scene.add(new THREE.Mesh(yTop, new THREE.MeshBasicMaterial({map: yTexture})));
+                this.scene.add(new THREE.Mesh(yBottom, new THREE.MeshBasicMaterial({map: yTexture})));
+                this.scene.add(new THREE.Mesh(xTop, new THREE.MeshBasicMaterial({map: xTexture})));
+                this.scene.add(new THREE.Mesh(xBottom, new THREE.MeshBasicMaterial({map: xTexture})));
+            }
         }
-
-        // {
-        //     let mesh = new THREE.PlaneGeometry(1000, 1000, 10);
-        //         mesh.translate(0, 0, -0.1);
-
-        //     this.scene.add(new THREE.Mesh(
-        //         mesh,
-        //         new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide})
-        //     ));
-        // }
 
         {
             let light = new THREE.AmbientLight(0x404040, 2); // soft white light
@@ -219,7 +132,6 @@ class GameMap {
             // l2.castShadow = true;
             // this.scene.add(l2);
         }
-
     }
 }
 

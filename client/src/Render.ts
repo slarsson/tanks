@@ -8,6 +8,7 @@ import Projectile from './Particle';
 
 import { helper, obstacleTest } from './dev';
 
+
 class Render {
 
     public readonly BROADCAST_RATE = 50;
@@ -42,9 +43,10 @@ class Render {
         this.scene = new THREE.Scene();
 
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 2000);
-        this.camera.rotation.x = Math.PI / 4;
+        //this.camera.rotation.x = Math.PI / 4;
         this.camera.position.y = -140;
-        this.camera.position.z = 60;
+        this.camera.position.z = 30;
+        this.camera.lookAt(0, 0, 0);
         
         this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -222,7 +224,7 @@ class Render {
             
             if (item[0] == this.self) {
                 this.camera.position.x = pos[0];
-                this.camera.position.y = pos[1] - 30;
+                this.camera.position.y = pos[1] - 60;
             }
         }
 

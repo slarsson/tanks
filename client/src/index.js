@@ -23,12 +23,16 @@
 
 import Render from './Render';
 
+import { Assets } from './AssetsTest';
+
 // (() => {
 //     const x = new Render();
 // })();
 
-window.addEventListener('DOMContentLoaded', () => {
-    
+window.addEventListener('DOMContentLoaded', async () => {
+    await Assets.load();
+
+
     const go = new Go();
 
     WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {

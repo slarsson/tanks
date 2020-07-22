@@ -67,44 +67,44 @@ const obstacleTest = (scene: THREE.Scene) => {
     // wall.position.set(5, 15.5, 2);
     // scene.add(wall);
 
-    let c1 = new Container(scene, 25, 10);
-        c1.setPosition(40, 0, 0);
-    let c2 = new Container(scene, 5, 5);
-        c2.setPosition(-20, 15, 0);
-    // let c3 = new Container(scene, 2, 1);
-    //     c3.setPosition(0, 30, 0);
+    // let c1 = new Container(scene, 25, 10);
+    //     c1.setPosition(40, 0, 0);
+    // let c2 = new Container(scene, 5, 5);
+    //     c2.setPosition(-20, 15, 0);
+    // // let c3 = new Container(scene, 2, 1);
+    // //     c3.setPosition(0, 30, 0);
 
 
-        let loader = new THREE.TextureLoader();
+    //     let loader = new THREE.TextureLoader();
 
-        loader.load(
-            'postnord.png',
-            //'warning.jpeg',
+    //     loader.load(
+    //         'postnord.png',
+    //         //'warning.jpeg',
 
-            // onLoad callback
-            function ( texture ) {
-                //console.log(texture);
-                let c3 = new Container(scene, 2, 1);
-                c3.setPosition(0, 30, 0);
-                c3.test(texture);
+    //         // onLoad callback
+    //         function ( texture ) {
+    //             //console.log(texture);
+    //             let c3 = new Container(scene, 2, 1);
+    //             c3.setPosition(0, 30, 0);
+    //             c3.test(texture);
 
 
 
                
-                // // in this example we create the material when the texture is loaded
-                // var material = new THREE.MeshBasicMaterial( {
-                //     map: texture
-                // } );
-            },
+    //             // // in this example we create the material when the texture is loaded
+    //             // var material = new THREE.MeshBasicMaterial( {
+    //             //     map: texture
+    //             // } );
+    //         },
 
-            // onProgress callback currently not supported
-            undefined,
+    //         // onProgress callback currently not supported
+    //         undefined,
 
-            // onError callback
-            function ( err ) {
-                console.error( 'An error happened.' );
-            }
-        );
+    //         // onError callback
+    //         function ( err ) {
+    //             console.error( 'An error happened.' );
+    //         }
+    //     );
 
 
     // let house = new THREE.Mesh(
