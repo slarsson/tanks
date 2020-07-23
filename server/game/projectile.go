@@ -235,6 +235,7 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 		}
 
 		poly := NewTankHullPolygon()
+		poly.Translate(p.Position.X, p.Position.Y, 0)
 		poly.Rotate(v.Rotation, v.Position)
 
 		lastIdx := len(*poly) - 1

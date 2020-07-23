@@ -24,7 +24,13 @@ class Item {
         let m = new THREE.MeshPhongMaterial({color: 0x00a0d6});
 
         
-        let t = Assets.textures?.postnord.clone();
+        let swag = Math.trunc(Math.random()*3);
+        let t: THREE.Texture | undefined = undefined;
+        if (swag == 0) {t = Assets.textures?.postnord.clone();}
+        if (swag == 1) {t = Assets.textures?.msc.clone();}
+        if (swag == 2) {t = Assets.textures?.maersk.clone();}
+
+        // let t = Assets.textures?.msc.clone();
         if (t != undefined) {
             t.needsUpdate = true;
             m = new THREE.MeshPhongMaterial({map: t, side: THREE.DoubleSide});
@@ -82,7 +88,7 @@ class Item {
 
         scene.add(this.mesh);
 
-        //this.mesh.rotation.z = Math.PI;
+        //this.mesh.rotation.z = 0.2;
         // let f = () => {this.mesh.rotation.z += 0.1; setTimeout(() => f(), 50)};
         // f();
     }
@@ -125,6 +131,7 @@ class Container {
         }
         
         this.group = new THREE.Group();
+        this.group.rotation.z = 0.2;
         scene.add(this.group);
         
         let yInitValue = -0.5 * Container.WIDTH * nBottom + (Container.WIDTH * 0.5);

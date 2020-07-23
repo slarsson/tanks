@@ -3,6 +3,8 @@ import * as THREE from 'three';
 interface Textures {
     warning: THREE.Texture;
     postnord: THREE.Texture;
+    msc: THREE.Texture;
+    maersk: THREE.Texture;
 }
 
 class AssetsTest {
@@ -20,11 +22,16 @@ class AssetsTest {
             let test = await AssetsTest.loadTexture('warning2.png');            
             //let pn = await AssetsTest.loadTexture('warning.jpeg');            
 
-            let pn = await AssetsTest.loadTexture('pn.png');  
+
+            let pn = await AssetsTest.loadTexture('pn.png');
+            let msc = await AssetsTest.loadTexture('msc.png');  
+            let maersk = await AssetsTest.loadTexture('maersk.png'); 
 
             this.textures = {
                 warning: test,
-                postnord: pn
+                postnord: pn,
+                msc: msc,
+                maersk: maersk
             }
 
             console.log(this.textures);

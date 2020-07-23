@@ -125,7 +125,10 @@ func (p *Player) Shoot() (*Projectile, bool) {
 func (p *Player) HandleCollsionWithObjects(objects *[]*Polygon) {
 	for _, v := range *objects {
 		tank := NewTankHullPolygon()
+		//tank.Rotate(p.Rotation, p.Position)
+		tank.Translate(p.Position.X, p.Position.Y, 0)
 		tank.Rotate(p.Rotation, p.Position)
+
 		ok, mtv := tank.Collision(v)
 		if ok {
 			fmt.Println("CRASH WITH THE FKN WALL")
@@ -156,9 +159,13 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 		}
 
 		poly1 := NewTankHullPolygon()
+		//poly1.Rotate(p.Rotation, p.Position)
+		poly1.Translate(p.Position.X, p.Position.Y, 0)
 		poly1.Rotate(p.Rotation, p.Position)
 
 		poly2 := NewTankHullPolygon()
+		//poly2.Rotate(v.Rotation, v.Position)
+		poly2.Translate(v.Position.X, v.Position.Y, 0)
 		poly2.Rotate(v.Rotation, v.Position)
 
 		ok, mtv := poly1.Collision(poly2)
@@ -177,9 +184,13 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 			}
 
 			poly1 = NewTankHullPolygon()
+			//poly1.Rotate(p.Rotation, p.Position)
+			poly1.Translate(p.Position.X, p.Position.Y, 0)
 			poly1.Rotate(p.Rotation, p.Position)
 
 			poly2 = NewTankHullPolygon()
+			//poly2.Rotate(v.Rotation, v.Position)
+			poly2.Translate(v.Position.X, v.Position.Y, 0)
 			poly2.Rotate(v.Rotation, v.Position)
 
 			ok, mtv = poly1.Collision(poly2)

@@ -28,24 +28,49 @@ func NewTankHullPolygon() *Polygon {
 	}
 }
 
-// Rotate the vertex of a Polygon (using the start values)
-//
-// TODO: this is bad, make if better..
-func (p *Polygon) Rotate(rot float32, point *Vector3) {
-	polygonType := NewTankHullPolygon()
-	if len(*p) != len(*polygonType) {
-		// TODO: print error
-		return
-	}
+// // Rotate the vertex of a Polygon (using the start values)
+// //
+// // TODO: this is bad, make if better..
+// func (p *Polygon) Rotate(rot float32, point *Vector3) {
+// 	polygonType := NewTankHullPolygon()
+// 	if len(*p) != len(*polygonType) {
+// 		// TODO: print error
+// 		return
+// 	}
 
+// 	sin := float32(math.Sin(float64(rot)))
+// 	cos := float32(math.Cos(float64(rot)))
+
+// 	for i, v := range *p {
+// 		v.X = (*polygonType)[i].X*cos - (*polygonType)[i].Y*sin
+// 		v.X += point.X
+// 		v.Y = (*polygonType)[i].X*sin + (*polygonType)[i].Y*cos
+// 		v.Y += point.Y
+// 	}
+// }
+
+// Rotate2 rotates the Polygon in the xy-plane
+func (p *Polygon) Rotate(rot float32, point *Vector3) {
 	sin := float32(math.Sin(float64(rot)))
 	cos := float32(math.Cos(float64(rot)))
 
-	for i, v := range *p {
-		v.X = (*polygonType)[i].X*cos - (*polygonType)[i].Y*sin
-		v.X += point.X
-		v.Y = (*polygonType)[i].X*sin + (*polygonType)[i].Y*cos
-		v.Y += point.Y
+	for _, v := range *p {
+		v.X -= point.X
+		v.Y -= point.Y
+
+		xNew := v.X*cos - v.Y*sin
+		yNew := v.X*sin + v.Y*cos
+
+		v.X = xNew + point.X
+		v.Y = yNew + point.Y
+	}
+}
+
+func (p *Polygon) Translate(x float32, y float32, z float32) {
+	for _, v := range *p {
+		v.X += x
+		v.Y += y
+		v.Z += z
 	}
 }
 

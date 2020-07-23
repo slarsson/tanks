@@ -224,7 +224,7 @@ class Render {
             
             if (item[0] == this.self) {
                 this.camera.position.x = pos[0];
-                this.camera.position.y = pos[1] - 60;
+                this.camera.position.y = pos[1] - 40;
             }
         }
 

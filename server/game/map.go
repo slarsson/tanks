@@ -98,7 +98,49 @@ func NewMap() *Map {
 			Z: 0,
 		}
 
-		obstacles = append(obstacles, &Polygon{c1, c2, c3, c4})
+		// c1 := &Vector3{
+		// 	X: -xx,
+		// 	Y: yy,
+		// 	Z: 0,
+		// }
+		// c1.Rotate(0.2)
+		// c1.X += val.Position.X
+		// c1.Y += val.Position.Y
+
+		// c2 := &Vector3{
+		// 	X: xx,
+		// 	Y: yy,
+		// 	Z: 0,
+		// }
+		// c2.Rotate(0.2)
+		// c2.X += val.Position.X
+		// c2.Y += val.Position.Y
+
+		// c3 := &Vector3{
+		// 	X: xx,
+		// 	Y: -yy,
+		// 	Z: 0,
+		// }
+		// c3.Rotate(0.2)
+		// c3.X += val.Position.X
+		// c3.Y += val.Position.Y
+
+		// c4 := &Vector3{
+		// 	X: -xx,
+		// 	Y: -yy,
+		// 	Z: 0,
+		// }
+		// c4.Rotate(0.2)
+		// c4.X += val.Position.X
+		// c4.Y += val.Position.Y
+
+		pp := &Polygon{c1, c2, c3, c4}
+		//pp.Rotate2(0.2, &Vector3{X: 0, Y: 0, Z: 0})
+		fmt.Println("before:", (*pp)[0])
+		pp.Rotate(0.2, &val.Position)
+		fmt.Println("after:", (*pp)[0])
+
+		obstacles = append(obstacles, pp)
 	}
 
 	// x := []*Polygon{}

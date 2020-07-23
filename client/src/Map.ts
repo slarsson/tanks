@@ -75,7 +75,8 @@ class GameMap {
                 mesh.translate(xCenter, yCenter, 0);
 
             this.scene.add(new THREE.Mesh(
-                mesh,  
+                mesh,
+                //new THREE.MeshBasicMaterial({color: 0xa0a09a, side: THREE.DoubleSide})  
                 new THREE.MeshBasicMaterial({color: 0xb7b1ae, side: THREE.DoubleSide})
             ));
         }
