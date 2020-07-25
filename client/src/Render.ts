@@ -8,6 +8,42 @@ import GameMap from './Map'
 import Projectile from './Particle';
 
 
+const testName = (conn: Connection) => {
+    console.log('meh...', conn);
+
+    let root = document.getElementById('test');
+    let container = document.createElement('div');
+    container.classList.add('input-test');
+
+    let form = document.createElement('form');
+
+    let input = document.createElement('input');
+        input.setAttribute('type', 'text');
+        
+    container.appendChild(form);
+    form.appendChild(input);
+    root?.appendChild(container);
+
+
+    form.addEventListener('submit', (e: any) => {
+        e.preventDefault();
+        console.log(input.value);
+        
+        let s = input.value;
+            
+        let arr = new Uint8Array(1 + s.length);
+        arr[0] = 99;
+
+        for (let i = 0; i < s.length; i++) {
+            //onsole.log(s[i]);
+            arr[i + 1] = s[i].charCodeAt(0); 
+        }
+
+        conn.send(arr.buffer);
+    });
+};
+
+
 
 class Render {
 
@@ -79,6 +115,24 @@ class Render {
         document.getElementById('root')?.appendChild(this.renderer.domElement);
         this.timestamp = performance.now();
         this.animate();
+
+        // test:
+
+
+        testName(this.conn);
+        // setTimeout(() => {
+        //     let s = "##läggnerpostnord"
+            
+        //     let arr = new Uint8Array(1 + s.length);
+        //     arr[0] = 99;
+
+        //     for (let i = 0; i < s.length; i++) {
+        //         console.log(s[i]);
+        //         arr[i + 1] = s[i].charCodeAt(0); 
+        //     }
+
+        //     this.conn.send(arr.buffer);
+        // }, 1000);
     }
 
     private serverMessage(mt: number, buffer: ArrayBuffer): void {
@@ -137,6 +191,11 @@ class Render {
             setTimeout(() => {
                 div.remove()
             }, 1000);
+        }
+
+        if (mt == 98) {
+            console.log('id:', new Uint32Array(buffer.slice(0, 4)));
+            console.log(new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4))));
         }
     }
 

@@ -102,3 +102,21 @@ func TestMessage() *[]byte {
 	// buf = append(buf, mt...)
 	return &buf
 }
+
+func SendPlayerName(data string) *[]byte {
+	p := "#läggernerpostnord => " + data
+
+	buf := make([]byte, 0)
+	mt := make([]byte, 4)
+	id := make([]byte, 4)
+	str := []byte(p)
+
+	binary.LittleEndian.PutUint32(mt, 98)
+	binary.LittleEndian.PutUint32(id, 1337)
+
+	buf = append(buf, mt...)
+	buf = append(buf, id...)
+	buf = append(buf, str...)
+
+	return &buf
+}

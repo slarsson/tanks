@@ -1,6 +1,8 @@
 package network
 
 import (
+	"fmt"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -20,6 +22,7 @@ type Client struct {
 type Action struct {
 	MessageType int8
 	Client      *Client
+	Payload     []byte
 }
 
 func NewNetwork() *Network {
@@ -59,11 +62,25 @@ func (n *Network) reader(client *Client, ca chan *Action) {
 
 	for {
 		_, message, err := client.Conn.ReadMessage()
+
 		if err != nil {
 			break
 		}
 
+		if len(message) == 0 {
+			continue
+			//break
+		}
+
 		//fmt.Println("NETWORK:", message)
+
+		if message[0] == 99 {
+			//fmt.Println("NAME =>", string(message[1:]))
+			//fmt.Println("wtf:", message[1:])
+			ca <- &Action{MessageType: 99, Payload: message[1:], Client: client}
+			continue
+		}
+
 		if message[0] == 0 {
 			ca <- &Action{MessageType: 0, Client: client}
 		} else {
@@ -84,6 +101,7 @@ func (n *Network) writer(client *Client) {
 				client.Conn.WriteMessage(websocket.BinaryMessage, message)
 			} else {
 				// error?
+				fmt.Println("error my error...")
 			}
 		}
 	}

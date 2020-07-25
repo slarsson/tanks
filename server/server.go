@@ -47,6 +47,17 @@ func (s *Server) Manager() {
 							// TODO: send del message to all clients
 						}
 					}
+				case 99:
+					fmt.Println("ADD NEW NAME:", string(message.Payload))
+
+					// buf := make([]byte, 4)
+					// mt := make([]byte, 4)
+					// binary.LittleEndian.PutUint32(mt, 98)
+
+					// buf = append(buf, mt...)
+					// buf = append(buf, []byte("hejsan svejsan:"+string(message.Payload))...)
+
+					message.Client.NetworkOutput <- *game.SendPlayerName(string(message.Payload))
 				}
 
 			}
@@ -134,3 +145,13 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 		}
 	}
 }
+
+// func (s *Server) Swag() {
+// 	ticker := time.NewTicker(time.Duration(523) * time.Millisecond)
+
+// 	for range ticker.C {
+// 		//fmt.Println(game.SendPlayerName())
+
+// 		s.Network.Broadcast <- *game.SendPlayerName()
+// 	}
+// }

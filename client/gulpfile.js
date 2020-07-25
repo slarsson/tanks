@@ -91,7 +91,7 @@ const server = () => {
 	//gulp.watch('./src/assets/*', gulp.series('delete', 'copy', 'reload'));
     gulp.watch('./src/*', gulp.series('webpack', 'reload'));
     //gulp.watch('./*.html', gulp.series('html', 'reload'));
-    //gulp.watch('./*.scss', gulp.series('css', 'reload'));
+    gulp.watch('./*.scss', gulp.series('css', 'reload'));
 };
 
 gulp.task('html', html);

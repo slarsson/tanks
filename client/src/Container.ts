@@ -24,11 +24,11 @@ class Item {
         let m = new THREE.MeshPhongMaterial({color: 0x00a0d6});
 
         
-        let swag = Math.trunc(Math.random()*3);
+        let swag = Math.trunc(Math.random()*2);
         let t: THREE.Texture | undefined = undefined;
         if (swag == 0) {t = Assets.textures?.postnord.clone();}
-        if (swag == 1) {t = Assets.textures?.msc.clone();}
-        if (swag == 2) {t = Assets.textures?.maersk.clone();}
+        if (swag == 1) {t = Assets.textures?.maersk.clone();}
+        if (swag == 2) {t = Assets.textures?.msc.clone();}
 
         // let t = Assets.textures?.msc.clone();
         if (t != undefined) {

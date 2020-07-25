@@ -26,3 +26,20 @@ canvas {
         to   {opacity: 1;}
     }
 }
+
+.input-test {
+    position:absolute;
+    margin:100px;
+    padding:20px;
+    border:1px solid red;
+    background-color:black;
+
+    input {
+        padding:10px;
+        border:1px solid green;
+
+        &:focus {
+            outline:none;
+        }
+    }
+}

@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math"
 
 	"github.com/slarsson/game/network"
@@ -99,7 +98,7 @@ func (p *Player) Move(dt float32) {
 	p.Position.X += p.Velocity.X * dt
 	p.Position.Y += p.Velocity.Y * dt
 
-	fmt.Println("DIR:", p.Direction)
+	//fmt.Println("DIR:", p.Direction)
 	//fmt.Println("X:", p.Velocity.Length())
 }
 
