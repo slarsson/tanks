@@ -2,9 +2,11 @@ import * as THREE from 'three';
 
 import { Assets } from './AssetsTest';
 import Container from './Container';
+import { Mesh } from 'three';
 
 interface ContainersTest {
     position: {x: number, y: number, z: number};
+    rotation: number;
     total: number;
     bottom: number;
 } 
@@ -32,6 +34,7 @@ class GameMap {
                         "y": 0,
                         "z": 0
                     },
+                    "rotation": 0,
                     "total": 25,
                     "bottom": 10
                 },
@@ -41,6 +44,7 @@ class GameMap {
                         "y": 15,
                         "z": 0
                     },
+                    "rotation": -0.3,
                     "total": 5,
                     "bottom": 5
                 },
@@ -50,17 +54,27 @@ class GameMap {
                         "y": 30,
                         "z": 0
                     },
+                    "rotation": 0.5,
                     "total": 2,
                     "bottom": 1
+                },
+                {
+                    "position": {
+                        "x": -35,
+                        "y": -30,
+                        "z": 0
+                    },
+                    "rotation": 1.2,
+                    "total": 9,
+                    "bottom": 5
                 }
             ]
         }`);
 
-        // let c = new Container(this.scene, 1, 1);
-        // c.setPosition(0, 0, 5);
         for (const item of this.manifest.containers) {
             let c = new Container(this.scene, item.total, item.bottom);
                 c.setPosition(item.position.x, item.position.y, item.position.z);
+                c.setRotation(item.rotation);
         }
 
         let xLength = Math.abs(this.manifest.boundaries[0] - this.manifest.boundaries[1]);
@@ -76,8 +90,8 @@ class GameMap {
 
             this.scene.add(new THREE.Mesh(
                 mesh,
-                //new THREE.MeshBasicMaterial({color: 0xa0a09a, side: THREE.DoubleSide})  
-                new THREE.MeshBasicMaterial({color: 0xb7b1ae, side: THREE.DoubleSide})
+                new THREE.MeshBasicMaterial({color: 0xa0a09a, side: THREE.DoubleSide})  
+                //new THREE.MeshPhongMaterial({color: 0xb7b1ae, side: THREE.DoubleSide})
             ));
         }
         
@@ -113,26 +127,40 @@ class GameMap {
         }
 
         {
-            let light = new THREE.AmbientLight(0x404040, 2); // soft white light
-            this.scene.add( light );
+            let hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7);
+            hemiLight.position.set(0, 500, 0);
+            this.scene.add( hemiLight );
 
-            let hemiLight = new THREE.HemisphereLight(0x5780EA, 0xffffff, 0.3);
-            this.scene.add(hemiLight);
-
-            // let light = new THREE.SpotLight(0xffa95c,2);
-            // light.position.set(-50,50,50);
-            // light.castShadow = true;
-            // this.scene.add( light );
-
-            // let l1 = new THREE.PointLight(0xff0000, 0.5, 100);
-            // l1.position.set(10, 10, 0);
-            // this.scene.add(l1);
-
-            // let l2 = new THREE.DirectionalLight(0xefefff, 1.4);
-            // l2.position.set(1, 1, 1).normalize();
-            // l2.castShadow = true;
-            // this.scene.add(l2);
+            let dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight.position.set(-1, 0.75, 1);
+            dirLight.position.multiplyScalar(5);
+            this.scene.add(dirLight);
         }
+
+        scene.add(new THREE.AxesHelper(150));   
+        
+        // {
+        //     let geometry = new THREE.Geometry();
+        //         geometry.vertices= [
+        //             // new THREE.Vector3(2,1,0), 
+        //             // new THREE.Vector3(1,3,0), 
+        //             // new THREE.Vector3(3,4,0)
+        //             new THREE.Vector3(0,0,0), 
+        //             new THREE.Vector3(0.5,0,1), 
+        //             new THREE.Vector3(-0.5,0,1)
+        //         ]; 
+        //         geometry.faces = [new THREE.Face3(0, 1, 2)];
+
+        //     let swag = new THREE.Mesh(
+        //         geometry,
+        //         new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: 0.5, side: THREE.DoubleSide})
+        //     );
+
+        //     swag.position.z = 4;
+        //     swag.scale.set(2, 2, 2);
+
+        //     this.scene.add(swag);
+        // }
     }
 }
 

@@ -115,7 +115,7 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 
 			p.Controls.Decode(&message)
 			p.Move(dt)
-			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles)
+			p.HandleCollsionWithObjects(&s.Game.Map.Obstacles, dt)
 			p.HandleCollsionWithPlayers(&s.Game.Players, dt)
 
 			if s.Game.Map.OutOfBounds(p.Position) {

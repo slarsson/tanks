@@ -5,6 +5,7 @@ interface Textures {
     postnord: THREE.Texture;
     msc: THREE.Texture;
     maersk: THREE.Texture;
+    sky: THREE.Texture;
 }
 
 class AssetsTest {
@@ -31,7 +32,8 @@ class AssetsTest {
                 warning: test,
                 postnord: pn,
                 msc: msc,
-                maersk: maersk
+                maersk: maersk,
+                sky: await AssetsTest.loadTexture('sky.jpg') 
             }
 
             console.log(this.textures);

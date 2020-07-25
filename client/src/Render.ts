@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import Vehicle from './Vehicle';
+import Tank from './Tank';
+//import Vehicle from './Vehicle';
 import Keypress from './Keypress';
 import Connection from './Connection';
 import GameMap from './Map'
 
 import Projectile from './Particle';
 
-import { helper, obstacleTest } from './dev';
 
 
 class Render {
@@ -20,7 +20,7 @@ class Render {
     private renderer: THREE.WebGLRenderer;
     private timestamp: number;
     
-    private vehicles: Map<number, Vehicle>;
+    private vehicles: Map<number, Tank>;
     private self: number = -1;
     private shoot: Map<number, Projectile>;
 
@@ -57,8 +57,7 @@ class Render {
         this.shoot = new Map();
         new GameMap(this.scene);
         //this.shoot = new Particle(this.scene);
-        helper(this.scene);
-        obstacleTest(this.scene);
+
 
         // init websocket connection
         this.conn = new Connection(
@@ -88,7 +87,7 @@ class Render {
             let state = new Float32Array(buffer);            
             for (let i = 0; i < state.length; i += 12) {
                 if (!this.vehicles.has(state[i])) {
-                    this.vehicles.set(state[i], new Vehicle(this.scene));
+                    this.vehicles.set(state[i], new Tank(this.scene));
                 } else if (state[i+9] == 1) {
                     console.log('ADD ANOTHER PROJECTILE FFS');
                     //this.wasm.addProjectile(state[i]); // float comparsion missmatch!?
@@ -180,7 +179,7 @@ class Render {
         this.wasm.keypress(evt.key, true);
 
         if (evt.key == 'c') {
-            this.vehicles.get(this.self)?.setColor(0xfc99cd);
+            //this.vehicles.get(this.self)?.setColor(0xfc99cd);
             this.SWAG = !this.SWAG;
         }
 

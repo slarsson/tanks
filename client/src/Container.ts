@@ -131,7 +131,7 @@ class Container {
         }
         
         this.group = new THREE.Group();
-        this.group.rotation.z = 0.2;
+        //this.group.rotation.z = 0.2;
         scene.add(this.group);
         
         let yInitValue = -0.5 * Container.WIDTH * nBottom + (Container.WIDTH * 0.5);
@@ -157,6 +157,10 @@ class Container {
     public setPosition(x: number, y: number, z: number): void {
         this.group.position.set(x, y, z);
         //this.group.rotation.z = Math.random() * Math.PI * 2;
+    }
+
+    public setRotation(rot: number): void {
+        this.group.rotation.z = rot;
     }
 
     public test(tex: THREE.Texture): void {

@@ -20,7 +20,7 @@ func updateLocalPlayer() {
 	// TODO: sync actions with server?
 	localPlayer.Move(updateRate)
 	localPlayer.HandleCollsionWithPlayers(&networkPlayers, updateRate)
-	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles)
+	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles, updateRate)
 	if pr, ok := localPlayer.Shoot(); ok {
 		var wtf int
 		for {

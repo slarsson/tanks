@@ -69,6 +69,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 		IsAlive:        true,
 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
+		Direction:      0,
 		Rotation:       0,
 		TurretRotation: 0,
 		Client:         client,

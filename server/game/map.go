@@ -18,6 +18,7 @@ type MapData struct {
 
 type ContainerGroup struct {
 	Position Vector3 `json:"position"`
+	Rotation float32 `json:"rotation"`
 	Total    int     `json:"total"`
 	Bottom   int     `json:"bottom"`
 }
@@ -33,6 +34,7 @@ func NewMap() *Map {
 					"y": 0,
 					"z": 0
 				},
+				"rotation": 0,
 				"total": 25,
 				"bottom": 10
 			},
@@ -42,6 +44,7 @@ func NewMap() *Map {
 					"y": 15,
 					"z": 0
 				},
+				"rotation": -0.3,
 				"total": 5,
 				"bottom": 5
 			},
@@ -51,6 +54,7 @@ func NewMap() *Map {
 					"y": 30,
 					"z": 0
 				},
+				"rotation": 0.5,
 				"total": 2,
 				"bottom": 1
 			}
@@ -137,7 +141,7 @@ func NewMap() *Map {
 		pp := &Polygon{c1, c2, c3, c4}
 		//pp.Rotate2(0.2, &Vector3{X: 0, Y: 0, Z: 0})
 		fmt.Println("before:", (*pp)[0])
-		pp.Rotate(0.2, &val.Position)
+		pp.Rotate(val.Rotation, &val.Position)
 		fmt.Println("after:", (*pp)[0])
 
 		obstacles = append(obstacles, pp)
