@@ -65,7 +65,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 
 	g.Players[playerID] = &Player{
 		ID:             playerID,
-		Name:           "player" + strconv.Itoa(playerID),
+		Name:           "unknownplayer_" + strconv.Itoa(playerID),
 		IsAlive:        true,
 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
@@ -111,6 +111,16 @@ func (g *Game) RemovePlayer(idx int) {
 	buf = append(buf, id...)
 
 	g.Network.Broadcast <- buf
+}
+
+func (g Game) CheckPlayerName(name *string) bool {
+	for _, v := range g.Players {
+		if v.Name == *name {
+			return false
+		}
+	}
+
+	return true
 }
 
 // func (g *Game) addBot() {

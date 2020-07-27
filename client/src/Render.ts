@@ -4,6 +4,7 @@ import Tank from './Tank';
 import Keypress from './Keypress';
 import Connection from './Connection';
 import GameMap from './Map'
+import Graphics from './Graphics';
 
 import Projectile from './Particle';
 
@@ -22,7 +23,7 @@ const testName = (conn: Connection) => {
         
     container.appendChild(form);
     form.appendChild(input);
-    root?.appendChild(container);
+    //root?.appendChild(container);
 
 
     form.addEventListener('submit', (e: any) => {
@@ -62,6 +63,11 @@ class Render {
 
     private SWAG: boolean;
 
+    private gg: Graphics;
+
+
+    private players: Map<number, string>;
+
     constructor(wasm: any) {
         this.SWAG = false;
         
@@ -91,7 +97,15 @@ class Render {
         // setup objects + testing..
         this.vehicles = new Map();
         this.shoot = new Map();
+        this.players = new Map();
         new GameMap(this.scene);
+        
+        this.gg = new Graphics();
+        this.gg.newInfoBox('Postnord ska och borde läggas ner, typ så..', null, Graphics.INFO);
+        this.gg.newInfoBox('lägg ner postnord igen..', null, Graphics.ERROR);
+        this.gg.newInfoBox('Warning my warning.', null, Graphics.WARNING);
+
+        this.gg.newKillMessage('jocke', 'jonna');
         //this.shoot = new Particle(this.scene);
 
 
@@ -184,18 +198,42 @@ class Render {
             console.log(data);
             console.log('show kill log ?');
 
-            let div = document.createElement('div');
-            div.innerHTML = '<span>'+data[0]+'</span> KILLED <span>'+data[1]+'</span>';
-            document.getElementById('kills')?.appendChild(div);
+            let k1 = "wtfplayer" + Math.random();
+            let k2 = "asdf" + Math.random();
+            // let k1 = this.players.get(data[0]);
+            // let k2 = this.players.get(data[1]);
 
-            setTimeout(() => {
-                div.remove()
-            }, 1000);
+            if (k1 != undefined && k2 != undefined) {
+                this.gg.newKillMessage(k1, k2);
+            }
+
+            // let div = document.createElement('div');
+            // div.innerHTML = '<span>'+this.players.get(data[0])+'</span> KILLED <span>'+this.players.get(data[1])+'</span>';
+            // document.getElementById('kills')?.appendChild(div);
+
+            // setTimeout(() => {
+            //     div.remove()
+            // }, 1000);
         }
 
         if (mt == 98) {
-            console.log('id:', new Uint32Array(buffer.slice(0, 4)));
-            console.log(new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4))));
+            let id = new Uint32Array(buffer.slice(0, 4));
+            let name = new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4)));
+            this.players.set(id[0], name);
+
+            if (id[0] == this.self) {
+                let div = document.getElementById('test');
+                if (div != null) {
+                    div.innerHTML = '';
+                }
+            } 
+
+            // console.log('id:', new Uint32Array(buffer.slice(0, 4)));
+            // console.log(new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4))));
+        }
+
+        if (mt == 33) {
+            console.log('SERVER ERROR WTF');
         }
     }
 

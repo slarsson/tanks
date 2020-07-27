@@ -37,7 +37,7 @@ type Player struct {
 func NewLocalPlayer() *Player {
 	return &Player{
 		ID:             -1,
-		Name:           "uknownlocalplayer",
+		Name:           "",
 		IsAlive:        true,
 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},

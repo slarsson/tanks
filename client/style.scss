@@ -2,30 +2,36 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
+    font-family:'Montserrat', sans-serif;
+
 }
 
 canvas {
     display:block;
 }
 
-#kills {
-    position:absolute;
-    right:0;
-    margin:20px;
-
-    div {
-        background-color:#000;
-        padding:5px;
-        color:#fff;
-        margin-bottom:5px;
-        animation:fadein 0.5s;
-    }
-
-    @keyframes fadein {
-        from {opacity: 0;}
-        to   {opacity: 1;}
-    }
+button {
+    all:unset;
 }
+
+// #kills {
+//     position:absolute;
+//     right:0;
+//     margin:20px;
+
+//     div {
+//         background-color:#000;
+//         padding:5px;
+//         color:#fff;
+//         margin-bottom:5px;
+//         animation:fadein 0.5s;
+//     }
+
+//     @keyframes fadein {
+//         from {opacity: 0;}
+//         to   {opacity: 1;}
+//     }
+// }
 
 .input-test {
     position:absolute;
@@ -41,5 +47,190 @@ canvas {
         &:focus {
             outline:none;
         }
+    }
+}
+
+#graphics {
+    position:absolute;
+    width:100vw;
+    height:100vh;
+
+    @keyframes fade-in {
+        0% {opacity:0;}
+        100% {opacity:0.5}
+    }
+
+    &.blur {
+        // animation-name:fade-in;
+        // animation-duration:0.5s; 
+        // background-color:#000;
+        // opacity:0.5;
+        background-color:rgba(0, 0, 0, .5);
+    }
+
+    
+
+    .panel {
+        z-index:1;
+        background-color:#fff;
+        padding:20px;
+        min-width:350px;
+        
+        input[type="text"] {
+            border:1px solid #ededed;
+            height:60px;
+            padding-left:15px;
+            font-size:20px;
+            width:auto;
+            //padding:15px;
+            outline:none;
+            margin:15px 0px 15px 0px;
+        }
+
+        button {
+            border:none;
+            padding:15px;
+            outline:none;
+            height:60px;
+        }
+
+        label {
+            font-size:20px;
+        }
+
+        .logo {
+            text-align:center;
+            margin:50px 0px 50px 0px;
+        }
+
+        .add-name {
+            display:flex;
+            flex-direction:column;
+        }
+    }
+
+    .center {
+        display:flex;
+        justify-content:space-around;
+        align-items:center;
+        height:100vh;
+    }
+}
+
+#info {
+    
+
+    position: absolute;
+    bottom:20px;
+    width:100%;
+
+    .info-box {
+        opacity:1;
+        // animation-name:fade-in;
+        // animation-duration:0.5s;
+        //background-color:#fff;
+        //color:#fff;
+        max-width:800px;
+        margin:10px auto 10px auto;
+        display:flex;
+        padding:15px;
+        align-items:center;
+        border-radius:2px;
+        border-width:1px;
+        border-style:solid;
+
+        svg {
+            width:24px;
+            height:24px;
+            //fill:#fff;
+        }
+
+        .icon {
+            line-height:0;
+            padding-right:15px;
+        }
+
+        button {
+            line-height:0;
+            cursor:pointer;
+            background-color:transparent;
+            border:none;
+        }
+
+        p {
+            font-size:16px;
+            flex-grow:1;
+            margin-right:50px;
+        }
+
+    }
+
+    .warning {
+        border-color:#F2EB9E;
+        background-color:#FFF7A7;
+        // background-color:#ffbb33;
+        // border-color:#FF8800;
+    }
+
+    .info {
+        background-color:rgba(0, 193, 236, 1);
+        border-color:rgba(0, 163, 217, 1);
+        color:#fff;
+
+        svg {
+            fill:#fff;
+        }
+    }
+
+    .error {
+        background-color:rgba(217, 9, 0, 1);
+        border-color:rgba(255, 60, 0, 1);
+        color:#fff;
+
+        svg {
+            fill:#fff;
+        }
+    }
+}
+
+@keyframes out {
+    0% {opacity:1;}
+    100% {opacity:0;}
+}
+
+@keyframes in {
+    0% {opacity:0;}
+    100% {opacity:1}
+}
+
+.fade-in {
+    animation-name:in;
+    animation-duration:0.5s;
+}
+
+.fade-out {
+    animation-name:out;
+    animation-duration:0.5s;
+}
+
+#kills {
+    position:absolute;
+    right:0;
+    margin:20px;
+
+    & > div {
+        background-color:rgba(0, 0, 0, 0.5);
+        padding:10px;
+        font-size:16px;
+        color:#fff;
+        display:flex;
+        align-items:center; 
+    }
+
+    svg {
+        fill:#fff;
+        width:40px;
+        margin:0px 10px 0px 10px;
+        //height:20px;
     }
 }
