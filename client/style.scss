@@ -73,11 +73,13 @@ button {
     .panel {
         z-index:1;
         background-color:#fff;
-        padding:20px;
+        //padding:20px;
         min-width:350px;
+        border-radius:2px;
         
         input[type="text"] {
             border:1px solid #ededed;
+            background-color:#fcfaf8;
             height:60px;
             padding-left:15px;
             font-size:20px;
@@ -85,27 +87,76 @@ button {
             //padding:15px;
             outline:none;
             margin:15px 0px 15px 0px;
+
+            &::placeholder {
+                font-style:italic;
+                color:#ededed;
+            }
+
+            &:focus {
+                border-color:rgba(0, 163, 217, 1);
+                border-width:1px;
+            }
         }
 
         button {
             border:none;
-            padding:15px;
-            outline:none;
+            display:flex;
+            align-items:center;
+            justify-content:space-around;
+            border:1px solid rgba(67, 156, 97, 1);
+            background-color:rgba(95, 186, 125 ,1);
             height:60px;
+            color:#fff;
+            cursor:pointer;
+            font-weight:600;
+            font-size:20px;
+
+            &:hover {
+                background-color:rgba(67, 156, 97, 1);
+            }
+
+            svg {
+                fill:#fff;
+            }
+
+            &:focus {
+                border-color:rgba(0, 163, 217, 1);
+                border-width:1px;
+            }
         }
 
         label {
             font-size:20px;
+            font-style: italic;
         }
 
         .logo {
             text-align:center;
-            margin:50px 0px 50px 0px;
+            padding:50px 20px 40px 20px;
+            // padding:50px 0px 50px 0px;
+            // margin-bottom:20px;
+            border-bottom:1px dashed #ededed;
+            
+
+            h1 {
+                color:#FFA500;
+                //text-shadow: 2px 2px 25px tomato;
+                //color:orange;
+                font-size:50px;
+            }
+
+            svg {
+                width:210px;
+                height:60px;
+                margin-left:35px;
+            }
         }
 
         .add-name {
             display:flex;
             flex-direction:column;
+            padding:20px;
         }
     }
 

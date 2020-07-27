@@ -36,6 +36,62 @@ const addKillMessage = (parent: HTMLElement, killer: string, killed: string): vo
     setTimeout(() => parent.removeChild(root), 2000);
 };
 
+class NameInput {
+
+    private root: HTMLElement;
+
+    constructor(root) {
+        this.root = root;
+
+        let input = document.createElement('input');
+            input.id = '_player';
+            input.placeholder = 'krillex';
+            input.type = 'text';
+
+        let label = document.createElement('label');
+            label.innerText = 'Enter player name';
+            label.htmlFor = input.id;
+
+        let form = document.createElement('form');
+            form.autocomplete = 'off';
+
+        let button = document.createElement('button');
+            button.type = 'submit';
+            button.innerHTML = `
+                <p>PLAY GAME</p>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>
+            `;
+
+        let logo = document.createElement('div');
+            logo.classList.add('logo');
+            logo.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3.5" width="30" height="4"/></svg>
+                <h1>myGame</h1>
+            `;
+
+        let addNameDiv = document.createElement('div');
+            addNameDiv.classList.add('add-name');
+
+        let panel = document.createElement('div');
+            panel.classList.add('panel');
+
+        let container = document.createElement('div');
+            container.classList.add('center');
+
+        container.appendChild(panel);
+        panel.appendChild(logo);
+        panel.appendChild(form);
+        form.appendChild(addNameDiv);
+        addNameDiv.appendChild(label);
+        addNameDiv.appendChild(input);
+        addNameDiv.appendChild(button);
+        
+        this.root.appendChild(container);
+    }
+
+}
+
+
 
 class Graphics {
 
@@ -77,28 +133,37 @@ class Graphics {
 
         // console.log('NEW GRAPHICS CREATED...');
 
-        let swag = document.createElement('div');
-        swag.innerHTML = `
-        <div class="center">
-            <div class="panel">
-                <div class="logo">
-                    game_my_game
-                </div>
+        // let swag = document.createElement('div');
+        // swag.innerHTML = `
+        // <div class="center">
+        //     <div class="panel">
+        //         <div class="logo">
+                   
+                
+        //             <svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3" width="30" height="4"/></svg>
+        //             <h1>myGame</h1>
+                
+        //             </div>
 
 
-                <form>
-                    <div class="add-name">
-                        <label for="">Enter player name</label>
-                        <input type="text"/>
-                        <button type="submit">continue</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        `;
+        //         <form>
+        //             <div class="add-name">
+        //                 <label for="">Enter player name</label>
+        //                 <input type="text" placeholder="krillex"/>
+        //                 <button type="submit">
+        //                     <p>PLAY GAME</p>
+        //                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>                        </button>
+        //             </div>
+        //         </form>
+        //     </div>
+        // </div>
+        // `;
 
-        this.root.appendChild(swag);
-        //this.root.classList.add('blur');
+        // this.root.appendChild(swag);
+        // this.root.classList.add('blur');
+
+        new NameInput(this.root);
+        //this.showNameDialog();
     }
 
     newInfoBox(text: string, timeout: number | null = null, type: number = 0): void {
@@ -179,6 +244,54 @@ class Graphics {
         setTimeout(() => this.killLog.removeChild(root), timeout);
     }
 
+    // showNameDialog(): void {
+    //     let input = document.createElement('input');
+    //         input.id = '_player';
+    //         input.placeholder = 'krillex';
+    //         input.type = 'text';
+
+    //     let label = document.createElement('label');
+    //         label.innerText = 'Enter player name';
+    //         label.htmlFor = input.id;
+
+    //     let form = document.createElement('form');
+    //         form.autocomplete = 'off';
+
+    //     let button = document.createElement('button');
+    //         button.type = 'submit';
+    //         button.innerHTML = `
+    //             <p>PLAY GAME</p>
+    //             <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>
+    //         `;
+
+    //     let logo = document.createElement('div');
+    //         logo.classList.add('logo');
+    //         logo.innerHTML = `
+    //             <svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3" width="30" height="4"/></svg>
+    //             <h1>myGame</h1>
+    //         `;
+
+    //     let addNameDiv = document.createElement('div');
+    //         addNameDiv.classList.add('add-name');
+
+    //     let panel = document.createElement('div');
+    //         panel.classList.add('panel');
+
+    //     let container = document.createElement('div');
+    //         container.classList.add('center');
+
+    //     container.appendChild(panel);
+    //     panel.appendChild(logo);
+    //     panel.appendChild(form);
+    //     form.appendChild(addNameDiv);
+    //     addNameDiv.appendChild(label);
+    //     addNameDiv.appendChild(input);
+    //     addNameDiv.appendChild(button);
+        
+    //     this.root.appendChild(container);
+
+
+    // }
 
 }
 
