@@ -70,102 +70,7 @@ button {
 
     
 
-    .panel {
-        z-index:1;
-        background-color:#fff;
-        //padding:20px;
-        min-width:350px;
-        border-radius:2px;
-        
-        input[type="text"] {
-            border:1px solid #ededed;
-            background-color:#fcfaf8;
-            height:60px;
-            padding-left:15px;
-            font-size:20px;
-            width:auto;
-            //padding:15px;
-            outline:none;
-            margin:15px 0px 15px 0px;
-
-            &::placeholder {
-                font-style:italic;
-                color:#ededed;
-            }
-
-            &:focus {
-                border-color:rgba(0, 163, 217, 1);
-                border-width:1px;
-            }
-        }
-
-        button {
-            border:none;
-            display:flex;
-            align-items:center;
-            justify-content:space-around;
-            border:1px solid rgba(67, 156, 97, 1);
-            background-color:rgba(95, 186, 125 ,1);
-            height:60px;
-            color:#fff;
-            cursor:pointer;
-            font-weight:600;
-            font-size:20px;
-
-            &:hover {
-                background-color:rgba(67, 156, 97, 1);
-            }
-
-            svg {
-                fill:#fff;
-            }
-
-            &:focus {
-                border-color:rgba(0, 163, 217, 1);
-                border-width:1px;
-            }
-        }
-
-        label {
-            font-size:20px;
-            font-style: italic;
-        }
-
-        .logo {
-            text-align:center;
-            padding:50px 20px 40px 20px;
-            // padding:50px 0px 50px 0px;
-            // margin-bottom:20px;
-            border-bottom:1px dashed #ededed;
-            
-
-            h1 {
-                color:#FFA500;
-                //text-shadow: 2px 2px 25px tomato;
-                //color:orange;
-                font-size:50px;
-            }
-
-            svg {
-                width:210px;
-                height:60px;
-                margin-left:35px;
-            }
-        }
-
-        .add-name {
-            display:flex;
-            flex-direction:column;
-            padding:20px;
-        }
-    }
-
-    .center {
-        display:flex;
-        justify-content:space-around;
-        align-items:center;
-        height:100vh;
-    }
+    
 }
 
 #info {
@@ -285,3 +190,140 @@ button {
         //height:20px;
     }
 }
+
+
+    
+.loading {
+    background: transparent;
+    font-size:0;
+    width:30px;
+    height:30px;
+    border-radius:100%;
+    padding:0;
+    border:4px solid #FFFFFF;
+    border-bottom:4px solid transparent;
+    border-left:4px solid transparent;
+    animation-name:spin;
+    animation-duration:0.5s;
+    animation-iteration-count:infinite;
+}
+
+@keyframes spin {
+    0%   {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+// swag
+
+
+
+
+// enter player name
+.popup--container {
+    z-index:998;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    height:100vh;
+    width:100%;
+    background-color:rgba(0, 0, 0, .5);
+
+    .popup--window {
+        z-index:999;
+        background-color:#fff;
+        min-width:350px;
+        border-radius:2px;
+        
+        .window--container {
+            display:flex;
+            flex-direction:column;
+            padding:20px;
+        }
+
+        input[type="text"] {
+            box-sizing:border-box;
+            border:1px solid #ededed;
+            background-color:#fcfaf8;
+            height:60px;
+            padding:5px 5px 5px 15px;
+            font-size:20px;
+            width:auto;
+            outline:none;
+            margin-top:15px;
+
+            &:focus {
+                transition:0.2s ease-in all; 
+                padding:2px 2px 2px 12px;
+                border-color:rgba(0, 163, 217, 1);
+                border-width:4px;
+            }
+
+            &::placeholder {
+                font-style:italic;
+                color:#ededed;
+            }
+        }
+
+        .error {
+            display:flex;
+            align-items:center;
+            margin-top:10px;
+            margin-bottom:-5px; // whatever..
+            font-size:16px;
+
+            svg {
+                width:24px;
+                height:24px;
+            }
+
+            p {
+                padding:5px;
+            }
+        }
+
+        .submit-button {
+            margin-top:15px;
+            display:flex;
+            align-items:center;
+            justify-content:space-around;
+            box-sizing:border-box;
+            border:1px solid rgba(67, 156, 97, 1);
+            background-color:rgba(95, 186, 125 ,1);
+            height:60px;
+            color:#fff;
+            cursor:pointer;
+            font-weight:600;
+            font-size:20px;
+            width:100%;
+
+            padding:5px;
+        }
+
+        .submit-button-loading {
+            background-color:rgba(67, 156, 97, 1);
+        }
+
+        button {
+            svg {
+                fill:#fff;
+            }
+
+            &:focus {
+                transition:0.2s ease-in all; 
+                border:4px solid rgba(67, 156, 97, 1);
+                padding:2px;
+            }
+        }
+
+        label {
+            font-size:20px;
+            font-style:italic;
+        }
+
+        .logo {
+            min-height:150px;
+            border-bottom:1px dashed #ededed;
+        }
+    }
+}
+

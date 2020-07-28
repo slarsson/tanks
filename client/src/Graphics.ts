@@ -39,56 +39,121 @@ const addKillMessage = (parent: HTMLElement, killer: string, killed: string): vo
 class NameInput {
 
     private root: HTMLElement;
+    private status: HTMLElement;
+    private error: HTMLElement;
+    private input: HTMLInputElement;
+    private loading: boolean;
+    private callback: (arg: string) => void;
 
-    constructor(root) {
+    constructor(root, cb) {
         this.root = root;
+        this.callback = cb;
+        this.status = document.createElement('div');
+        this.error = document.createElement('div');
+        this.loading = false;
+        
+        this.submit = this.submit.bind(this);
+        this.setLoading = this.setLoading.bind(this);
 
-        let input = document.createElement('input');
-            input.id = '_player';
-            input.placeholder = 'krillex';
-            input.type = 'text';
+        // input 
+        this.input = document.createElement('input');
+        this.input.id = '_player';
+        this.input.placeholder = 'krillex';
+        this.input.type = 'text';
 
+        // label
         let label = document.createElement('label');
             label.innerText = 'Enter player name';
-            label.htmlFor = input.id;
+            label.htmlFor = this.input.id;
 
+        // form
         let form = document.createElement('form');
             form.autocomplete = 'off';
+            form.onsubmit = this.submit;
 
-        let button = document.createElement('button');
-            button.type = 'submit';
-            button.innerHTML = `
-                <p>PLAY GAME</p>
-                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>
-            `;
-
+        // logo
         let logo = document.createElement('div');
             logo.classList.add('logo');
-            logo.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3.5" width="30" height="4"/></svg>
-                <h1>myGame</h1>
-            `;
 
-        let addNameDiv = document.createElement('div');
-            addNameDiv.classList.add('add-name');
 
-        let panel = document.createElement('div');
-            panel.classList.add('panel');
 
+        // containerz
         let container = document.createElement('div');
-            container.classList.add('center');
+            container.classList.add('popup--container');
 
-        container.appendChild(panel);
-        panel.appendChild(logo);
-        panel.appendChild(form);
-        form.appendChild(addNameDiv);
-        addNameDiv.appendChild(label);
-        addNameDiv.appendChild(input);
-        addNameDiv.appendChild(button);
-        
+        let window = document.createElement('div');
+            window.classList.add('popup--window');
+
+        let innerContainer = document.createElement('div');
+            innerContainer.classList.add('window--container');
+
+        container.appendChild(window);
+        window.appendChild(logo);
+        window.appendChild(form);
+        form.appendChild(innerContainer);
+        innerContainer.appendChild(label);
+        innerContainer.appendChild(this.input);
+        innerContainer.appendChild(this.error);
+        innerContainer.appendChild(this.status);
+        this.status.appendChild(NameInput.createSubmitButton());
+
         this.root.appendChild(container);
     }
 
+
+    private static createSubmitButton(loading: boolean = false): HTMLElement {
+        if (!loading) {
+            let button = document.createElement('button');
+                button.type = 'submit';
+                button.classList.add('submit-button');
+                button.innerHTML = `
+                    <p>PLAY GAME</p>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>
+                `;
+            return button;
+        }
+
+        let div = document.createElement('div');
+            div.classList.add('submit-button', 'submit-button-loading');
+            div.innerHTML = `<div class="loading"></div>`;
+        return div;
+    }
+
+    private submit(evt: Event): void {
+        evt.preventDefault();
+        
+        if (this.loading) {
+            return;
+        }
+        
+        this.callback('from the callback:'+this.input.value);
+        //console.log('my event:', this.input.value);
+
+        this.setLoading(true);
+    }
+
+    setLoading(state: boolean): void {
+        this.loading = state;
+        this.status.innerHTML = '';
+        this.status.appendChild(NameInput.createSubmitButton(state));
+    }
+
+    showError(msg: string): void {
+        let error = document.createElement('div');
+            error.classList.add('error');
+            
+        let errorText = document.createElement('p');
+            errorText.innerText = msg;
+        
+        error.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+        error.appendChild(errorText);
+        
+        this.error.appendChild(error);
+    }
+
+    hideError(): void {
+        this.error.innerHTML = '';
+    }
 }
 
 
@@ -162,7 +227,7 @@ class Graphics {
         // this.root.appendChild(swag);
         // this.root.classList.add('blur');
 
-        new NameInput(this.root);
+        new NameInput(this.root, (s: string) => console.log(s));
         //this.showNameDialog();
     }
 
