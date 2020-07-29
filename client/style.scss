@@ -14,78 +14,63 @@ button {
     all:unset;
 }
 
-// #kills {
-//     position:absolute;
-//     right:0;
-//     margin:20px;
+@keyframes out {
+    0% {opacity:1;}
+    100% {opacity:0;}
+}
 
-//     div {
-//         background-color:#000;
-//         padding:5px;
-//         color:#fff;
-//         margin-bottom:5px;
-//         animation:fadein 0.5s;
-//     }
+@keyframes in {
+    0% {opacity:0;}
+    100% {opacity:1}
+}
 
-//     @keyframes fadein {
-//         from {opacity: 0;}
-//         to   {opacity: 1;}
-//     }
-// }
+.fade-in {
+    animation-name:in;
+    animation-duration:0.5s;
+}
 
-.input-test {
-    position:absolute;
-    margin:100px;
-    padding:20px;
-    border:1px solid red;
-    background-color:black;
+.fade-out {
+    animation-name:out;
+    animation-duration:0.5s;
+}
+  
+.loading {
+    background: transparent;
+    font-size:0;
+    width:30px;
+    height:30px;
+    border-radius:100%;
+    padding:0;
+    border:4px solid #FFFFFF;
+    border-bottom:4px solid transparent;
+    border-left:4px solid transparent;
+    animation-name:spin;
+    animation-duration:0.5s;
+    animation-iteration-count:infinite;
+}
 
-    input {
-        padding:10px;
-        border:1px solid green;
-
-        &:focus {
-            outline:none;
-        }
-    }
+@keyframes spin {
+    0%   {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
 }
 
 #graphics {
     position:absolute;
     width:100vw;
     height:100vh;
-
-    @keyframes fade-in {
-        0% {opacity:0;}
-        100% {opacity:0.5}
-    }
-
-    &.blur {
-        // animation-name:fade-in;
-        // animation-duration:0.5s; 
-        // background-color:#000;
-        // opacity:0.5;
-        background-color:rgba(0, 0, 0, .5);
-    }
-
-    
-
-    
+    z-index:0;
+    overflow:hidden;
 }
 
-#info {
-    
-
-    position: absolute;
+// show info/warning/error messages
+.info--container {
+    position:absolute;
     bottom:20px;
     width:100%;
-
+    z-index:1;
+   
     .info-box {
         opacity:1;
-        // animation-name:fade-in;
-        // animation-duration:0.5s;
-        //background-color:#fff;
-        //color:#fff;
         max-width:800px;
         margin:10px auto 10px auto;
         display:flex;
@@ -94,11 +79,10 @@ button {
         border-radius:2px;
         border-width:1px;
         border-style:solid;
-
+        
         svg {
             width:24px;
             height:24px;
-            //fill:#fff;
         }
 
         .icon {
@@ -118,14 +102,11 @@ button {
             flex-grow:1;
             margin-right:50px;
         }
-
     }
 
     .warning {
         border-color:#F2EB9E;
         background-color:#FFF7A7;
-        // background-color:#ffbb33;
-        // border-color:#FF8800;
     }
 
     .info {
@@ -149,32 +130,14 @@ button {
     }
 }
 
-@keyframes out {
-    0% {opacity:1;}
-    100% {opacity:0;}
-}
-
-@keyframes in {
-    0% {opacity:0;}
-    100% {opacity:1}
-}
-
-.fade-in {
-    animation-name:in;
-    animation-duration:0.5s;
-}
-
-.fade-out {
-    animation-name:out;
-    animation-duration:0.5s;
-}
-
-#kills {
+// show kill log
+.kill--container {
     position:absolute;
     right:0;
     margin:20px;
 
     & > div {
+        right:0;
         background-color:rgba(0, 0, 0, 0.5);
         padding:10px;
         font-size:16px;
@@ -191,35 +154,9 @@ button {
     }
 }
 
-
-    
-.loading {
-    background: transparent;
-    font-size:0;
-    width:30px;
-    height:30px;
-    border-radius:100%;
-    padding:0;
-    border:4px solid #FFFFFF;
-    border-bottom:4px solid transparent;
-    border-left:4px solid transparent;
-    animation-name:spin;
-    animation-duration:0.5s;
-    animation-iteration-count:infinite;
-}
-
-@keyframes spin {
-    0%   {transform: rotate(0deg);}
-    100% {transform: rotate(360deg);}
-}
-
-// swag
-
-
-
-
 // enter player name
 .popup--container {
+    position: relative;
     z-index:998;
     display:flex;
     justify-content:space-around;
@@ -227,6 +164,16 @@ button {
     height:100vh;
     width:100%;
     background-color:rgba(0, 0, 0, .5);
+
+    @keyframes border-flash {
+        0%   {border-color:transparent;}
+        100% {border-color:rgba(217, 9, 0, 1);}
+    }
+
+    @keyframes fade1 {
+        0%   {border-color:transparent;}
+        100% {border-color:rgba(217, 9, 0, 1);}
+    }
 
     .popup--window {
         z-index:999;
@@ -251,16 +198,22 @@ button {
             outline:none;
             margin-top:15px;
 
-            &:focus {
-                transition:0.2s ease-in all; 
+            &:focus { 
                 padding:2px 2px 2px 12px;
                 border-color:rgba(0, 163, 217, 1);
                 border-width:4px;
+                outline:none;
             }
 
             &::placeholder {
                 font-style:italic;
                 color:#ededed;
+            }
+
+            &.input-error {
+                border-color:rgba(217, 9, 0, 1);
+                animation-name:border-flash;
+                animation-duration:0.5s;
             }
         }
 
@@ -274,6 +227,7 @@ button {
             svg {
                 width:24px;
                 height:24px;
+                fill:rgba(217, 9, 0, 1);;
             }
 
             p {
@@ -295,7 +249,6 @@ button {
             font-weight:600;
             font-size:20px;
             width:100%;
-
             padding:5px;
         }
 
@@ -309,7 +262,6 @@ button {
             }
 
             &:focus {
-                transition:0.2s ease-in all; 
                 border:4px solid rgba(67, 156, 97, 1);
                 padding:2px;
             }
@@ -327,3 +279,17 @@ button {
     }
 }
 
+// connected players
+.players {
+    position:absolute;
+    z-index:1;
+    bottom:0;
+    left:0;
+    padding:5px;
+    font-size:15px;
+    color:#fff;
+
+    span {
+        color:red;
+    }
+}

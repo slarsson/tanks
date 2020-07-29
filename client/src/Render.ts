@@ -100,16 +100,7 @@ class Render {
         this.players = new Map();
         new GameMap(this.scene);
         
-        this.gg = new Graphics();
-        this.gg.newInfoBox('Postnord ska och borde läggas ner, typ så..', null, Graphics.INFO);
-        this.gg.newInfoBox('lägg ner postnord igen..', null, Graphics.ERROR);
-        this.gg.newInfoBox('Warning my warning.', null, Graphics.WARNING);
-
-        this.gg.newKillMessage('jocke', 'jonna');
-        //this.shoot = new Particle(this.scene);
-
-
-        // init websocket connection
+// init websocket connection
         this.conn = new Connection(
             this.serverMessage,
             () => {
@@ -120,6 +111,37 @@ class Render {
                 this.broadcast();
             }
         );
+
+        this.gg = new Graphics();
+        this.gg.setConnectedPlayers(['jocke', 'jonna']);
+        setInterval(() => this.gg.addKillMessage('asdf1', 'asdf2', 2000), 6000);
+        // this.gg.addMessage('Postnord ska och borde läggas ner, typ så..', null, Graphics.INFO);
+        // this.gg.addMessage('lägg ner postnord igen..', null, Graphics.ERROR);
+        // this.gg.addMessage('Warning my warning.', null, Graphics.WARNING);
+
+        this.gg.addKillMessage('jocke', 'jonna');
+
+        let wtfx = this.gg.newNameInput((s: string) => {
+            console.log(s);
+
+            let arr = new Uint8Array(1 + s.length);
+            arr[0] = 99;
+
+            for (let i = 0; i < s.length; i++) {
+                arr[i + 1] = s[i].charCodeAt(0); 
+            }
+
+            this.conn.send(arr.buffer);
+            
+            
+            //this.gg.removeNameEntry();
+            //console.log(this.gg.nameEntryLoading(false));
+        });
+
+        //this.shoot = new Particle(this.scene);
+
+
+        
 
         // setup eventlisteners
         window.addEventListener('keydown', this.registerKey);
@@ -198,13 +220,13 @@ class Render {
             console.log(data);
             console.log('show kill log ?');
 
-            let k1 = "wtfplayer" + Math.random();
-            let k2 = "asdf" + Math.random();
-            // let k1 = this.players.get(data[0]);
-            // let k2 = this.players.get(data[1]);
+            // let k1 = "wtfplayer" + Math.random();
+            // let k2 = "asdf" + Math.random();
+            let k1 = this.players.get(data[0]);
+            let k2 = this.players.get(data[1]);
 
             if (k1 != undefined && k2 != undefined) {
-                this.gg.newKillMessage(k1, k2);
+                this.gg.addKillMessage(k1, k2);
             }
 
             // let div = document.createElement('div');
@@ -222,11 +244,15 @@ class Render {
             this.players.set(id[0], name);
 
             if (id[0] == this.self) {
-                let div = document.getElementById('test');
-                if (div != null) {
-                    div.innerHTML = '';
-                }
+                this.gg.removeNameInput();
+                //setTimeout(() => this.gg.removeNameEntry(), 500);
+                // let div = document.getElementById('test');
+                // if (div != null) {
+                //     div.innerHTML = '';
+                // }
             } 
+
+            this.gg.addMessage(`New player added: {id: ${id}, name: ${name}}`, 2000);
 
             // console.log('id:', new Uint32Array(buffer.slice(0, 4)));
             // console.log(new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4))));

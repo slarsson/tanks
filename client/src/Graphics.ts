@@ -1,40 +1,8 @@
-
-const addInfoBox = (parent: HTMLElement, text: string, timeout: number | null = null): void => {
-    let t: number | undefined = undefined;
-    
-    let root = document.createElement('div');
-        root.id = 'info'; // BAD!! should be class
-        root.onanimationend = () => parent.removeChild(root);
-    
-    let close = document.createElement('button');
-        close.innerText = 'CLOSE';
-        close.onclick = () => {
-            clearTimeout(t);
-            root.classList.add('swag')
-            close.onclick = null;
-        };
-
-    let content = document.createElement('p');
-        content.innerText = text;
-    
-    if (timeout != null) {
-        t = window.setTimeout(() => {
-            root.classList.add('swag')
-            close.onclick = null;
-        }, timeout);
-    }
-
-    root.appendChild(content);
-    root.appendChild(close);
-    parent.appendChild(root);
-};
-
-const addKillMessage = (parent: HTMLElement, killer: string, killed: string): void => {
-    let root = document.createElement('div');
-        root.innerText = killer + ' KILLED ' + killed;
-
-    setTimeout(() => parent.removeChild(root), 2000);
-};
+interface NameInputActions {
+    showError: (arg: string) => void;
+    hideError: () => void;
+    setLoading: (arg: boolean) => void;
+} 
 
 class NameInput {
 
@@ -45,8 +13,10 @@ class NameInput {
     private loading: boolean;
     private callback: (arg: string) => void;
 
-    constructor(root, cb) {
-        this.root = root;
+    constructor(_root, cb) {
+        this.root = document.createElement('div');
+        _root.appendChild(this.root);
+
         this.callback = cb;
         this.status = document.createElement('div');
         this.error = document.createElement('div');
@@ -60,6 +30,10 @@ class NameInput {
         this.input.id = '_player';
         this.input.placeholder = 'krillex';
         this.input.type = 'text';
+        this.input.oninput = () => {
+            this.input.classList.remove('input-error');
+            this.error.innerHTML = '';
+        }
 
         // label
         let label = document.createElement('label');
@@ -74,8 +48,6 @@ class NameInput {
         // logo
         let logo = document.createElement('div');
             logo.classList.add('logo');
-
-
 
         // containerz
         let container = document.createElement('div');
@@ -121,15 +93,22 @@ class NameInput {
 
     private submit(evt: Event): void {
         evt.preventDefault();
+        if (this.loading) {return;}
         
-        if (this.loading) {
+        let value = this.input.value;
+
+        if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+            this.showError('Letters and numbers only');
             return;
         }
-        
-        this.callback('from the callback:'+this.input.value);
-        //console.log('my event:', this.input.value);
+
+        if (value.length > 20) {
+            this.showError(`Name to long, ${value.length} char. [max: 20]`);
+            return;
+        }
 
         this.setLoading(true);
+        this.callback(this.input.value);  
     }
 
     setLoading(state: boolean): void {
@@ -148,15 +127,23 @@ class NameInput {
         error.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
         error.appendChild(errorText);
         
+        this.input.classList.remove('input-error');
+        this.input.offsetHeight; // force repaint, to recognize that animation-state has changed
+        this.input.classList.toggle('input-error');
+
+        this.error.innerHTML = '';
         this.error.appendChild(error);
+        this.setLoading(false);
     }
 
     hideError(): void {
         this.error.innerHTML = '';
     }
+
+    dispose(): void {
+        this.root.remove();
+    }
 }
-
-
 
 class Graphics {
 
@@ -165,9 +152,10 @@ class Graphics {
     public static readonly ERROR = 2;
 
     private root: HTMLElement;
-
     private info: HTMLElement;
     private killLog: HTMLElement;
+    private nameInput: NameInput | null;
+    private connectedPlayers: HTMLElement;
 
     constructor() {
         let rootDiv = document.getElementById('graphics');
@@ -180,58 +168,37 @@ class Graphics {
         }
 
         this.info = document.createElement('div');
-        this.info.id = 'info';
+        this.info.classList.add('info--container');
 
         this.killLog = document.createElement('div');
-        this.killLog.id = 'kills';
+        this.killLog.classList.add('kill--container');
 
         this.root.appendChild(this.info);
         this.root.appendChild(this.killLog);
 
-        //addInfoBox(this.root, 'hata aik');
-        
-        // let x = new InfoBox(this.root);
-        // x.add('wtf?');
+        this.nameInput = null;
 
-        // this.root.classList.add('blur');
-
-
-        // console.log('NEW GRAPHICS CREATED...');
-
-        // let swag = document.createElement('div');
-        // swag.innerHTML = `
-        // <div class="center">
-        //     <div class="panel">
-        //         <div class="logo">
-                   
-                
-        //             <svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3" width="30" height="4"/></svg>
-        //             <h1>myGame</h1>
-                
-        //             </div>
-
-
-        //         <form>
-        //             <div class="add-name">
-        //                 <label for="">Enter player name</label>
-        //                 <input type="text" placeholder="krillex"/>
-        //                 <button type="submit">
-        //                     <p>PLAY GAME</p>
-        //                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>                        </button>
-        //             </div>
-        //         </form>
-        //     </div>
-        // </div>
-        // `;
-
-        // this.root.appendChild(swag);
-        // this.root.classList.add('blur');
-
-        new NameInput(this.root, (s: string) => console.log(s));
-        //this.showNameDialog();
+        this.connectedPlayers = document.createElement('div');
+        this.connectedPlayers.classList.add('players');
+        this.connectedPlayers.title = 'connected players';
+        this.root.appendChild(this.connectedPlayers);
     }
 
-    newInfoBox(text: string, timeout: number | null = null, type: number = 0): void {
+    newNameInput(cb: (arg: string) => void): NameInputActions {
+        this.nameInput = new NameInput(this.root, cb);
+        return {
+            showError: (arg: string) => {this.nameInput != null ? this.nameInput.showError(arg) : null},
+            hideError: () => {this.nameInput != null ? this.nameInput.hideError() : null},
+            setLoading: (arg: boolean) => {this.nameInput != null ? this.nameInput.setLoading(arg) : null},
+        };
+    }
+
+    removeNameInput(): void {
+        this.nameInput?.dispose();
+        this.nameInput = null;
+    }
+
+    addMessage(text: string, timeout: number | null = null, type: number = 0): void {
         let t: number | undefined = undefined;
         
         let icon = document.createElement('div');
@@ -249,20 +216,17 @@ class Graphics {
                 root.classList.add('error');
             }
 
-            root.classList.add('info-box', 'fade-in'); // BAD!! should be class
+            root.classList.add('info-box', 'fade-in');
             root.onanimationend = (e: AnimationEvent) => {
                 if (e.animationName == 'out') {
                     this.info.removeChild(root);
                 }
             }
-            
-            //root.onanimationend = () => this.info.removeChild(root);
         
         let close = document.createElement('button');
             close.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
             close.onclick = () => {
                 clearTimeout(t);
-                //root.onanimationend = () => this.info.removeChild(root);
                 root.classList.remove('fade-in');
                 root.classList.add('fade-out');
                 close.onclick = null;
@@ -271,10 +235,6 @@ class Graphics {
         let content = document.createElement('p');
             content.innerText = text;
         
-        
-            //icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
-            //icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
-
         if (timeout != null) {
             t = window.setTimeout(() => {
                 root.classList.remove('fade-in');
@@ -289,7 +249,7 @@ class Graphics {
         this.info.appendChild(root);
     }
 
-    newKillMessage(killer: string, killed: string, timeout: number = 2000): void {
+    addKillMessage(killer: string, killed: string, timeout: number = 2000): void {
         let root = document.createElement('div');
         
         let k1 = document.createElement('p');
@@ -300,7 +260,6 @@ class Graphics {
         let div = document.createElement('div');
             div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3" width="30" height="4"/></svg>';
 
-        
         root.appendChild(k1);
         root.appendChild(div);
         root.appendChild(k2);
@@ -308,56 +267,10 @@ class Graphics {
 
         setTimeout(() => this.killLog.removeChild(root), timeout);
     }
-
-    // showNameDialog(): void {
-    //     let input = document.createElement('input');
-    //         input.id = '_player';
-    //         input.placeholder = 'krillex';
-    //         input.type = 'text';
-
-    //     let label = document.createElement('label');
-    //         label.innerText = 'Enter player name';
-    //         label.htmlFor = input.id;
-
-    //     let form = document.createElement('form');
-    //         form.autocomplete = 'off';
-
-    //     let button = document.createElement('button');
-    //         button.type = 'submit';
-    //         button.innerHTML = `
-    //             <p>PLAY GAME</p>
-    //             <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M8 5v14l11-7z"/></svg>
-    //         `;
-
-    //     let logo = document.createElement('div');
-    //         logo.classList.add('logo');
-    //         logo.innerHTML = `
-    //             <svg xmlns="http://www.w3.org/2000/svg" width="70" height="20" viewBox="0 0 70 20" > <rect x="0" y="10" width="60" height="10"/> <rect x="20" y="0" width="20" height="10"/><rect x="40" y="3" width="30" height="4"/></svg>
-    //             <h1>myGame</h1>
-    //         `;
-
-    //     let addNameDiv = document.createElement('div');
-    //         addNameDiv.classList.add('add-name');
-
-    //     let panel = document.createElement('div');
-    //         panel.classList.add('panel');
-
-    //     let container = document.createElement('div');
-    //         container.classList.add('center');
-
-    //     container.appendChild(panel);
-    //     panel.appendChild(logo);
-    //     panel.appendChild(form);
-    //     form.appendChild(addNameDiv);
-    //     addNameDiv.appendChild(label);
-    //     addNameDiv.appendChild(input);
-    //     addNameDiv.appendChild(button);
-        
-    //     this.root.appendChild(container);
-
-
-    // }
-
+    
+    setConnectedPlayers(list: string[]): void {
+        this.connectedPlayers.innerText = `${list.join(', ')} (${list.length} connected)`; 
+    }
 }
 
 export default Graphics;
