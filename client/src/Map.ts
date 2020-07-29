@@ -162,6 +162,10 @@ class GameMap {
         //     this.scene.add(swag);
         // }
     }
+
+    outOfMap(x: number, y: number): boolean {
+        return x > this.manifest.boundaries[0] || x < this.manifest.boundaries[1] || y > this.manifest.boundaries[2] || y < this.manifest.boundaries[3];
+    }
 }
 
 export default GameMap;

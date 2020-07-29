@@ -22,6 +22,8 @@
 // document.body.textContent = greeter(user);
 
 import Render from './Render';
+import Game from './Game';
+import Manager from './Manager';
 
 import { Assets } from './AssetsTest';
 
@@ -50,7 +52,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             addProjectile: wasm__addProjectile
         }
 
-        new Render(wasm);
+        // NEW:
+        new Manager(wasm);
+        //new Game();
+        
+        
+        // OLD:
+        //new Render(wasm);
 
         (function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
     });

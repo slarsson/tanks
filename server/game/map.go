@@ -174,9 +174,15 @@ func NewMap() *Map {
 }
 
 func (m *Map) OutOfBounds(point *Vector3) bool {
-	if point.X > m.Boundaries[0] || point.X < m.Boundaries[1] || point.Y > m.Boundaries[2] || point.Y < m.Boundaries[3] {
-		fmt.Println("out of map")
-		return true
-	}
-	return false
+	return point.X > m.Boundaries[0] || point.X < m.Boundaries[1] || point.Y > m.Boundaries[2] || point.Y < m.Boundaries[3]
+
+	// if point.X > m.Boundaries[0] || point.X < m.Boundaries[1] || point.Y > m.Boundaries[2] || point.Y < m.Boundaries[3] {
+	// 	fmt.Println("out of map")
+	// 	return true
+	// }
+	// return false
+}
+
+func (m Map) OffsetMap(point *Vector3, distance float32) bool {
+	return point.X > (m.Boundaries[0]+distance) || point.X < (m.Boundaries[1]-distance) || point.Y > (m.Boundaries[2]+distance) || point.Y < (m.Boundaries[3]-distance)
 }

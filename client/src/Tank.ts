@@ -35,7 +35,7 @@ class Tank {
         this.scene.add(this.tank);
 
         // test
-        this.addArrow();
+        //this.addArrow();
     }
 
     setPosition(x: number, y: number, z: number) {

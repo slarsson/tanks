@@ -9,40 +9,6 @@ import Graphics from './Graphics';
 import Projectile from './Particle';
 
 
-const testName = (conn: Connection) => {
-    console.log('meh...', conn);
-
-    let root = document.getElementById('test');
-    let container = document.createElement('div');
-    container.classList.add('input-test');
-
-    let form = document.createElement('form');
-
-    let input = document.createElement('input');
-        input.setAttribute('type', 'text');
-        
-    container.appendChild(form);
-    form.appendChild(input);
-    //root?.appendChild(container);
-
-
-    form.addEventListener('submit', (e: any) => {
-        e.preventDefault();
-        console.log(input.value);
-        
-        let s = input.value;
-            
-        let arr = new Uint8Array(1 + s.length);
-        arr[0] = 99;
-
-        for (let i = 0; i < s.length; i++) {
-            //onsole.log(s[i]);
-            arr[i + 1] = s[i].charCodeAt(0); 
-        }
-
-        conn.send(arr.buffer);
-    });
-};
 
 
 
@@ -155,7 +121,7 @@ class Render {
         // test:
 
 
-        testName(this.conn);
+        //testName(this.conn);
         // setTimeout(() => {
         //     let s = "##läggnerpostnord"
             

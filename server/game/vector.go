@@ -57,3 +57,11 @@ func (v *Vector3) Mult(arg float32) *Vector3 {
 func (v *Vector3) Length() float32 {
 	return float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
 }
+
+func (v *Vector3) Clone() *Vector3 {
+	return &Vector3{
+		X: v.X,
+		Y: v.Y,
+		Z: v.Z,
+	}
+}

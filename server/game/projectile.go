@@ -89,8 +89,8 @@ func (p *Player) NewProjectile() *Projectile {
 	dir.Norm()
 
 	return &Projectile{
-		Position:     &Vector3{X: p.Position.X + 4*x, Y: p.Position.Y + 4*y, Z: 1},
-		LastPosition: &Vector3{X: p.Position.X + 4*x, Y: p.Position.Y + 4*y, Z: 1},
+		Position:     &Vector3{X: p.Position.X + 4*x, Y: p.Position.Y + 4*y, Z: 1.5},
+		LastPosition: &Vector3{X: p.Position.X + 4*x, Y: p.Position.Y + 4*y, Z: 1.5},
 		Direction:    &dir,
 		Velocity:     0.05,
 		Owner:        p,
@@ -114,7 +114,8 @@ func (p *Projectile) Move(dt float32) {
 }
 
 func (p *Projectile) CollisionTest(m *Map) {
-	if m.OutOfBounds(p.Position) {
+	if m.OffsetMap(p.Position, 50) {
+		//if m.OutOfBounds(p.Position) {
 		p.IsAlive = false
 		return
 	}
