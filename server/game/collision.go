@@ -12,6 +12,7 @@ type Polygon []*Vector3
 type MTV struct {
 	Vector    *Vector3
 	Magnitude float32
+	Test      int
 }
 
 func (p *Polygon) Add(x float32, y float32, z float32) {
@@ -106,8 +107,11 @@ func (p Polygon) projectVertices(v *Vector3) (float32, float32) {
 
 // Collision checks if two object has collieded using the SAT (Separate Axis Theorem) algorithm
 func (p Polygon) Collision(target *Polygon) (bool, *MTV) {
+	wtf := -1
+
 	var n, smallest Vector3
 	overlap := math.MaxFloat32
+	//overlap := float64(-1)
 
 	lastIdx := len(p) - 1
 	for i := 0; i <= lastIdx; i++ {
@@ -132,9 +136,11 @@ func (p Polygon) Collision(target *Polygon) (bool, *MTV) {
 		}
 
 		o := math.Abs(math.Min(float64(maxA), float64(maxB)) - math.Max(float64(minA), float64(minB)))
+		//if o > 0 && o > overlap {
 		if o > 0 && o < overlap {
 			overlap = o
 			smallest = n
+			wtf = 1
 		}
 	}
 
@@ -161,14 +167,71 @@ func (p Polygon) Collision(target *Polygon) (bool, *MTV) {
 		}
 
 		o := math.Abs(math.Min(float64(maxA), float64(maxB)) - math.Max(float64(minA), float64(minB)))
+		//if o > 0 && o > overlap {
 		if o > 0 && o < overlap {
 			overlap = o
 			smallest = n
+			wtf = 2
 		}
 	}
 
+	// lol := smallest.Clone()
+	// lol.Norm()
+
+	// //fmt.Println("SMALL:", wtf, smallest)
+	// // fmt.Println("DOT:", lol.Dot(lol), target.GetCenter())
+
+	// a := target.GetCenter()
+	// b := p.GetCenter()
+
+	// x := &Vector3{
+	// 	X: a.X - b.X,
+	// 	Y: a.Y - b.Y,
+	// 	Z: 0,
+	// }
+
+	// // if x.Dot(lol) < 0 {
+	// // 	overlap *= -1
+	// // }
+	// fmt.Println("DOT:", x.Dot(lol))
+
 	return true, &MTV{
+		// Vector:    smallest.Clone(),
+		// Magnitude: 1.0,
 		Vector:    smallest.Norm(),
 		Magnitude: 1.01 * float32(overlap),
+		Test:      wtf,
 	}
 }
+
+// func (p *Polygon) GetCenter() *Vector3 {
+// 	maxX := (*p)[0].X
+// 	minX := (*p)[0].X
+// 	maxY := (*p)[0].Y
+// 	minY := (*p)[0].Y
+
+// 	for _, v := range (*p)[1:] {
+// 		//fmt.Println(i)
+// 		if v.X > maxX {
+// 			maxX = v.X
+// 		}
+
+// 		if v.X < minX {
+// 			minX = v.X
+// 		}
+
+// 		if v.Y > maxY {
+// 			maxY = v.Y
+// 		}
+
+// 		if v.Y < minY {
+// 			minY = v.Y
+// 		}
+// 	}
+
+// 	return &Vector3{
+// 		X: minX + 0.5*float32(math.Abs(float64(minX-maxX))),
+// 		Y: minY + 0.5*float32(math.Abs(float64(minY-maxY))),
+// 		Z: 0,
+// 	}
+// }

@@ -65,3 +65,7 @@ func (v *Vector3) Clone() *Vector3 {
 		Z: v.Z,
 	}
 }
+
+func (v *Vector3) Dot(arg *Vector3) float32 {
+	return v.X*arg.X + v.Y*arg.Y + v.Z*arg.Z
+}
