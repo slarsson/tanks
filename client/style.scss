@@ -50,12 +50,22 @@ button {
     border-left:4px solid transparent;
     animation-name:spin;
     animation-duration:0.5s;
+    animation-timing-function: linear;
     animation-iteration-count:infinite;
 }
 
 @keyframes spin {
     0%   {transform: rotate(0deg);}
-    100% {transform: rotate(360deg);}
+    100% {transform: rotate(359deg);}
+}
+
+.root--loading {
+    position:absolute;
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
 }
 
 #graphics {
@@ -71,7 +81,7 @@ button {
     position:absolute;
     bottom:20px;
     width:100%;
-    z-index:1;
+    z-index:998;
    
     .info-box {
         opacity:1;
@@ -158,25 +168,34 @@ button {
     }
 }
 
+
+
 // enter player name
 .popup--container {
     position: relative;
-    z-index:998;
+    z-index:997;
     display:flex;
     justify-content:space-around;
     align-items:center;
     height:100vh;
     width:100%;
     background-color:rgba(0, 0, 0, .5);
+    animation:bg-fade;
+    animation-duration:1s;
 
     @keyframes border-flash {
         0%   {border-color:transparent;}
         100% {border-color:rgba(217, 9, 0, 1);}
     }
 
-    @keyframes fade1 {
-        0%   {border-color:transparent;}
-        100% {border-color:rgba(217, 9, 0, 1);}
+    @keyframes bg-fade {
+        0% {background-color:rgba(0, 0, 0, 0);}
+        100% {background-color:rgba(0, 0, 0, .5)}
+    }
+    
+    @keyframes fly-in {
+        0% {transform:translateY(calc(-50vh - 150px));}
+        100% {transform:translateY(0%);}
     }
 
     .popup--window {
@@ -184,7 +203,9 @@ button {
         background-color:#fff;
         min-width:350px;
         border-radius:2px;
-        
+        animation:fly-in;
+        animation-duration:0.5s;
+
         .window--container {
             display:flex;
             flex-direction:column;
@@ -198,11 +219,12 @@ button {
             height:60px;
             padding:5px 5px 5px 15px;
             font-size:20px;
-            width:auto;
+            width:320px;
             outline:none;
             margin-top:15px;
 
             &:focus { 
+                transition:border-width 0.2s ease-in, padding 0.2s ease-in;
                 padding:2px 2px 2px 12px;
                 border-color:rgba(0, 163, 217, 1);
                 border-width:4px;
@@ -252,7 +274,7 @@ button {
             cursor:pointer;
             font-weight:600;
             font-size:20px;
-            width:100%;
+            width:320px;
             padding:5px;
         }
 
@@ -266,6 +288,7 @@ button {
             }
 
             &:focus {
+                transition:border-width 0.2s ease-in, padding 0.2s ease-in;
                 border:4px solid rgba(67, 156, 97, 1);
                 padding:2px;
             }

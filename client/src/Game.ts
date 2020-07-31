@@ -41,7 +41,14 @@ class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setClearColor(0x000000, 0);
 
-        document.getElementById('root')?.appendChild(this.renderer.domElement);
+        let root = document.getElementById('root');
+        if (root != null) {
+            root.innerHTML = '';
+            root.appendChild(this.renderer.domElement);
+        } else {
+            console.error('GAME: #root element not found :(');
+        }
+
         window.addEventListener('resize', this.resize);
 
         // object setup

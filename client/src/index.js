@@ -52,6 +52,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             addProjectile: wasm__addProjectile
         }
 
+        //setTimeout(() => new Manager(wasm), 3000);
         // NEW:
         new Manager(wasm);
         //new Game();
@@ -59,6 +60,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         
         // OLD:
         //new Render(wasm);
+
 
         (function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
     });

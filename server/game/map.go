@@ -26,7 +26,7 @@ type ContainerGroup struct {
 func NewMap() *Map {
 	data := []byte(`{
 		"name": "Port of Nrkp",
-		"boundaries": [150, -150, 150, -150], 
+		"boundaries": [50, -50, 50, -50], 
 		"containers": [
 			{
 				"position": {
