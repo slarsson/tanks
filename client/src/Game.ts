@@ -4,6 +4,7 @@ import Tank from './Tank';
 import Projectile from './Particle';
 import Graphics from './Graphics';
 import Camera from './Camera';
+import { throws } from 'assert';
 
 class Game {
 
@@ -86,7 +87,7 @@ class Game {
             }
         }
 
-        // TODO: fix projectilez
+        // // TODO: fix projectilez
         let projectiles = this.wasm.updateProjectiles(dt);
         for (let i = 0; i < projectiles.length; i += 5) {
             if (projectiles[i+4] == 0) {
@@ -137,15 +138,18 @@ class Game {
 
     update(data: Float32Array): void {
         for (let i = 0; i < data.length; i += 12) {
-            if (!this.players.has(data[i])) {
+            const player = this.players.get(data[i]);
+            
+            if (player == undefined) {
                 this.addPlayer(data[i]);
-            } else if (data[i+9] == 1) {
-                console.log('GAME: add projectile for id: ', data[i]);
-            } else if (data[i+11] == 0) {
-                this.players.get(data[i])?.kill(); // not efficient? :(( Because it checks everytime...
-            } else {
-                this.players.get(data[i])?.respawn(); // meh..
-            }  
+                return;
+            }
+
+            if (data[i+11] == 0 && player.isAlive) {
+                player.kill();
+            } else if (data[i+11] == 1 && !player.isAlive) {
+                player.respawn();
+            } 
         }
     }
 }

@@ -3,7 +3,6 @@ package game
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"sync"
 )
 
@@ -14,50 +13,33 @@ type Projectile struct {
 	Velocity     float32
 	Owner        *Player
 	IsAlive      bool
-	Mutex        *sync.RWMutex
 }
 
 type ProjectileManager struct {
 	Projectiles map[int]*Projectile
+	mutex       *sync.RWMutex
+	counter     int
 }
 
 func NewProjectileManager() *ProjectileManager {
 	return &ProjectileManager{
 		Projectiles: make(map[int]*Projectile),
+		mutex:       &sync.RWMutex{},
+		counter:     0,
 	}
-}
-
-func (pm *ProjectileManager) NewProjectile(p *Player) {
-	var id int
-	for {
-		id = rand.Intn(10000) // fejk random?
-		_, ok := pm.Projectiles[id]
-		if !ok {
-			break
-		}
-	}
-
-	pm.Projectiles[id] = p.NewProjectile()
-
-	fmt.Println("new projectile added:", id)
 }
 
 func (pm *ProjectileManager) Add(p *Projectile) {
-	var id int
-	for {
-		id = rand.Intn(10000) // fejk random?
-		_, ok := pm.Projectiles[id]
-		if !ok {
-			break
-		}
-	}
-
-	pm.Projectiles[id] = p
-
-	fmt.Println("new projectile added:", id)
+	pm.mutex.Lock()
+	defer pm.mutex.Unlock()
+	pm.counter++
+	pm.Projectiles[pm.counter] = p
+	fmt.Println("PManager: add:", pm.counter)
 }
 
 func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player, m *Map, broadcast chan []byte) {
+	pm.mutex.Lock()
+	defer pm.mutex.Unlock()
 
 	for i, v := range pm.Projectiles {
 		//fmt.Println(v)
@@ -70,14 +52,49 @@ func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player, m *
 		}
 
 		if !v.IsAlive {
-			pm.Remove(i)
+			fmt.Println("PManager: remove:", i)
+			delete(pm.Projectiles, i)
 		}
 	}
 }
 
-func (pm *ProjectileManager) Remove(key int) {
-	fmt.Println("remove projectile with ID:", key)
-	delete(pm.Projectiles, key) // maybe check ? or panic?
+func (pm *ProjectileManager) UpdateLocal(dt float32, players *map[int]*Player, m *Map) interface{} {
+	pm.mutex.Lock()
+	defer pm.mutex.Unlock()
+
+	buf := make([]interface{}, len(pm.Projectiles)*5)
+	idx := 0
+
+	for i, v := range pm.Projectiles {
+		v.Move(dt)
+		v.CollisionTest(m)
+
+		id := v.CollisionTestPlayers(players)
+		if id != -1 {
+			fmt.Println("KILLED LOCAL!?")
+		}
+
+		if !v.IsAlive {
+			fmt.Println("PManager: remove:", i)
+			delete(pm.Projectiles, i)
+
+			buf[idx] = i
+			buf[idx+1] = 0
+			buf[idx+2] = 0
+			buf[idx+3] = 0
+			buf[idx+4] = 0
+		} else {
+			buf[idx] = i
+			buf[idx+1] = v.Position.X
+			buf[idx+2] = v.Position.Y
+			buf[idx+3] = v.Position.Z
+			buf[idx+4] = 1
+		}
+
+		idx += 5
+	}
+
+	return buf
 }
 
 func (p *Player) NewProjectile() *Projectile {
@@ -95,7 +112,6 @@ func (p *Player) NewProjectile() *Projectile {
 		Velocity:     0.05,
 		Owner:        p,
 		IsAlive:      true,
-		Mutex:        &sync.RWMutex{},
 	}
 }
 
@@ -217,7 +233,7 @@ func (p *Projectile) CollisionTest(m *Map) {
 			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-				//fmt.Println("HIITT")
+				fmt.Println("HIITT WALL")
 				//p.Position.X = 1000
 
 				p.IsAlive = false
@@ -236,7 +252,7 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 		}
 
 		poly := NewTankHullPolygon()
-		poly.Translate(p.Position.X, p.Position.Y, 0)
+		poly.Translate(v.Position.X, v.Position.Y, 0)
 		poly.Rotate(v.Rotation, v.Position)
 
 		lastIdx := len(*poly) - 1
@@ -258,7 +274,7 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-				fmt.Println("TANK HIITT")
+				fmt.Println("TANK HIITT", v)
 				//fmt.Println(p.Owner.ID, "killed", v.ID)
 				//v.IsAlive = false
 				//v.Position.Set(rand.Float32()*60-30, rand.Float32()*60-30, 0)

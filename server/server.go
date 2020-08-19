@@ -71,6 +71,8 @@ func (s *Server) Manager() {
 								name := string(message.Payload)
 								if s.Game.CheckPlayerName(&name) {
 									v.Name = name
+									v.ExitLobby()
+
 									fmt.Println(v)
 									s.Network.Broadcast <- *game.SendPlayerName(v.ID, name)
 									//message.Client.NetworkOutput <- *game.SendPlayerName(v.ID, name)
@@ -154,6 +156,10 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 			p.SetSequenceNumber(&message)
 
 			if !p.IsAlive {
+				if p.Lobby {
+					return
+				}
+
 				if p.RespawnTime > game.RespawnTime {
 					p.Respawn()
 				} else {

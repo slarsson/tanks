@@ -32,7 +32,9 @@ var networkPlayers = make(map[int]*game.Player)
 var gameMap = game.NewMap()
 
 // ...
-var projectiles = make(map[int]*game.Projectile)
+var pmanager = game.NewProjectileManager()
+
+//var projectiles = make(map[int]*game.Projectile)
 
 // sequence: is the sequence number, incremented and sent to the server on every tick
 var sequence = uint32(0)
@@ -184,7 +186,6 @@ func main() {
 	js.Global().Set("wasm__get", js.FuncOf(getPosition))
 	js.Global().Set("wasm__setSelf", js.FuncOf(setSelf))
 	js.Global().Set("wasm__updateProjectiles", js.FuncOf(updateProjectiles))
-	js.Global().Set("wasm__addProjectile", js.FuncOf(addProjectile))
 	js.Global().Set("wasm__removePlayer", js.FuncOf(removePlayer))
 
 	fmt.Println("WASM: WebAssembly init!")

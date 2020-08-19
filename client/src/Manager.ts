@@ -87,15 +87,16 @@ class Manager {
                     let data = new Uint32Array(buffer);
                     console.log(data);
                     console.log('show kill log ?');
+                    this.graphics.addKillMessage(data[0].toString(), data[1].toString());
+
+                    // // let k1 = "wtfplayer" + Math.random();
+                    // // let k2 = "asdf" + Math.random();
+                    // let k1 = 'a';
+                    // let k2 = 'b';
         
-                    // let k1 = "wtfplayer" + Math.random();
-                    // let k2 = "asdf" + Math.random();
-                    let k1 = 'a';
-                    let k2 = 'b';
-        
-                    if (k1 != undefined && k2 != undefined) {
-                        this.graphics.addKillMessage(k1, k2);
-                    }
+                    // if (k1 != undefined && k2 != undefined) {
+                    //     this.graphics.addKillMessage(k1, k2);
+                    // }
                 }
                 break;
             

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"syscall/js"
 	"time"
 
@@ -22,15 +21,18 @@ func updateLocalPlayer() {
 	localPlayer.HandleCollsionWithPlayers(&networkPlayers, updateRate)
 	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles, updateRate)
 	if pr, ok := localPlayer.Shoot(); ok {
-		var wtf int
-		for {
-			wtf = rand.Intn(10000) // fejk random?
-			_, ok := projectiles[wtf]
-			if !ok {
-				break
-			}
-		}
-		projectiles[wtf] = pr
+		pmanager.Add(pr)
+		//fmt.Println("sh00ting", pr)
+
+		// var wtf int
+		// for {
+		// 	wtf = rand.Intn(10000) // fejk random?
+		// 	_, ok := projectiles[wtf]
+		// 	if !ok {
+		// 		break
+		// 	}
+		// }
+		// projectiles[wtf] = pr
 	}
 
 	// update last snapshoot of state for current sequence number
@@ -44,7 +46,13 @@ func updateLocalPlayer() {
 	}
 }
 
+func updateProjectiles(this js.Value, args []js.Value) interface{} {
+	dt := float32(args[0].Float())
+	return pmanager.UpdateLocal(dt, &networkPlayers, gameMap)
+}
+
 func update(this js.Value, args []js.Value) interface{} {
+	//fmt.Println(networkPlayers)
 	for i := 0; i < len(args)-1; i += 12 {
 		key := args[i].Int()
 		if p, ok := networkPlayers[key]; ok {
@@ -52,7 +60,7 @@ func update(this js.Value, args []js.Value) interface{} {
 			status := (args[i+11].Int() != 0)
 			if p.IsAlive != status {
 				p.IsAlive = status
-				fmt.Println("WASM: alive status has change (id:", p.ID, ")")
+				fmt.Println("WASM: alive status has change (id:", key, ")")
 			}
 
 			if !p.IsAlive {
@@ -77,19 +85,22 @@ func update(this js.Value, args []js.Value) interface{} {
 					//localPlayer.SyncState(p)
 					prev.ShouldUpdate = true
 				}
-
-				continue
-			}
-
-			// TODO: kanske inte så här...
-			if args[i+9].Int() == 1 {
-				addProjectile4Real(p)
+			} else {
+				// // TODO: kanske inte så här...
+				if args[i+9].Int() == 1 {
+					pmanager.Add(p.NewProjectile())
+					//fmt.Println("ADD NEWWWW ")
+					//fmt.Println("add p!!")
+					//addProjectile4Real(p)
+				}
 			}
 		} else {
+			key := args[i].Int()
 			networkPlayer := game.NewLocalPlayer()
+			networkPlayer.ID = key
 			networkPlayer.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
 			networkPlayer.Position.Set(float32(args[i+4].Float()), float32(args[i+5].Float()), float32(args[i+6].Float()))
-			networkPlayers[args[i].Int()] = networkPlayer
+			networkPlayers[key] = networkPlayer
 		}
 	}
 

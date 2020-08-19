@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 class Tank {
 
-    private isAlive: boolean = true;
+    public isAlive: boolean = false;
     private scene: THREE.Scene;
     private tank: THREE.Group;
     private hull: THREE.Group;
@@ -32,7 +32,6 @@ class Tank {
         this.hull.add(hullMesh);
         this.hull.add(this.turret);
         this.tank.add(this.hull);
-        this.scene.add(this.tank);
     }
 
     setPosition(x: number, y: number, z: number) {
@@ -52,17 +51,13 @@ class Tank {
     }
 
     kill(): void {
-        if (this.isAlive) {
-            this.isAlive = false;
-            this.dispose();
-        }
+        this.isAlive = false;
+        this.dispose();
     }
 
     respawn(): void {
-        if (!this.isAlive) {
-            this.isAlive = true;
-            this.scene.add(this.tank);
-        }
+        this.isAlive = true;
+        this.scene.add(this.tank);
     }
 
     addArrow(rot: number = 0, color: number = 0x00ff00): void {

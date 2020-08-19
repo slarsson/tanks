@@ -49,7 +49,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             setSelf: wasm__setSelf,
             //guessPosition: wasm__guessPosition,
             updateProjectiles: wasm__updateProjectiles,
-            addProjectile: wasm__addProjectile
+            //addProjectile: wasm__addProjectile
         }
 
         //setTimeout(() => new Manager(wasm), 3000);

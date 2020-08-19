@@ -15,40 +15,41 @@ const (
 )
 
 type Game struct {
-	Map         *Map
-	Players     map[int]*Player
-	Projectiles map[int]*Projectile
-	PManager    *ProjectileManager
-	mutex       *sync.RWMutex
-	Network     *network.Network
+	Map      *Map
+	Players  map[int]*Player
+	PManager *ProjectileManager
+	mutex    *sync.RWMutex
+	Network  *network.Network
 }
 
 func NewGame(n *network.Network) *Game {
 	return &Game{
-		Map:         NewMap(),
-		Players:     make(map[int]*Player),
-		Projectiles: make(map[int]*Projectile),
-		PManager:    NewProjectileManager(),
-		mutex:       &sync.RWMutex{},
-		Network:     n,
+		Map:     NewMap(),
+		Players: make(map[int]*Player),
+		//Projectiles: make(map[int]*Projectile),
+		PManager: NewProjectileManager(),
+		mutex:    &sync.RWMutex{},
+		Network:  n,
 	}
 }
 
-func (g *Game) AddProjectile(p *Player) {
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
+// func (g *Game) AddProjectile(p *Player) {
+// 	fmt.Println("hallå?")
 
-	var id int
-	for {
-		id = rand.Intn(10000) // fejk random?
-		_, ok := g.Projectiles[id]
-		if !ok {
-			break
-		}
-	}
+// 	g.mutex.Lock()
+// 	defer g.mutex.Unlock()
 
-	g.Projectiles[id] = p.NewProjectile()
-}
+// 	var id int
+// 	for {
+// 		id = rand.Intn(10000) // fejk random?
+// 		_, ok := g.Projectiles[id]
+// 		if !ok {
+// 			break
+// 		}
+// 	}
+
+// 	g.Projectiles[id] = p.NewProjectile()
+// }
 
 func (g *Game) AddPlayer(client *network.Client) {
 	g.mutex.Lock()
@@ -66,7 +67,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 	g.Players[playerID] = &Player{
 		ID:             playerID,
 		Name:           "unknownplayer_" + strconv.Itoa(playerID),
-		IsAlive:        true,
+		IsAlive:        false,
 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
 		Direction:      0,
@@ -75,6 +76,7 @@ func (g *Game) AddPlayer(client *network.Client) {
 		Client:         client,
 		Controls:       NewControls(),
 		WaitTime:       0,
+		Lobby:          true,
 	}
 
 	fmt.Printf("\033[1;34m%s\033[0m", "new player added with id", playerID, "\n")

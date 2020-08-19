@@ -33,6 +33,7 @@ type Player struct {
 	OutOfMapTime   float32
 	RespawnTime    float32
 	SequenceNumber uint32
+	Lobby          bool
 }
 
 func NewLocalPlayer() *Player {
@@ -106,8 +107,12 @@ func (p *Player) Move(dt float32) {
 func (p *Player) Respawn() {
 	p.IsAlive = true
 	p.RespawnTime = 0
-	p.Velocity.Set(0, 0, 0)
-	p.Position.Set(0, 0, 0)
+	p.Reset()
+}
+
+func (p *Player) ExitLobby() {
+	p.Lobby = false
+	p.Respawn()
 }
 
 func (p *Player) Reset() {
@@ -119,6 +124,7 @@ func (p *Player) Reset() {
 
 func (p *Player) Kill() {
 	p.IsAlive = false
+	//p.Reset()
 }
 
 func (p *Player) Shoot() (*Projectile, bool) {
