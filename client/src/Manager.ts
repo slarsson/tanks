@@ -1,6 +1,7 @@
 import Game from './Game';
 import Connection from './Connection2';
 import Graphics from './Graphics';
+import { runInThisContext } from 'vm';
 
 class Manager {
 
@@ -10,6 +11,7 @@ class Manager {
     private game: Game;
     private connection: Connection;
     private graphics: Graphics;
+    private playerNames: Map<number, string>;
 
     constructor(wasm: any) {
         this.messageHandler = this.messageHandler.bind(this);
@@ -23,7 +25,7 @@ class Manager {
         this.graphics = new Graphics();
         this.game = new Game(this.wasm, this.graphics);
         this.connection = new Connection('ws://localhost:1337', this.messageHandler, this.init, this.errorHandler);
-        
+        this.playerNames = new Map();
 
         console.log('my manager..');
     }
@@ -73,6 +75,8 @@ class Manager {
                     console.log('remove ID:', id);
                     this.wasm.removePlayer(id);
                     this.game.removePlayer(id);
+                    this.playerNames.delete(id);
+                    this.graphics.setConnectedPlayers(Array.from(this.playerNames.values()));
                 }
                 break;
 
@@ -85,37 +89,34 @@ class Manager {
             case 99:
                 {
                     let data = new Uint32Array(buffer);
-                    console.log(data);
-                    console.log('show kill log ?');
-                    this.graphics.addKillMessage(data[0].toString(), data[1].toString());
-
-                    // // let k1 = "wtfplayer" + Math.random();
-                    // // let k2 = "asdf" + Math.random();
-                    // let k1 = 'a';
-                    // let k2 = 'b';
-        
-                    // if (k1 != undefined && k2 != undefined) {
-                    //     this.graphics.addKillMessage(k1, k2);
-                    // }
+                    let k1 = this.playerNames.get(data[0]);
+                    let k2 = this.playerNames.get(data[1]);
+                    if (k1 == undefined || k2 == undefined) {
+                        console.warn('MANAGER: can not show kill log :(');
+                    } else {
+                        this.graphics.addKillMessage(k1, k2);
+                    }
                 }
                 break;
             
             case 98:
                 {
-                    let id = new Uint32Array(buffer.slice(0, 4));
+                    let id = new Uint32Array(buffer.slice(0, 4))[0];
                     let name = new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4)));
+                    this.playerNames.set(id, name);
+                    
                     //this.players.set(id[0], name);
         
                     console.log('self:', this.game.getSelf());
-                    if (id[0] == this.game.getSelf()) {                
+                    if (id == this.game.getSelf()) {                
                         this.graphics.removeNameInput();
-                        
                         this.game.camera.setFlyTo(0, -40, 30, 500);
                         this.game.camera.setMode(2);
                     } 
         
                     this.graphics.addMessage(`New player added: {id: ${id}, name: ${name}}`, 2000);
-        
+                    this.graphics.setConnectedPlayers(Array.from(this.playerNames.values()));
+
                     // console.log('id:', new Uint32Array(buffer.slice(0, 4)));
                     // console.log(new TextDecoder('utf-8').decode(new Uint8Array(buffer.slice(4))));
 

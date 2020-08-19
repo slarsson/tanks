@@ -271,6 +271,7 @@ class Graphics {
     }
     
     setConnectedPlayers(list: string[]): void {
+        list.sort();
         this.connectedPlayers.innerText = `${list.join(', ')} (${list.length} connected)`; 
     }
 
