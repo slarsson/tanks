@@ -156,6 +156,8 @@ class Graphics {
     private killLog: HTMLElement;
     private nameInput: NameInput | null;
     private connectedPlayers: HTMLElement;
+    private outOfMap: HTMLElement | null = null;
+    private outOfMapTimeout: number = -1;
 
     constructor() {
         let rootDiv = document.getElementById('graphics');
@@ -270,6 +272,36 @@ class Graphics {
     
     setConnectedPlayers(list: string[]): void {
         this.connectedPlayers.innerText = `${list.join(', ')} (${list.length} connected)`; 
+    }
+
+    showOutOfMap(n: number): void {
+        this.outOfMap = document.createElement('div');
+        this.outOfMap.classList.add('outofmap');
+        let box = document.createElement('div');
+            box.innerText = 'RETURN TO MAP';
+        let counter = document.createElement('div');
+            counter.innerText = '5';
+
+        box.appendChild(counter);
+        this.outOfMap.appendChild(box);
+        this.root.appendChild(this.outOfMap);
+
+        let countdown = (n: number) => {
+            counter.innerText = n.toString();
+            n--;
+            if (n == -1) return;
+            this.outOfMapTimeout = window.setTimeout(() => countdown(n), 1000);
+        };
+
+        countdown(n);
+    }
+
+    hideOutOfMap(): void {
+        window.clearTimeout(this.outOfMapTimeout);
+        if (this.outOfMap != null) {
+            this.root.removeChild(this.outOfMap);
+            this.outOfMap = null;
+        }
     }
 }
 

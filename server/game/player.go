@@ -210,6 +210,8 @@ func (p *Player) HandleCollsionWithObjects(objects *[]*Polygon, dt float32) {
 
 			if meh > -0.001 && meh < 0.001 {
 				fmt.Println("MAYBE PROBLEMZ")
+
+				//fmt.Println("obj:", v)
 				// p.Position.X = 0
 				// p.Position.Y = 0
 

@@ -1,11 +1,10 @@
-
 import Game from './Game';
 import Connection from './Connection2';
 import Graphics from './Graphics';
 
 class Manager {
 
-    public static readonly BROADCAST_RATE = 50;
+    public static readonly BROADCAST_RATE: number = 50;
 
     private wasm: any; // TODO: fix 'any'
     private game: Game;
@@ -32,7 +31,7 @@ class Manager {
     private init() {
         console.log('MANAGER: connection ok, start game');
 
-        this.graphics.addMessage('Connection OK', 2000);
+        //this.graphics.addMessage('Connection OK', 2000);
         this.pollState();
 
         window.addEventListener('keydown', this.registerKey);
@@ -59,18 +58,13 @@ class Manager {
 
     private messageHandler(mt: number, buffer: ArrayBuffer): void {
         if (mt == 0) {
-            // state update ..
-            //console.log('do state update..');
             let state = new Float32Array(buffer);   
             this.wasm.update(...state);
             this.game.update(state);
-            // for (let i = 0; i < state.length; i += 12) {
-            //     this.game.addPlayer(state[i]);
-            // }
             return;
         }
 
-        console.log('new message?', mt);
+        console.log('MANAGER: new message:', mt);
 
         switch (mt) {
             case 9: 
@@ -112,9 +106,11 @@ class Manager {
                     //this.players.set(id[0], name);
         
                     console.log('self:', this.game.getSelf());
-                    if (id[0] == this.game.getSelf()) {
-                        
+                    if (id[0] == this.game.getSelf()) {                
                         this.graphics.removeNameInput();
+                        
+                        this.game.camera.setFlyTo(0, -40, 30, 500);
+                        this.game.camera.setMode(2);
                     } 
         
                     this.graphics.addMessage(`New player added: {id: ${id}, name: ${name}}`, 2000);
@@ -137,7 +133,6 @@ class Manager {
     }
 
     private pollState(): void {
-        //console.log(this.wasm.poll().buffer);
         this.connection.send(this.wasm.poll().buffer);
         setTimeout(this.pollState, Manager.BROADCAST_RATE);
     }
@@ -147,6 +142,11 @@ class Manager {
             console.log(`MANAGER: key not used by wasm (${evt.key})`);
             if (evt.key == 'CapsLock') {
                 this.graphics.addMessage('CAPS LOCK WARNING :(', 2000, Graphics.WARNING);
+                return;
+            }
+
+            if (evt.key == 'z') {
+                this.game.camera.setMode(2);
             }
         }
     }

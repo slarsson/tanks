@@ -28,6 +28,11 @@ button {
     100% {opacity:1}
 }
 
+@keyframes bg-fade {
+    0% {background-color:rgba(0, 0, 0, 0);}
+    100% {background-color:rgba(0, 0, 0, .5)}
+}
+
 .fade-in {
     animation-name:in;
     animation-duration:0.5s;
@@ -168,8 +173,6 @@ button {
     }
 }
 
-
-
 // enter player name
 .popup--container {
     position: relative;
@@ -188,11 +191,6 @@ button {
         100% {border-color:rgba(217, 9, 0, 1);}
     }
 
-    @keyframes bg-fade {
-        0% {background-color:rgba(0, 0, 0, 0);}
-        100% {background-color:rgba(0, 0, 0, .5)}
-    }
-    
     @keyframes fly-in {
         0% {transform:translateY(calc(-50vh - 150px));}
         100% {transform:translateY(0%);}
@@ -292,6 +290,11 @@ button {
                 border:4px solid rgba(67, 156, 97, 1);
                 padding:2px;
             }
+
+            &:hover, &:active {
+                transition:background-color 0.2s ease-in;
+                background-color:rgba(67, 156, 97, 1);
+            }
         }
 
         label {
@@ -318,5 +321,29 @@ button {
 
     span {
         color:red;
+    }
+}
+
+.outofmap {
+    position:absolute;
+    width:100vw;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    background-color:rgba(0, 0, 0, 0.5);
+    animation:bg-fade;
+    animation-duration:1s;
+
+    & > div {
+        display:inline-block;
+        color:#fff;
+        font-size:25px;
+        
+        div {
+            text-align:center;
+            font-size:65px;
+            color:rgba(255, 60, 0, 1);
+        }
     }
 }

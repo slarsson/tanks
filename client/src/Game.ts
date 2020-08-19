@@ -1,25 +1,21 @@
 import * as THREE from 'three';
-
 import GameMap from './Map'
 import Tank from './Tank';
 import Projectile from './Particle';
 import Graphics from './Graphics';
+import Camera from './Camera';
 
 class Game {
 
+    public camera: Camera;
     private scene: THREE.Scene;
-    private camera: THREE.PerspectiveCamera;
     private renderer: THREE.WebGLRenderer;
-
     private timestamp: number;
     private self: number = -1;
     private outOfMap: boolean = false;
-
     private gameMap: GameMap;
     private players: Map<number, Tank>;
     private projectiles: Map<number, Projectile>;
-
-
     private graphics: Graphics;
     private wasm: any;
 
@@ -30,13 +26,9 @@ class Game {
         this.resize = this.resize.bind(this);
         this.animate = this.animate.bind(this);
        
+        // main setup
         this.scene = new THREE.Scene();
-
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
-        this.camera.position.y = -50;
-        this.camera.position.z = 30;
-        this.camera.lookAt(0, 0, 0);
-
+        this.camera = new Camera(window.innerWidth, window.innerHeight);
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setClearColor(0x000000, 0);
@@ -56,22 +48,14 @@ class Game {
         this.players = new Map();
         this.projectiles = new Map();
 
-        // init
+        // init game
         this.timestamp = performance.now();
         this.animate();
-
-        // // test
-        // this.addPlayer(1337);
-        // this.addPlayer(1337);
-        // this.addPlayer(1338);
-        // this.addPlayer(1339);
-        // setTimeout(() => this.removePlayer(1339), 4000);
     }
 
     private resize(evt: Event) {
         const w = evt.target as Window;
-        this.camera.aspect = w.innerWidth / w.innerHeight;
-        this.camera.updateProjectionMatrix();
+        this.camera.setAspect(w.innerWidth,w.innerHeight);
         this.renderer.setSize(w.innerWidth, w.innerHeight);
     }
 
@@ -90,16 +74,13 @@ class Game {
             player.setTurretRotation(state[4]);
 
             if (id == this.self) {
-                this.camera.position.x = state[0];
-                this.camera.position.y = state[1] - 40;
-
+                this.camera.setPosition(state[0], state[1] - 40, 30);
                 if (this.outOfMap != this.gameMap.outOfMap(state[0], state[1])) {
                     this.outOfMap = !this.outOfMap;
-                    
                     if (this.outOfMap) {
-                        this.graphics.addMessage('Out of map...', 1000, Graphics.WARNING);
+                        this.graphics.showOutOfMap(3);
                     } else {
-                        this.graphics.addMessage('Welcome back...', 1000, Graphics.INFO);
+                        this.graphics.hideOutOfMap();
                     }
                 }
             }
@@ -109,7 +90,6 @@ class Game {
         let projectiles = this.wasm.updateProjectiles(dt);
         for (let i = 0; i < projectiles.length; i += 5) {
             if (projectiles[i+4] == 0) {
-                //console.log('remove:', items[i]);
                 this.projectiles.get(projectiles[i])?.dispose();
                 this.projectiles.delete(projectiles[i]);
                 continue
@@ -121,8 +101,10 @@ class Game {
             this.projectiles.get(projectiles[i])?.set(projectiles[i+1], projectiles[i+2], projectiles[i+3]);
         }
 
+        this.camera.update(dt);
+
         // render
-        this.renderer.render(this.scene, this.camera);
+        this.renderer.render(this.scene, this.camera.instance);
         this.timestamp = now;
     }
 
@@ -144,7 +126,7 @@ class Game {
         if (this.players.has(id)) {
             this.players.get(id)?.addArrow();
         } else {
-            console.log('GAME: self player not created yet, try again in 100ms..')
+            console.log('GAME: self player not created yet, try again in 100ms..'); // retard solution ..
             setTimeout(() => this.setSelf(id), 100);
         }
     }
@@ -160,7 +142,7 @@ class Game {
             } else if (data[i+9] == 1) {
                 console.log('GAME: add projectile for id: ', data[i]);
             } else if (data[i+11] == 0) {
-                this.players.get(data[i])?.kill(); // not efficient? :((
+                this.players.get(data[i])?.kill(); // not efficient? :(( Because it checks everytime...
             } else {
                 this.players.get(data[i])?.respawn(); // meh..
             }  

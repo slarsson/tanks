@@ -137,7 +137,7 @@ class GameMap {
             this.scene.add(dirLight);
         }
 
-        scene.add(new THREE.AxesHelper(150));   
+        //scene.add(new THREE.AxesHelper(150));   
         
         // {
         //     let geometry = new THREE.Geometry();

@@ -169,7 +169,7 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 
 			if s.Game.Map.OutOfBounds(p.Position) {
 				p.OutOfMapTime += dt
-				if p.OutOfMapTime > 1500 {
+				if p.OutOfMapTime > 3000 {
 					p.Kill()
 				}
 			} else {

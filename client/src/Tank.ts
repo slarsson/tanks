@@ -2,11 +2,11 @@ import * as THREE from 'three';
 
 class Tank {
 
+    private isAlive: boolean = true;
     private scene: THREE.Scene;
     private tank: THREE.Group;
     private hull: THREE.Group;
     private turret: THREE.Group;
-    private isAlive: boolean = true;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -33,9 +33,6 @@ class Tank {
         this.hull.add(this.turret);
         this.tank.add(this.hull);
         this.scene.add(this.tank);
-
-        // test
-        //this.addArrow();
     }
 
     setPosition(x: number, y: number, z: number) {
