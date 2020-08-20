@@ -4,7 +4,6 @@ import Tank from './Tank';
 import Projectile from './Particle';
 import Graphics from './Graphics';
 import Camera from './Camera';
-import { throws } from 'assert';
 
 class Game {
 
@@ -87,7 +86,6 @@ class Game {
             }
         }
 
-        // // TODO: fix projectilez
         let projectiles = this.wasm.updateProjectiles(dt);
         for (let i = 0; i < projectiles.length; i += 5) {
             if (projectiles[i+4] == 0) {
@@ -113,7 +111,7 @@ class Game {
         if (!this.players.has(id)) {
             this.players.set(id, new Tank(this.scene));
         } else {
-            console.warn(`GAME: player alreay exists (id: ${id})`);
+            console.warn(`GAME: player already exists (id: ${id})`);
         }
     }
 
