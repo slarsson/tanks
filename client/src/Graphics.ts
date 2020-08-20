@@ -1,3 +1,4 @@
+
 interface NameInputActions {
     showError: (arg: string) => void;
     hideError: () => void;
@@ -131,13 +132,19 @@ class NameInput {
         this.input.offsetHeight; // force repaint, to recognize that animation-state has changed
         this.input.classList.toggle('input-error');
 
-        this.error.innerHTML = '';
+        // remove error div if it already exists
+        while (this.error.firstChild != null) {
+            this.error.removeChild(this.error.firstChild);
+        }
+
         this.error.appendChild(error);
         this.setLoading(false);
     }
 
     hideError(): void {
-        this.error.innerHTML = '';
+        while (this.error.firstChild != null) {
+            this.error.removeChild(this.error.firstChild);
+        }
     }
 
     dispose(): void {

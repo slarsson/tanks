@@ -34,7 +34,7 @@ func (pm *ProjectileManager) Add(p *Projectile) {
 	defer pm.mutex.Unlock()
 	pm.counter++
 	pm.Projectiles[pm.counter] = p
-	fmt.Println("PManager: add:", pm.counter)
+	fmt.Println("PMANAGER: add =>", pm.counter)
 }
 
 func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player, m *Map, broadcast chan []byte) {
@@ -48,11 +48,11 @@ func (pm *ProjectileManager) UpdateAll(dt float32, players *map[int]*Player, m *
 
 		id := v.CollisionTestPlayers(players)
 		if id != -1 {
-			broadcast <- *v.KillMessage(id)
+			broadcast <- v.KillMessage(id)
 		}
 
 		if !v.IsAlive {
-			fmt.Println("PManager: remove:", i)
+			fmt.Println("PMANAGER: remove =>", i)
 			delete(pm.Projectiles, i)
 		}
 	}
@@ -233,7 +233,7 @@ func (p *Projectile) CollisionTest(m *Map) {
 			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-				fmt.Println("HIITT WALL")
+				//fmt.Println("HIITT WALL")
 				//p.Position.X = 1000
 
 				p.IsAlive = false
@@ -274,7 +274,7 @@ func (p *Projectile) CollisionTestPlayers(players *map[int]*Player) int {
 			uB := ((B.X-A.X)*(A.Y-C.Y) - (B.Y-A.Y)*(A.X-C.X)) / ((D.Y-C.Y)*(B.X-A.X) - (D.X-C.X)*(B.Y-A.Y))
 
 			if uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1 {
-				fmt.Println("TANK HIITT", v)
+				//fmt.Println("TANK HIITT", v)
 				//fmt.Println(p.Owner.ID, "killed", v.ID)
 				//v.IsAlive = false
 				//v.Position.Set(rand.Float32()*60-30, rand.Float32()*60-30, 0)

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Assets } from './AssetsTest';
+import { Assets } from './Assets';
 import { Vector2 } from 'three';
 
 class Item {

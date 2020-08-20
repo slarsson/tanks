@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Quaternion } from 'three';
 
 class Camera {
     
@@ -10,7 +9,6 @@ class Camera {
     public instance: THREE.PerspectiveCamera;
     private mode: number = -1;
     private matrix:  THREE.Matrix4;
-
     private flyState = {
         speed: {x: 0, y: 0, z: 0},
         stop: {x: 0, y: 0, z: 0},
@@ -60,7 +58,7 @@ class Camera {
         }
         
         this.mode = mode;
-        console.log(`CAMERA: mode has been set to ${this.mode}`);
+        console.log(`CAMERA: mode set to => ${this.mode}`);
     }
 
     update(dt: number): void {

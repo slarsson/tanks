@@ -67,10 +67,10 @@ func (s *Server) Manager() {
 									v.ExitLobby()
 									s.Network.Broadcast <- game.PlayerNameMessage(v.ID, name)
 								} else {
-									message.Client.NetworkOutput <- *game.TestErrorMessage()
+									message.Client.NetworkOutput <- game.ErrorMessage()
 								}
 							} else {
-								message.Client.NetworkOutput <- *game.TestErrorMessage()
+								message.Client.NetworkOutput <- game.ErrorMessage()
 							}
 						}
 					}

@@ -1,5 +1,5 @@
 import Game from './Game';
-import Connection from './Connection2';
+import Connection from './Connection';
 import Graphics from './Graphics';
 import { runInThisContext } from 'vm';
 
@@ -130,8 +130,8 @@ class Manager {
         }
     }
 
-    private errorHandler(): void {
-        console.log('my error...');
+    private errorHandler(message: string): void {
+        this.graphics.addMessage(message, null, Graphics.ERROR);
     }
 
     private pollState(): void {

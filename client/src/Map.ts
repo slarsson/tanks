@@ -1,8 +1,6 @@
 import * as THREE from 'three';
-
-import { Assets } from './AssetsTest';
+import { Assets } from './Assets';
 import Container from './Container';
-import { Mesh } from 'three';
 
 interface ContainersTest {
     position: {x: number, y: number, z: number};
