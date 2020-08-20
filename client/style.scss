@@ -55,7 +55,7 @@ button {
     border-left:4px solid transparent;
     animation-name:spin;
     animation-duration:0.5s;
-    animation-timing-function: linear;
+    animation-timing-function:linear;
     animation-iteration-count:infinite;
 }
 
@@ -159,7 +159,7 @@ button {
         right:0;
         background-color:rgba(0, 0, 0, 0.5);
         padding:10px;
-        font-size:16px;
+        font-size:18px;
         color:#fff;
         display:flex;
         align-items:center; 
@@ -167,7 +167,7 @@ button {
 
     svg {
         fill:#fff;
-        width:40px;
+        width:50px;
         margin:0px 10px 0px 10px;
         //height:20px;
     }
@@ -316,7 +316,7 @@ button {
     bottom:0;
     left:0;
     padding:5px;
-    font-size:15px;
+    font-size:16px;
     color:#fff;
 
     span {

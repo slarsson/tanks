@@ -29,17 +29,16 @@ func NewServer() *Server {
 	return s
 }
 
-func validateName(input *[]byte) bool {
-	if len(*input) > 20 {
+func validateName(input []byte) bool {
+	if len(input) > 20 {
 		return false
 	}
 
-	matched, err := regexp.Match(`^[A-Za-z0-9_-]+$`, *input)
+	matched, err := regexp.Match(`^[A-Za-z0-9_-]+$`, input)
 
 	if err != nil || !matched {
 		return false
 	}
-
 	return true
 }
 
@@ -56,50 +55,26 @@ func (s *Server) Manager() {
 				case 1:
 					for k, v := range s.Game.Players {
 						if v.Client == message.Client {
-							fmt.Println("player to remove found!!!")
 							s.Game.RemovePlayer(k)
-
-							// TODO: send del message to all clients
 						}
 					}
 				case 99:
-					fmt.Println("ADD NEW NAME:", string(message.Payload))
-
 					for _, v := range s.Game.Players {
 						if v.Client == message.Client {
-							if validateName(&message.Payload) {
+							if validateName(message.Payload) {
 								name := string(message.Payload)
-								if s.Game.CheckPlayerName(&name) {
-									v.Name = name
+								if s.Game.SetPlayerName(v.ID, name) {
 									v.ExitLobby()
-
-									fmt.Println(v)
-									s.Network.Broadcast <- *game.SendPlayerName(v.ID, name)
-									//message.Client.NetworkOutput <- *game.SendPlayerName(v.ID, name)
+									s.Network.Broadcast <- game.PlayerNameMessage(v.ID, name)
 								} else {
 									message.Client.NetworkOutput <- *game.TestErrorMessage()
-									//fmt.Println("NAME EXISTS!!")
-									// send error msg
 								}
 							} else {
-								//fmt.Println("BAD INPUT")
 								message.Client.NetworkOutput <- *game.TestErrorMessage()
 							}
-
-							fmt.Println("add name to", v.Name)
 						}
 					}
-
-					// buf := make([]byte, 4)
-					// mt := make([]byte, 4)
-					// binary.LittleEndian.PutUint32(mt, 98)
-
-					// buf = append(buf, mt...)
-					// buf = append(buf, []byte("hejsan svejsan:"+string(message.Payload))...)
-
-					//message.Client.NetworkOutput <- *game.SendPlayerName(string(message.Payload))
 				}
-
 			}
 		}
 	}

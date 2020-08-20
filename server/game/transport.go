@@ -103,20 +103,30 @@ func TestMessage() *[]byte {
 	return &buf
 }
 
-func SendPlayerName(playerID int, data string) *[]byte {
-	buf := make([]byte, 0)
-	mt := make([]byte, 4)
-	id := make([]byte, 4)
+// mt = 98
+func PlayerNameMessage(playerID int, data string) []byte {
+	buf := make([]byte, 8)
 	str := []byte(data)
-
-	binary.LittleEndian.PutUint32(mt, 98)
-	binary.LittleEndian.PutUint32(id, uint32(playerID))
-
-	buf = append(buf, mt...)
-	buf = append(buf, id...)
+	binary.LittleEndian.PutUint32(buf[0:4], 98)
+	binary.LittleEndian.PutUint32(buf[4:8], uint32(playerID))
 	buf = append(buf, str...)
+	return buf
+}
 
-	return &buf
+// mt = 10
+func SelfNameMessage(playerID int) []byte {
+	buf := make([]byte, 8)
+	binary.LittleEndian.PutUint32(buf[0:4], 10)
+	binary.LittleEndian.PutUint32(buf[4:8], uint32(playerID))
+	return buf
+}
+
+// mt = 9
+func RemovePlayerMessage(playerID int) []byte {
+	buf := make([]byte, 8)
+	binary.LittleEndian.PutUint32(buf[0:4], 9)
+	binary.LittleEndian.PutUint32(buf[4:8], uint32(playerID))
+	return buf
 }
 
 func TestErrorMessage() *[]byte {

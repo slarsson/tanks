@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"strconv"
 
 	"github.com/slarsson/game/network"
 )
@@ -34,6 +35,23 @@ type Player struct {
 	RespawnTime    float32
 	SequenceNumber uint32
 	Lobby          bool
+}
+
+func NewPlayer(ID int, client *network.Client) *Player {
+	return &Player{
+		ID:             ID,
+		Name:           "unknown_" + strconv.Itoa(ID),
+		IsAlive:        false,
+		Position:       &Vector3{X: 0, Y: 0, Z: 0},
+		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
+		Direction:      0,
+		Rotation:       0,
+		TurretRotation: 0,
+		Client:         client,
+		Controls:       NewControls(),
+		WaitTime:       0,
+		Lobby:          true,
+	}
 }
 
 func NewLocalPlayer() *Player {

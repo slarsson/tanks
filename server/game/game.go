@@ -1,10 +1,7 @@
 package game
 
 import (
-	"encoding/binary"
 	"fmt"
-	"math/rand"
-	"strconv"
 	"sync"
 
 	"github.com/slarsson/game/network"
@@ -20,135 +17,74 @@ type Game struct {
 	PManager *ProjectileManager
 	mutex    *sync.RWMutex
 	Network  *network.Network
+	counter  int
 }
 
 func NewGame(n *network.Network) *Game {
 	return &Game{
-		Map:     NewMap(),
-		Players: make(map[int]*Player),
-		//Projectiles: make(map[int]*Projectile),
+		Map:      NewMap(),
+		Players:  make(map[int]*Player),
 		PManager: NewProjectileManager(),
 		mutex:    &sync.RWMutex{},
 		Network:  n,
+		counter:  0,
 	}
 }
 
-// func (g *Game) AddProjectile(p *Player) {
-// 	fmt.Println("hallå?")
-
-// 	g.mutex.Lock()
-// 	defer g.mutex.Unlock()
-
-// 	var id int
-// 	for {
-// 		id = rand.Intn(10000) // fejk random?
-// 		_, ok := g.Projectiles[id]
-// 		if !ok {
-// 			break
-// 		}
-// 	}
-
-// 	g.Projectiles[id] = p.NewProjectile()
-// }
-
 func (g *Game) AddPlayer(client *network.Client) {
+	// broadcast the names of all the connected players to the new player
+	for i, v := range g.Players {
+		if v.Lobby {
+			continue
+		}
+		client.NetworkOutput <- PlayerNameMessage(i, v.Name)
+	}
+
+	g.mutex.Lock()
+	g.counter++
+	ID := g.counter
+	g.Players[ID] = NewPlayer(ID, client)
+	g.mutex.Unlock()
+
+	fmt.Printf("GAME: "+colorBlue+"NEW PLAYER ADDED (ID = %d)"+colorReset, ID)
+	fmt.Println("")
+
+	client.NetworkOutput <- SelfNameMessage(ID)
+}
+
+func (g *Game) RemovePlayer(playerID int) {
+	g.mutex.Lock()
+	delete(g.Players, playerID)
+	g.mutex.Unlock()
+
+	fmt.Printf("GAME: "+colorPurple+"REMOVED PLAYER (ID = %d)"+colorReset, playerID)
+	fmt.Println("")
+
+	g.Network.Broadcast <- RemovePlayerMessage(playerID)
+}
+
+func (g Game) PlayerNameExists(name *string) bool {
+	for _, v := range g.Players {
+		if v.Name == *name {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) SetPlayerName(playerID int, name string) bool {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	var playerID int
-	for {
-		playerID = rand.Intn(10000) // fejk random?
-		_, ok := g.Players[playerID]
-		if !ok {
-			break
-		}
-	}
-
-	g.Players[playerID] = &Player{
-		ID:             playerID,
-		Name:           "unknownplayer_" + strconv.Itoa(playerID),
-		IsAlive:        false,
-		Position:       &Vector3{X: 0, Y: 0, Z: 0},
-		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
-		Direction:      0,
-		Rotation:       0,
-		TurretRotation: 0,
-		Client:         client,
-		Controls:       NewControls(),
-		WaitTime:       0,
-		Lobby:          true,
-	}
-
-	fmt.Printf("\033[1;34m%s\033[0m", "new player added with id", playerID, "\n")
-
-	buf := make([]byte, 0)
-	mt := make([]byte, 4)
-	id := make([]byte, 4)
-
-	binary.LittleEndian.PutUint32(mt, 10)
-	binary.LittleEndian.PutUint32(id, uint32(playerID))
-
-	buf = append(buf, mt...)
-	buf = append(buf, id...)
-
-	fmt.Println(buf)
-
-	g.Players[playerID].Client.NetworkOutput <- buf
-
-}
-
-func (g *Game) RemovePlayer(idx int) {
-	g.mutex.Lock()
-	delete(g.Players, idx)
-	g.mutex.Unlock()
-
-	buf := make([]byte, 0)
-	mt := make([]byte, 4)
-	id := make([]byte, 4)
-
-	binary.LittleEndian.PutUint32(mt, 9)
-	binary.LittleEndian.PutUint32(id, uint32(idx))
-
-	buf = append(buf, mt...)
-	buf = append(buf, id...)
-
-	g.Network.Broadcast <- buf
-}
-
-func (g Game) CheckPlayerName(name *string) bool {
 	for _, v := range g.Players {
-		if v.Name == *name {
+		if v.Name == name {
 			return false
 		}
 	}
 
-	return true
+	if p, ok := g.Players[playerID]; ok {
+		p.Name = name
+		return true
+	}
+	return false
 }
-
-// func (g *Game) addBot() {
-// 	g.mutex.Lock()
-// 	defer g.mutex.Unlock()
-
-// 	var playerID int
-// 	for {
-// 		playerID = rand.Intn(10000) // fejk random?
-// 		_, ok := g.Players[playerID]
-// 		if !ok {
-// 			break
-// 		}
-// 	}
-
-// 	g.Players[playerID] = &Player{
-// 		ID:             playerID,
-// 		Name:           "player" + strconv.Itoa(playerID),
-// 		Position:       &Vector3{X: 0, Y: 0, Z: 0},
-// 		Velocity:       &Vector3{X: 0, Y: 0, Z: 0},
-// 		Rotation:       0,
-// 		TurretRotation: 0,
-// 		Client:         nil,
-// 	}
-// }
-
-// func (p *Player) moveBot(dt float32) {
-// 	p.Position.Y += dt * 0.001
-// }
