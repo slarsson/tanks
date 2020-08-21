@@ -22,7 +22,7 @@ class Assets {
                     Assets.loadTexture('warning.png'),
                     Assets.loadTexture('pn.png'),
                     Assets.loadTexture('msc.png'),
-                    Assets.loadTexture('maersk.png'),
+                    Assets.loadTexture('maersk.png')
                 ]);
 
                 this.textures = {

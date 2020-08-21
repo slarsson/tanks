@@ -3,6 +3,8 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 type Map struct {
@@ -26,7 +28,7 @@ type ContainerGroup struct {
 func NewMap() *Map {
 	data := []byte(`{
 		"name": "Port of Nrkp",
-		"boundaries": [50, -50, 50, -50], 
+		"boundaries": [50, -50, 50, -50],
 		"containers": [
 			{
 				"position": {
@@ -40,23 +42,63 @@ func NewMap() *Map {
 			},
 			{
 				"position": {
-					"x": -20,
+					"x": 20,
+					"y": 7,
+					"z": 0
+				},
+				"rotation": 0,
+				"total": 16,
+				"bottom": 8
+			},
+			{
+				"position": {
+					"x": -30,
 					"y": 15,
 					"z": 0
 				},
-				"rotation": -0.3,
-				"total": 5,
+				"rotation": -0.5,
+				"total": 7,
 				"bottom": 5
 			},
 			{
 				"position": {
 					"x": 0,
-					"y": 30,
+					"y": 35,
 					"z": 0
 				},
-				"rotation": 0.5,
-				"total": 2,
+				"rotation": 0,
+				"total": 1,
 				"bottom": 1
+			},
+			{
+				"position": {
+					"x": -20,
+					"y": 35,
+					"z": 0
+				},
+				"rotation": 0,
+				"total": 1,
+				"bottom": 1
+			},
+			{
+				"position": {
+					"x": -25,
+					"y": -20,
+					"z": 0
+				},
+				"rotation": 1.5,
+				"total": 4,
+				"bottom": 4
+			},
+			{
+				"position": {
+					"x": -35,
+					"y": -30,
+					"z": 0
+				},
+				"rotation": 1.5,
+				"total": 9,
+				"bottom": 5
 			}
 		]
 	}`)
@@ -185,4 +227,17 @@ func (m *Map) OutOfBounds(point *Vector3) bool {
 
 func (m Map) OffsetMap(point *Vector3, distance float32) bool {
 	return point.X > (m.Boundaries[0]+distance) || point.X < (m.Boundaries[1]-distance) || point.Y > (m.Boundaries[2]+distance) || point.Y < (m.Boundaries[3]-distance)
+}
+
+func (m Map) RandomRespawn() (float32, float32) {
+	s1 := [2]float32{0, 0}
+	s2 := [2]float32{-20, -20}
+
+	arr := [2][2]float32{s1, s2}
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	idx := r.Intn(2)
+
+	return arr[idx][0], arr[idx][1]
 }

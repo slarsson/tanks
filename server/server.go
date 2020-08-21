@@ -136,7 +136,7 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 				}
 
 				if p.RespawnTime > game.RespawnTime {
-					p.Respawn()
+					p.Respawn(s.Game.Map.RandomRespawn())
 				} else {
 					p.RespawnTime += dt
 				}

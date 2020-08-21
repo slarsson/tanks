@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Assets } from './Assets';
 import Container from './Container';
 import { runInThisContext } from 'vm';
+import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 
 interface ContainersTest {
     position: {x: number, y: number, z: number};
@@ -20,7 +21,7 @@ class GameMap {
 
     private manifest: MapManifest;
     private scene: THREE.Scene;
-    
+
     constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.manifest = JSON.parse(`{
@@ -39,23 +40,53 @@ class GameMap {
                 },
                 {
                     "position": {
-                        "x": -20,
+                        "x": 20,
+                        "y": 7,
+                        "z": 0
+                    },
+                    "rotation": 0,
+                    "total": 16,
+                    "bottom": 8
+                },
+                {
+                    "position": {
+                        "x": -30,
                         "y": 15,
                         "z": 0
                     },
-                    "rotation": -0.3,
-                    "total": 5,
+                    "rotation": -0.5,
+                    "total": 7,
                     "bottom": 5
                 },
                 {
                     "position": {
                         "x": 0,
-                        "y": 30,
+                        "y": 35,
                         "z": 0
                     },
-                    "rotation": 0.5,
-                    "total": 2,
+                    "rotation": 0,
+                    "total": 1,
                     "bottom": 1
+                },
+                {
+                    "position": {
+                        "x": -20,
+                        "y": 35,
+                        "z": 0
+                    },
+                    "rotation": 0,
+                    "total": 1,
+                    "bottom": 1
+                },
+                {
+                    "position": {
+                        "x": -25,
+                        "y": -20,
+                        "z": 0
+                    },
+                    "rotation": 1.5,
+                    "total": 4,
+                    "bottom": 4
                 },
                 {
                     "position": {
@@ -63,7 +94,7 @@ class GameMap {
                         "y": -30,
                         "z": 0
                     },
-                    "rotation": 1.2,
+                    "rotation": 1.5,
                     "total": 9,
                     "bottom": 5
                 }
@@ -89,8 +120,9 @@ class GameMap {
 
             this.scene.add(new THREE.Mesh(
                 mesh,
-                new THREE.MeshBasicMaterial({color: 0xa0a09a, side: THREE.DoubleSide})  
-                //new THREE.MeshPhongMaterial({color: 0xb7b1ae, side: THREE.DoubleSide})
+                //new THREE.MeshBasicMaterial({color: 0xc6c1b0, side: THREE.DoubleSide})  
+                //new THREE.MeshBasicMaterial({color: 0xa0a09a, side: THREE.DoubleSide})  
+                new THREE.MeshPhongMaterial({color: 0xb7b1ae, side: THREE.DoubleSide})
             ));
         }
         
@@ -136,36 +168,7 @@ class GameMap {
             this.scene.add(dirLight);
         }
 
-        // this.test = new Container(this.scene, 1, 1);
-        // this.test.setPosition(0, 5, 0);
-        // this.test.setScale(2);
-        
-        
-
-        //scene.add(new THREE.AxesHelper(150));   
-        
-        // {
-        //     let geometry = new THREE.Geometry();
-        //         geometry.vertices= [
-        //             // new THREE.Vector3(2,1,0), 
-        //             // new THREE.Vector3(1,3,0), 
-        //             // new THREE.Vector3(3,4,0)
-        //             new THREE.Vector3(0,0,0), 
-        //             new THREE.Vector3(0.5,0,1), 
-        //             new THREE.Vector3(-0.5,0,1)
-        //         ]; 
-        //         geometry.faces = [new THREE.Face3(0, 1, 2)];
-
-        //     let swag = new THREE.Mesh(
-        //         geometry,
-        //         new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: 0.5, side: THREE.DoubleSide})
-        //     );
-
-        //     swag.position.z = 4;
-        //     swag.scale.set(2, 2, 2);
-
-        //     this.scene.add(swag);
-        // }
+        scene.add(new THREE.AxesHelper(150)); 
     }
 
     outOfMap(x: number, y: number): boolean {
@@ -173,10 +176,7 @@ class GameMap {
     }
 
     update(dt: number) {
-        // this.rot += dt * 0.001;
-        // this.test.setRotation(this.rot);
-        
-        //console.log('update map');
+        // map updates goes here..
     }
 }
 

@@ -122,15 +122,16 @@ func (p *Player) Move(dt float32) {
 	//fmt.Println("X:", p.Velocity.Length())
 }
 
-func (p *Player) Respawn() {
+func (p *Player) Respawn(x float32, y float32) {
 	p.IsAlive = true
 	p.RespawnTime = 0
 	p.Reset()
+	p.Position.Set(x, y, 0)
 }
 
 func (p *Player) ExitLobby() {
 	p.Lobby = false
-	p.Respawn()
+	p.Respawn(0, 0)
 }
 
 func (p *Player) Reset() {
