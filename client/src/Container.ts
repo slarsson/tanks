@@ -94,19 +94,6 @@ class Item {
     public dispose(): void {
         this.scene.remove(this.mesh);
     }
-
-    public test(tex: THREE.Texture): void {
-        console.log('wtf..', tex);
-
-        this.mesh.material = [
-            new THREE.MeshPhongMaterial({color: 0xff0000}),
-            new THREE.MeshPhongMaterial({color: 0xff0000}),
-            new THREE.MeshPhongMaterial({color: 0xff0000}),
-            new THREE.MeshPhongMaterial({map: tex, color: 0xff0000}),
-            new THREE.MeshPhongMaterial({color: 0xff0000}),
-            new THREE.MeshPhongMaterial({color: 0xff0000})
-        ];
-    }
 }
 
 class Container {    
