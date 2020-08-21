@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Assets } from './Assets';
 import Container from './Container';
+import { runInThisContext } from 'vm';
 
 interface ContainersTest {
     position: {x: number, y: number, z: number};
@@ -19,6 +20,9 @@ class GameMap {
 
     private manifest: MapManifest;
     private scene: THREE.Scene;
+
+    private test: Container;
+    private rot: number = 0;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -135,6 +139,12 @@ class GameMap {
             this.scene.add(dirLight);
         }
 
+        // this.test = new Container(this.scene, 1, 1);
+        // this.test.setPosition(0, 5, 0);
+        // this.test.setScale(2);
+        
+        
+
         //scene.add(new THREE.AxesHelper(150));   
         
         // {
@@ -163,6 +173,13 @@ class GameMap {
 
     outOfMap(x: number, y: number): boolean {
         return x > this.manifest.boundaries[0] || x < this.manifest.boundaries[1] || y > this.manifest.boundaries[2] || y < this.manifest.boundaries[3];
+    }
+
+    update(dt: number) {
+        // this.rot += dt * 0.001;
+        // this.test.setRotation(this.rot);
+        
+        //console.log('update map');
     }
 }
 

@@ -20,7 +20,8 @@ class Assets {
             try {
                 let resp = await Promise.all([
                     Assets.loadTexture('warning2.png'),
-                    Assets.loadTexture('pn.png'),
+                    Assets.loadTexture('container_full.png'),
+                    //Assets.loadTexture('pn.png'),
                     Assets.loadTexture('msc.png'),
                     Assets.loadTexture('maersk.png'),
                 ]);

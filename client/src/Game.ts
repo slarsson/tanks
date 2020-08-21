@@ -100,6 +100,7 @@ class Game {
             this.projectiles.get(projectiles[i])?.set(projectiles[i+1], projectiles[i+2], projectiles[i+3]);
         }
 
+        this.gameMap.update(dt);
         this.camera.update(dt);
 
         // render
