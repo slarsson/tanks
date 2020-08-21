@@ -1,8 +1,6 @@
 import * as THREE from 'three';
 import { Assets } from './Assets';
 import Container from './Container';
-import { runInThisContext } from 'vm';
-import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 
 interface ContainersTest {
     position: {x: number, y: number, z: number};
@@ -24,82 +22,16 @@ class GameMap {
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
-        this.manifest = JSON.parse(`{
-            "name": "Port of Nrkp",
-            "boundaries": [50, -50, 50, -50],
-            "containers": [
-                {
-                    "position": {
-                        "x": 40,
-                        "y": 0,
-                        "z": 0
-                    },
-                    "rotation": 0,
-                    "total": 25,
-                    "bottom": 10
-                },
-                {
-                    "position": {
-                        "x": 20,
-                        "y": 7,
-                        "z": 0
-                    },
-                    "rotation": 0,
-                    "total": 16,
-                    "bottom": 8
-                },
-                {
-                    "position": {
-                        "x": -30,
-                        "y": 15,
-                        "z": 0
-                    },
-                    "rotation": -0.5,
-                    "total": 7,
-                    "bottom": 5
-                },
-                {
-                    "position": {
-                        "x": 0,
-                        "y": 35,
-                        "z": 0
-                    },
-                    "rotation": 0,
-                    "total": 1,
-                    "bottom": 1
-                },
-                {
-                    "position": {
-                        "x": -20,
-                        "y": 35,
-                        "z": 0
-                    },
-                    "rotation": 0,
-                    "total": 1,
-                    "bottom": 1
-                },
-                {
-                    "position": {
-                        "x": -25,
-                        "y": -20,
-                        "z": 0
-                    },
-                    "rotation": 1.5,
-                    "total": 4,
-                    "bottom": 4
-                },
-                {
-                    "position": {
-                        "x": -35,
-                        "y": -30,
-                        "z": 0
-                    },
-                    "rotation": 1.5,
-                    "total": 9,
-                    "bottom": 5
-                }
-            ]
-        }`);
+            
+        if (Assets.map != undefined) {
+            this.manifest = Assets.map; // clone?
+        } else {
+            this.manifest = {
+                name: 'default',
+                boundaries: [12, -12, 12, -12],
+                containers: []
+            };
+        }
 
         for (const item of this.manifest.containers) {
             let c = new Container(this.scene, item.total, item.bottom);
@@ -144,12 +76,15 @@ class GameMap {
                     yTexture.wrapT = THREE.RepeatWrapping;
                     yTexture.repeat.set((xLength / w), 1);
                     yTexture.needsUpdate = true;
+                    yTexture.minFilter = THREE.LinearFilter;
+
                 let xTexture = Assets.textures?.warning.clone();
                     xTexture.wrapS = THREE.RepeatWrapping;
                     xTexture.wrapT = THREE.RepeatWrapping;
                     xTexture.repeat.set(1, (yLength / w));    
                     xTexture.needsUpdate = true;
-                
+                    xTexture.minFilter = THREE.LinearFilter;
+
                 this.scene.add(new THREE.Mesh(yTop, new THREE.MeshBasicMaterial({map: yTexture})));
                 this.scene.add(new THREE.Mesh(yBottom, new THREE.MeshBasicMaterial({map: yTexture})));
                 this.scene.add(new THREE.Mesh(xTop, new THREE.MeshBasicMaterial({map: xTexture})));
@@ -180,4 +115,7 @@ class GameMap {
     }
 }
 
-export default GameMap;
+export {
+    GameMap,
+    MapManifest
+};

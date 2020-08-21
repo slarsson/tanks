@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import GameMap from './Map'
+import { GameMap } from './Map'
 import Tank from './Tank';
 import Projectile from './Particle';
 import Graphics from './Graphics';

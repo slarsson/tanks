@@ -19,11 +19,13 @@ class Item {
         } else if (rand == 1) {
             t = Assets.textures?.maersk.clone();
         } else {
-            t = Assets.textures?.msc.clone();
+            //t = Assets.textures?.msc.clone();
+            t = Assets.textures?.postnord.clone();
         }
 
         if (t != undefined) {
             t.needsUpdate = true;
+            t.minFilter = THREE.LinearFilter;
             m = new THREE.MeshPhongMaterial({map: t, side: THREE.DoubleSide});
         } else {
             console.warn('CONTAINER: texture is missing :(');

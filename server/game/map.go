@@ -10,12 +10,19 @@ import (
 type Map struct {
 	Obstacles  []*Polygon
 	Boundaries [4]float32 // maxX, minX, maxY, minY
+	Spawns     []SpawnPoint
 }
 
 type MapData struct {
 	Name       string           `json:"name"`
 	Boundaries [4]float32       `json:"boundaries"`
+	Spawns     []SpawnPoint     `json:"spawns"`
 	Containers []ContainerGroup `json:"containers"`
+}
+
+type SpawnPoint struct {
+	X float32 `json:"x"`
+	Y float32 `json:"y"`
 }
 
 type ContainerGroup struct {
@@ -29,6 +36,7 @@ func NewMap() *Map {
 	data := []byte(`{
 		"name": "Port of Nrkp",
 		"boundaries": [50, -50, 50, -50],
+		"spawns": [{"x": 0, "y":0}, {"x": 20, "y": -20}],
 		"containers": [
 			{
 				"position": {
@@ -208,10 +216,13 @@ func NewMap() *Map {
 	// 	&Vector3{X: 0, Y: 15, Z: 0},
 	// }
 
+	fmt.Println(manifest.Spawns)
+
 	return &Map{
 		Obstacles: obstacles,
 		//Boundaries: [4]float32{50, -50, 50, -50},
 		Boundaries: manifest.Boundaries,
+		Spawns:     manifest.Spawns,
 	}
 }
 
@@ -229,15 +240,12 @@ func (m Map) OffsetMap(point *Vector3, distance float32) bool {
 	return point.X > (m.Boundaries[0]+distance) || point.X < (m.Boundaries[1]-distance) || point.Y > (m.Boundaries[2]+distance) || point.Y < (m.Boundaries[3]-distance)
 }
 
-func (m Map) RandomRespawn() (float32, float32) {
-	s1 := [2]float32{0, 0}
-	s2 := [2]float32{-20, -20}
+func (m Map) RandomSpawn() (float32, float32) {
+	n := len(m.Spawns)
+	if n == 0 {
+		return 0, 0
+	}
 
-	arr := [2][2]float32{s1, s2}
-
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	idx := r.Intn(2)
-
-	return arr[idx][0], arr[idx][1]
+	idx := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(n)
+	return m.Spawns[idx].X, m.Spawns[idx].Y
 }

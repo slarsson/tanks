@@ -1,0 +1,86 @@
+{
+    "name": "Port of Nrkp",
+    "boundaries": [50, -50, 50, -50],
+    "spawns": [
+        {
+            "x": 0, 
+            "y":0
+        }, 
+        {
+            "x": 20, 
+            "y": -20
+        }
+    ],
+    "containers": [
+        {
+            "position": {
+                "x": 40,
+                "y": 0,
+                "z": 0
+            },
+            "rotation": 0,
+            "total": 25,
+            "bottom": 10
+        },
+        {
+            "position": {
+                "x": 20,
+                "y": 7,
+                "z": 0
+            },
+            "rotation": 0,
+            "total": 16,
+            "bottom": 8
+        },
+        {
+            "position": {
+                "x": -30,
+                "y": 15,
+                "z": 0
+            },
+            "rotation": -0.5,
+            "total": 7,
+            "bottom": 5
+        },
+        {
+            "position": {
+                "x": 0,
+                "y": 35,
+                "z": 0
+            },
+            "rotation": 0,
+            "total": 1,
+            "bottom": 1
+        },
+        {
+            "position": {
+                "x": -20,
+                "y": 35,
+                "z": 0
+            },
+            "rotation": 0,
+            "total": 1,
+            "bottom": 1
+        },
+        {
+            "position": {
+                "x": -25,
+                "y": -20,
+                "z": 0
+            },
+            "rotation": 1.5,
+            "total": 4,
+            "bottom": 4
+        },
+        {
+            "position": {
+                "x": -35,
+                "y": -30,
+                "z": 0
+            },
+            "rotation": 1.5,
+            "total": 9,
+            "bottom": 5
+        }
+    ]
+}

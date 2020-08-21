@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { MapManifest } from './Map';
 
 interface Textures {
     warning: THREE.Texture;
@@ -10,9 +11,11 @@ interface Textures {
 class Assets {
     
     public textures: Textures | undefined;
+    public map: MapManifest | undefined;
 
     constructor(){
         this.textures = undefined;
+        this.map = undefined;
     }
 
     public load(): Promise<boolean> {
@@ -22,7 +25,8 @@ class Assets {
                     Assets.loadTexture('warning.png'),
                     Assets.loadTexture('pn.png'),
                     Assets.loadTexture('msc.png'),
-                    Assets.loadTexture('maersk.png')
+                    Assets.loadTexture('maersk.png'),
+                    Assets.loadMap('map.json')
                 ]);
 
                 this.textures = {
@@ -31,6 +35,8 @@ class Assets {
                     msc: resp[2],
                     maersk: resp[3]
                 };
+
+                this.map = resp[4];
                 
                 resolve(true);
             } catch(err) {
@@ -47,6 +53,14 @@ class Assets {
                 undefined,
                 (err) => reject(err)
             );
+        });
+    }
+
+    private static loadMap(url): Promise<MapManifest> {
+        return new Promise((resolve, reject) => {
+            fetch(url)
+                .then(resp => resolve(resp.json()))
+                .catch(err => reject(err));
         });
     }
 }
