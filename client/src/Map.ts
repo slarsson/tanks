@@ -20,10 +20,7 @@ class GameMap {
 
     private manifest: MapManifest;
     private scene: THREE.Scene;
-
-    private test: Container;
-    private rot: number = 0;
-
+    
     constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.manifest = JSON.parse(`{
