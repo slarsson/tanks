@@ -83,16 +83,13 @@ func (n *Network) reader(client *Client, ca chan *Action) {
 			continue
 		}
 
-		// TODO: make this better..
-		if message[0] == 99 {
-			ca <- &Action{MessageType: 99, Payload: message[1:], Client: client}
-			continue
-		}
-
-		if message[0] == 0 {
-			ca <- &Action{MessageType: 0, Client: client}
-		} else {
+		// if MessageType = 1 send to NetworkInput (game state)
+		// else send to action channel
+		// TODO: this should not be done here..
+		if message[0] == 1 {
 			client.NetworkInput <- message
+		} else {
+			ca <- &Action{MessageType: int8(message[0]), Payload: message[1:], Client: client}
 		}
 	}
 }

@@ -143,7 +143,6 @@ func (p *Player) Reset() {
 
 func (p *Player) Kill() {
 	p.IsAlive = false
-	//p.Reset()
 }
 
 func (p *Player) Shoot() (*Projectile, bool) {
@@ -163,74 +162,6 @@ func (p *Player) HandleCollsionWithObjects(objects *[]*Polygon, dt float32) {
 
 		ok, mtv := tank.Collision(v)
 		if ok {
-			// // if p.Controls.RotateLeft || p.Controls.RotateRight {
-			// // 	p.Velocity.X = 0
-			// // 	p.Velocity.Y = 0
-			// // 	continue
-			// // }
-
-			// if mtv.Test == 2 {
-			// 	dx := -1 * mtv.Vector.X * mtv.Magnitude
-			// 	dy := -1 * mtv.Vector.Y * mtv.Magnitude
-
-			// 	// if p.Velocity.X < 0 && dx < 0 {
-			// 	// 	dx = -dx
-			// 	// }
-
-			// 	// if p.Velocity.Y < 0 && dy < 0 {
-			// 	// 	dy = -dy
-			// 	// }
-
-			// 	if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-			// 		dx = -dx
-			// 	}
-
-			// 	if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
-			// 		dy = -dy
-			// 	}
-
-			// 	p.Position.X += dx
-			// 	p.Position.Y += dy
-
-			// 	p.Velocity.X = 0
-			// 	p.Velocity.Y = 0
-
-			// } else {
-			// 	// x := p.Velocity.Clone()
-			// 	// x.Norm()
-
-			// 	// if p.Direction == 1 {
-			// 	// 	p.Position.X -= mtv.Magnitude * x.X
-			// 	// 	p.Position.Y -= mtv.Magnitude * x.Y
-			// 	// }
-
-			// 	// if p.Direction == -1 {
-			// 	// 	p.Position.X += mtv.Magnitude * x.X
-			// 	// 	p.Position.Y += mtv.Magnitude * x.Y
-			// 	// }
-
-			// 	dx := mtv.Vector.X * mtv.Magnitude
-			// 	dy := mtv.Vector.Y * mtv.Magnitude
-
-			// 	if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-			// 		dx = -dx
-			// 	}
-
-			// 	if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
-			// 		dy = -dy
-			// 	}
-
-			// 	p.Position.X += dx
-			// 	p.Position.Y += dy
-
-			// 	// p.Position.X = 0
-			// 	// p.Position.Y = 0
-
-			// 	p.Velocity.X = 0
-			// 	p.Velocity.Y = 0
-			// }
-			//fmt.Println("DOT:", p.Velocity.Dot(mtv.Vector))
-
 			meh := p.Velocity.Dot(mtv.Vector)
 
 			if meh > -0.001 && meh < 0.001 {

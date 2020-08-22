@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -36,6 +37,7 @@ func main() {
 	server := NewServer()
 	go server.GameLoop()
 	go server.Manager()
+	fmt.Println("MAIN: server started")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		start(server, w, r)
