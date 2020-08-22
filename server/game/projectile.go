@@ -137,18 +137,18 @@ func (p *Projectile) CollisionTest(m *Map) {
 	}
 
 	for _, obj := range m.Obstacles {
-		lastIdx := len(*obj) - 1
+		lastIdx := len(*obj.Polygon) - 1
 		var A *Vector3
 		var B *Vector3
 		C := p.LastPosition
 		D := p.Position
 		for i := 0; i <= lastIdx; i++ {
 			if i == lastIdx {
-				A = (*obj)[i]
-				B = (*obj)[0]
+				A = (*obj.Polygon)[i]
+				B = (*obj.Polygon)[0]
 			} else {
-				A = (*obj)[i]
-				B = (*obj)[i+1]
+				A = (*obj.Polygon)[i]
+				B = (*obj.Polygon)[i+1]
 			}
 
 			// golang can handle division with 0 (-/+Inf)

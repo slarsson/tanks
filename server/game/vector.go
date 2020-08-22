@@ -1,6 +1,8 @@
 package game
 
-import "math"
+import (
+	"math"
+)
 
 // Vector3 ...
 type Vector3 struct {
@@ -68,4 +70,11 @@ func (v *Vector3) Clone() *Vector3 {
 
 func (v *Vector3) Dot(arg *Vector3) float32 {
 	return v.X*arg.X + v.Y*arg.Y + v.Z*arg.Z
+}
+
+func (v *Vector3) Distance(vec *Vector3) float32 {
+	x := v.X - vec.X
+	y := v.Y - vec.Y
+	z := v.Z - vec.Z
+	return float32(math.Sqrt(float64(x*x + y*y + z*z)))
 }

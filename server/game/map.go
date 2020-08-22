@@ -7,9 +7,14 @@ import (
 )
 
 type Map struct {
-	Obstacles  []*Polygon
 	Boundaries [4]float32 // maxX, minX, maxY, minY
 	Spawns     []SpawnPoint
+	Obstacles  []Obstacle
+}
+
+type Obstacle struct {
+	Polygon  *Polygon
+	Centroid *Vector3
 }
 
 type MapData struct {
@@ -117,48 +122,47 @@ func NewMap() *Map {
 		panic(err)
 	}
 
-	obstacles := []*Polygon{}
-
+	obstacles := []Obstacle{}
 	for _, val := range manifest.Containers {
 
 		// TODO: hmm.. should not hardcode the dimensions
 		x := 0.5 * float32(8)
 		y := 0.5 * float32(val.Bottom) * 3.75
 
-		c1 := &Vector3{
-			X: val.Position.X - x,
-			Y: val.Position.Y + y,
-			Z: 0,
+		poly := &Polygon{
+			&Vector3{
+				X: val.Position.X - x,
+				Y: val.Position.Y + y,
+				Z: 0,
+			},
+			&Vector3{
+				X: val.Position.X + x,
+				Y: val.Position.Y + y,
+				Z: 0,
+			},
+			&Vector3{
+				X: val.Position.X + x,
+				Y: val.Position.Y - y,
+				Z: 0,
+			},
+			&Vector3{
+				X: val.Position.X - x,
+				Y: val.Position.Y - y,
+				Z: 0,
+			},
 		}
-
-		c2 := &Vector3{
-			X: val.Position.X + x,
-			Y: val.Position.Y + y,
-			Z: 0,
-		}
-
-		c3 := &Vector3{
-			X: val.Position.X + x,
-			Y: val.Position.Y - y,
-			Z: 0,
-		}
-
-		c4 := &Vector3{
-			X: val.Position.X - x,
-			Y: val.Position.Y - y,
-			Z: 0,
-		}
-
-		poly := &Polygon{c1, c2, c3, c4}
 		poly.Rotate(val.Rotation, &val.Position)
 
-		obstacles = append(obstacles, poly)
+		obstacles = append(obstacles, Obstacle{
+			Polygon:  poly,
+			Centroid: val.Position.Clone(),
+		})
 	}
 
 	return &Map{
-		Obstacles:  obstacles,
 		Boundaries: manifest.Boundaries,
 		Spawns:     manifest.Spawns,
+		Obstacles:  obstacles,
 	}
 }
 

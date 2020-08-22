@@ -203,35 +203,3 @@ func (p Polygon) Collision(target *Polygon) (bool, *MTV) {
 		Test:      wtf,
 	}
 }
-
-// func (p *Polygon) GetCenter() *Vector3 {
-// 	maxX := (*p)[0].X
-// 	minX := (*p)[0].X
-// 	maxY := (*p)[0].Y
-// 	minY := (*p)[0].Y
-
-// 	for _, v := range (*p)[1:] {
-// 		//fmt.Println(i)
-// 		if v.X > maxX {
-// 			maxX = v.X
-// 		}
-
-// 		if v.X < minX {
-// 			minX = v.X
-// 		}
-
-// 		if v.Y > maxY {
-// 			maxY = v.Y
-// 		}
-
-// 		if v.Y < minY {
-// 			minY = v.Y
-// 		}
-// 	}
-
-// 	return &Vector3{
-// 		X: minX + 0.5*float32(math.Abs(float64(minX-maxX))),
-// 		Y: minY + 0.5*float32(math.Abs(float64(minY-maxY))),
-// 		Z: 0,
-// 	}
-// }

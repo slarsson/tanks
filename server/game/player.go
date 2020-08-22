@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math"
 	"strconv"
 
@@ -153,37 +152,24 @@ func (p *Player) Shoot() (*Projectile, bool) {
 	return nil, false
 }
 
-func (p *Player) HandleCollsionWithObjects(objects *[]*Polygon, dt float32) {
+func (p *Player) HandleCollsionWithObjects(objects *[]Obstacle, dt float32) {
 	for _, v := range *objects {
 		tank := NewTankHullPolygon()
-		//tank.Rotate(p.Rotation, p.Position)
 		tank.Translate(p.Position.X, p.Position.Y, 0)
 		tank.Rotate(p.Rotation, p.Position)
 
-		ok, mtv := tank.Collision(v)
+		ok, mtv := tank.Collision(v.Polygon)
 		if ok {
-			meh := p.Velocity.Dot(mtv.Vector)
-
-			if meh > -0.001 && meh < 0.001 {
-				fmt.Println("MAYBE PROBLEMZ")
-
-				//fmt.Println("obj:", v)
-				// p.Position.X = 0
-				// p.Position.Y = 0
-
-				// p.Velocity.X = 0
-				// p.Velocity.Y = 0
-				// continue
-			}
-
 			dx := mtv.Vector.X * mtv.Magnitude
 			dy := mtv.Vector.Y * mtv.Magnitude
 
-			if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-				dx = -dx
-			}
+			after := p.Position.Clone()
+			after.X += mtv.Vector.X
+			after.Y += mtv.Vector.Y
 
-			if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
+			// if player is closer to the object then before => invert direction
+			if v.Centroid.Distance(after) < v.Centroid.Distance(p.Position) {
+				dx = -dx
 				dy = -dy
 			}
 
@@ -203,12 +189,10 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 		}
 
 		poly1 := NewTankHullPolygon()
-		//poly1.Rotate(p.Rotation, p.Position)
 		poly1.Translate(p.Position.X, p.Position.Y, 0)
 		poly1.Rotate(p.Rotation, p.Position)
 
 		poly2 := NewTankHullPolygon()
-		//poly2.Rotate(v.Rotation, v.Position)
 		poly2.Translate(v.Position.X, v.Position.Y, 0)
 		poly2.Rotate(v.Rotation, v.Position)
 
@@ -220,11 +204,13 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 		dx := mtv.Vector.X * mtv.Magnitude
 		dy := mtv.Vector.Y * mtv.Magnitude
 
-		if (dx < 0 && p.Velocity.X < 0) || (dx > 0 && p.Velocity.X > 0) {
-			dx = -dx
-		}
+		after := p.Position.Clone()
+		after.X += mtv.Vector.X
+		after.Y += mtv.Vector.Y
 
-		if (dy < 0 && p.Velocity.Y < 0) || (dy > 0 && p.Velocity.Y > 0) {
+		// if player is closer to the object then before => invert direction
+		if v.Position.Distance(after) < v.Position.Distance(p.Position) {
+			dx = -dx
 			dy = -dy
 		}
 
