@@ -1,24 +1,23 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/slarsson/game/game"
 	"github.com/slarsson/game/network"
 )
 
+// Server ...
 type Server struct {
 	Network    *network.Network
 	Game       *game.Game
 	Operations chan *network.Action
 }
 
+// NewServer creates the server and inits network connection
 func NewServer() *Server {
 	n := network.NewNetwork()
-
 	s := &Server{
 		Network:    n,
 		Game:       game.NewGame(n),
@@ -29,25 +28,13 @@ func NewServer() *Server {
 	return s
 }
 
-func validateName(input []byte) bool {
-	if len(input) > 20 {
-		return false
-	}
-
-	matched, err := regexp.Match(`^[A-Za-z0-9_-]+$`, input)
-
-	if err != nil || !matched {
-		return false
-	}
-	return true
-}
-
+// Manager handles operations coming from the client or from other threads/goroutines
 func (s *Server) Manager() {
 	for {
 		select {
 		case message, ok := <-s.Operations:
 			if ok {
-				fmt.Println("SERVER OPS:", message)
+				fmt.Println("SERVER: new message, mt =", message.MessageType)
 
 				switch message.MessageType {
 				case 0:
@@ -61,7 +48,7 @@ func (s *Server) Manager() {
 				case 99:
 					for _, v := range s.Game.Players {
 						if v.Client == message.Client {
-							if validateName(message.Payload) {
+							if game.ValidateName(message.Payload) {
 								name := string(message.Payload)
 								if s.Game.SetPlayerName(v.ID, name) {
 									v.ExitLobby()
@@ -80,54 +67,46 @@ func (s *Server) Manager() {
 	}
 }
 
+// GameLoop runs the world updates and then broadcasts it to all clients
 func (s *Server) GameLoop() {
-	//var step float32
+
+	// new tick every 50ms, this should match the client broadcast rate
 	step := float32(50)
 	ticker := time.NewTicker(time.Duration(step) * time.Millisecond)
-
-	// c := &Client{
-	// 	conn:          nil,
-	// 	NetworkInput:  make(chan []byte, 100),
-	// 	NetworkOutput: make(chan []byte, 100),
-	// }
-	// s.Game.addPlayer(c)
 
 	for range ticker.C {
 		//start := time.Now()
 
+		// update projectiles
 		s.Game.PManager.UpdateAll(step, &s.Game.Players, s.Game.Map, s.Game.Network.Broadcast)
-		//fmt.Println("antal:", len(s.Game.PManager.Projectiles))
 
-		buf := make([]byte, 0, 30)
-		mt := make([]byte, 4)
-		binary.LittleEndian.PutUint32(mt, 0)
-		buf = append(buf, mt...)
+		// create new binary buffer to store player state
+		buf := game.NewPlayerState(len(s.Game.Players))
+
+		// update all players and add to buffer
 		for _, p := range s.Game.Players {
-			if p.Client == nil {
-				//p.moveBot(step)
-			} else {
+			if p.Client != nil {
 				s.handleInputs(p.Client, p, step)
 			}
-			//p.Client.handleInputs(p, step)
-
 			p.AppendPlayerState(&buf)
 		}
 
+		// broadcast the player state to all clients
 		s.Network.Broadcast <- buf
-		//s.Network.Broadcast <- *game.TestMessage()
 
-		//fmt.Println("Executing time:", time.Since(start)*1000)
+		//fmt.Println("SERVER: executing time:", time.Since(start)*1000)
 	}
 }
 
+// handleInputs applies player input to the game world
+//
+// only MessageType = 1 should be handle by this function
+//
+// The client is expected and should only send one input per tick, but this is not enforced by the server
 func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 	for len(c.NetworkInput) != 0 {
 		message := <-c.NetworkInput
-
-		switch message[0] {
-		case 0:
-			fmt.Println("do something else..")
-		case 1:
+		if message[0] == 1 {
 			p.SetSequenceNumber(&message)
 
 			if !p.IsAlive {
@@ -159,18 +138,9 @@ func (s *Server) handleInputs(c *network.Client, p *game.Player, dt float32) {
 					s.Game.PManager.Add(projectile)
 				}
 			}
-		default:
-			fmt.Println("unknown command")
+		} else {
+			fmt.Printf("SERVER @ handleInputs: UNKNOWN MESSAGE (mt = %d)", message[0])
+			fmt.Println("")
 		}
 	}
 }
-
-// func (s *Server) Swag() {
-// 	ticker := time.NewTicker(time.Duration(523) * time.Millisecond)
-
-// 	for range ticker.C {
-// 		//fmt.Println(game.SendPlayerName())
-
-// 		s.Network.Broadcast <- *game.SendPlayerName()
-// 	}
-// }

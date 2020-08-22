@@ -19,7 +19,7 @@ var upgrader = websocket.Upgrader{
 func start(s *Server, w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("UPGRADE ERROR:", err)
+		log.Print("MAIN: UPGRADE ERROR:", err)
 		return
 	}
 

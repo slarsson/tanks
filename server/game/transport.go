@@ -5,6 +5,12 @@ import (
 	"math"
 )
 
+func NewPlayerState(n int) []byte {
+	buf := make([]byte, 4, (4 + 48*n))
+	binary.LittleEndian.PutUint32(buf[0:4], 0)
+	return buf
+}
+
 func (p Player) AppendPlayerState(buf *[]byte) {
 	id := make([]byte, 4)
 	px := make([]byte, 4)

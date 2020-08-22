@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -11,6 +12,7 @@ type Network struct {
 	Register   chan *Client
 	Unregister chan *Client
 	Broadcast  chan []byte
+	mutex      *sync.RWMutex
 }
 
 type Client struct {
@@ -31,6 +33,7 @@ func NewNetwork() *Network {
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Broadcast:  make(chan []byte),
+		mutex:      &sync.RWMutex{},
 	}
 }
 
@@ -38,14 +41,23 @@ func (n *Network) Start(ca chan *Action) {
 	for {
 		select {
 		case client := <-n.Register:
+			n.mutex.Lock()
 			n.Clients[client] = true
+			n.mutex.Unlock()
 			go n.reader(client, ca)
 			go n.writer(client)
 
 		case client := <-n.Unregister:
-			ca <- &Action{MessageType: 1, Client: client}
-			client.Conn.Close()
+			err := client.Conn.Close()
+			if err != nil {
+				fmt.Println("NETWORK: failed to close client")
+				continue
+			}
+			n.mutex.Lock()
 			delete(n.Clients, client)
+			n.mutex.Unlock()
+			client.NetworkOutput <- []byte{} // send stop signal
+			ca <- &Action{MessageType: 1, Client: client}
 
 		case message := <-n.Broadcast:
 			for client := range n.Clients {
@@ -57,26 +69,22 @@ func (n *Network) Start(ca chan *Action) {
 
 func (n *Network) reader(client *Client, ca chan *Action) {
 	defer func() {
-		n.Unregister <- client // close connection?
+		// when sending fails, trigger unregister player event
+		n.Unregister <- client
 	}()
 
 	for {
 		_, message, err := client.Conn.ReadMessage()
-
 		if err != nil {
-			break
+			break // kill the goroutine
 		}
 
 		if len(message) == 0 {
 			continue
-			//break
 		}
 
-		//fmt.Println("NETWORK:", message)
-
+		// TODO: make this better..
 		if message[0] == 99 {
-			//fmt.Println("NAME =>", string(message[1:]))
-			//fmt.Println("wtf:", message[1:])
 			ca <- &Action{MessageType: 99, Payload: message[1:], Client: client}
 			continue
 		}
@@ -90,18 +98,18 @@ func (n *Network) reader(client *Client, ca chan *Action) {
 }
 
 func (n *Network) writer(client *Client) {
-	defer func() {
-		n.Unregister <- client
-	}()
-
 	for {
 		select {
 		case message, ok := <-client.NetworkOutput:
 			if ok {
+				if len(message) == 0 {
+					break
+				}
 				client.Conn.WriteMessage(websocket.BinaryMessage, message)
 			} else {
-				// error?
-				fmt.Println("error my error...")
+				fmt.Println("NETWORK: could not write message, disconnect")
+				n.Unregister <- client
+				break
 			}
 		}
 	}

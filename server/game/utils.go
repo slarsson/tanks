@@ -1,8 +1,6 @@
 package game
 
-func validateName(str *string) bool {
-	return true
-}
+import "regexp"
 
 const (
 	InfoColor    = "\033[1;34m%s\033[0m"
@@ -20,3 +18,16 @@ const (
 	colorCyan   = string("\033[1;36m")
 	colorWhite  = string("\033[1;37m")
 )
+
+func ValidateName(input []byte) bool {
+	if len(input) > 20 {
+		return false
+	}
+
+	matched, err := regexp.Match(`^[A-Za-z0-9_-]+$`, input)
+
+	if err != nil || !matched {
+		return false
+	}
+	return true
+}
