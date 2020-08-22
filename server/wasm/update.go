@@ -22,17 +22,6 @@ func updateLocalPlayer() {
 	localPlayer.HandleCollsionWithObjects(&gameMap.Obstacles, updateRate)
 	if pr, ok := localPlayer.Shoot(); ok {
 		pmanager.Add(pr)
-		//fmt.Println("sh00ting", pr)
-
-		// var wtf int
-		// for {
-		// 	wtf = rand.Intn(10000) // fejk random?
-		// 	_, ok := projectiles[wtf]
-		// 	if !ok {
-		// 		break
-		// 	}
-		// }
-		// projectiles[wtf] = pr
 	}
 
 	// update last snapshoot of state for current sequence number
@@ -82,16 +71,11 @@ func update(this js.Value, args []js.Value) interface{} {
 					prev.ShouldUpdate = true
 				} else if (prev.SequenceNumber + 2) < (uint32(args[i+10].Int())) {
 					fmt.Println("WASM: missed nummer / error :(")
-					//localPlayer.SyncState(p)
 					prev.ShouldUpdate = true
 				}
 			} else {
-				// // TODO: kanske inte så här...
 				if args[i+9].Int() == 1 {
 					pmanager.Add(p.NewProjectile())
-					//fmt.Println("ADD NEWWWW ")
-					//fmt.Println("add p!!")
-					//addProjectile4Real(p)
 				}
 			}
 		} else {
