@@ -1,5 +1,7 @@
 # game
 
+![alt text](./assets/screen1.png)
+
 ## Client
 TODO
 
