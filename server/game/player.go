@@ -34,6 +34,7 @@ type Player struct {
 	RespawnTime    float32
 	SequenceNumber uint32
 	Lobby          bool
+	Radius         float32
 }
 
 func NewPlayer(ID int, client *network.Client) *Player {
@@ -50,6 +51,7 @@ func NewPlayer(ID int, client *network.Client) *Player {
 		Controls:       NewControls(),
 		WaitTime:       0,
 		Lobby:          true,
+		Radius:         5, // meh..
 	}
 }
 
@@ -68,6 +70,7 @@ func NewLocalPlayer() *Player {
 		WaitTime:       0,
 		OutOfMapTime:   0,
 		RespawnTime:    0,
+		Radius:         5,
 	}
 }
 
@@ -154,6 +157,12 @@ func (p *Player) Shoot() (*Projectile, bool) {
 
 func (p *Player) HandleCollsionWithObjects(objects *[]Obstacle, dt float32) {
 	for _, v := range *objects {
+		// broad-phase
+		if p.Position.Distance(v.Centroid) > (p.Radius + v.Radius) {
+			continue
+		}
+
+		// narrow-phase
 		tank := NewTankHullPolygon()
 		tank.Translate(p.Position.X, p.Position.Y, 0)
 		tank.Rotate(p.Rotation, p.Position)
@@ -188,6 +197,12 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 			continue
 		}
 
+		// broad-phase
+		if p.Position.Distance(v.Position) > (p.Radius + v.Radius) {
+			continue
+		}
+
+		// narrow-phase
 		poly1 := NewTankHullPolygon()
 		poly1.Translate(p.Position.X, p.Position.Y, 0)
 		poly1.Rotate(p.Rotation, p.Position)
