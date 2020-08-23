@@ -157,7 +157,7 @@ func NewMap() *Map {
 		obstacles = append(obstacles, Obstacle{
 			Polygon:  poly,
 			Centroid: val.Position.Clone(),
-			Radius:   poly.findRadius(&val.Position),
+			Radius:   poly.FindRadius(&val.Position),
 		})
 	}
 
@@ -184,20 +184,4 @@ func (m Map) RandomSpawn() (float32, float32) {
 
 	idx := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(n)
 	return m.Spawns[idx].X, m.Spawns[idx].Y
-}
-
-func (p *Polygon) findRadius(v *Vector3) float32 {
-	if len(*p) == 0 {
-		return 0
-	}
-
-	radius := (*p)[0].Distance(v)
-	for _, val := range (*p)[1:] {
-		r := val.Distance(v)
-		if r > radius {
-			radius = r
-		}
-	}
-
-	return radius
 }

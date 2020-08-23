@@ -34,8 +34,6 @@ var gameMap = game.NewMap()
 // ...
 var pmanager = game.NewProjectileManager()
 
-//var projectiles = make(map[int]*game.Projectile)
-
 // sequence: is the sequence number, incremented and sent to the server on every tick
 var sequence = uint32(0)
 

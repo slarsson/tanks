@@ -103,7 +103,7 @@ class GameMap {
             this.scene.add(dirLight);
         }
 
-        scene.add(new THREE.AxesHelper(150)); 
+        //scene.add(new THREE.AxesHelper(150)); 
     }
 
     outOfMap(x: number, y: number): boolean {

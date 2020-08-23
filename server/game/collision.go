@@ -53,6 +53,22 @@ func (p *Polygon) Translate(x float32, y float32, z float32) {
 	}
 }
 
+func (p *Polygon) FindRadius(v *Vector3) float32 {
+	if len(*p) == 0 {
+		return 0
+	}
+
+	radius := (*p)[0].Distance(v)
+	for _, val := range (*p)[1:] {
+		r := val.Distance(v)
+		if r > radius {
+			radius = r
+		}
+	}
+
+	return radius
+}
+
 func (p *Polygon) Print() {
 	for i, v := range *p {
 		fmt.Printf("idx: %d => x: %f, y: %f \n", i, v.X, v.Y)
