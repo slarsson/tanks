@@ -31,4 +31,6 @@ Go target = wasm
 GOOS=js GOARCH=wasm go build -o main.wasm
 ```
 
+https://github.com/golang/go/wiki/GoArm
+
 https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
