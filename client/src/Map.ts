@@ -13,6 +13,7 @@ interface ContainersTest {
 interface MapManifest {
     name: string;
     boundaries: number[];
+    crane: {x: number, y: number};
     containers: ContainersTest[];
 }
 
@@ -20,7 +21,7 @@ class GameMap {
 
     private manifest: MapManifest;
     private scene: THREE.Scene;
-    private crane: Crane;
+    public crane: Crane;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -31,6 +32,7 @@ class GameMap {
             this.manifest = {
                 name: 'default',
                 boundaries: [12, -12, 12, -12],
+                crane: {x: 0, y: 0},
                 containers: []
             };
         }
@@ -106,28 +108,7 @@ class GameMap {
         }
 
         this.crane = new Crane(this.scene);
-
-//         console.log(Assets.objects?.crane);
-// //         if (Assets.objects != undefined) {
-// //             const crane = Assets.objects.crane.scene;
-// //             //crane.rotation.y = Math.random() * 3;
-// //             crane.rotation.x = Math.PI / 2;
-
-// //             crane.scale.set(0.5, 0.5, 0.5);
-// //             crane.position.x = 20;
-            
-// //             let child = crane.children[0];
-// //             if (child instanceof THREE.Mesh) {
-// //                 child.material = new THREE.MeshPhongMaterial({color: 0xff0000, side: THREE.DoubleSide}); 
-// //             }
-
-// // //            console.log(crane.children[0].isMesh);
-            
-            
-            
-//             //this.scene.add(crane);
-//             //this.scene.add(Assets.objects.crane.scene);
-//         }
+        this.crane.setPosition(this.manifest.crane.x, this.manifest.crane.y, 0);
 
         //scene.add(new THREE.AxesHelper(150)); 
     }

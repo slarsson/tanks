@@ -11,6 +11,10 @@
             "y": -20
         }
     ],
+    "crane": {
+        "x": -25,
+        "y": 0
+    },
     "containers": [
         {
             "position": {

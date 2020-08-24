@@ -8,9 +8,9 @@ class Lifter {
     private lines: THREE.Group;
     private liftArm: THREE.Group;
     
-    private height: number = 0;
+    private height: number = 9;
     private maxHeight: number = 12;
-    private minHeight: number = 5;
+    private minHeight: number = 3.75 * 2;
 
     constructor() {
         this.mesh = new THREE.Group();
@@ -80,7 +80,7 @@ class Lifter {
     }
 
     public up(dt: number): boolean {
-        this.height += 0.0005 * dt;
+        this.height += 0.01 * dt;
         if (this.height > this.maxHeight) {
             this.height = this.maxHeight;
             return false;
@@ -90,7 +90,7 @@ class Lifter {
     }
 
     public down(dt: number): boolean {
-        this.height -= 0.0005 * dt;
+        this.height -= 0.01 * dt;
         if (this.height < this.minHeight) {
             this.height = this.minHeight;
             return false;
@@ -114,6 +114,9 @@ class Crane {
 
     private dir: boolean = true;
     private sidewaysLength: number = 7;
+
+    private moveUpDown: number = 0;
+    private moveLeftRight: number = 0;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -226,8 +229,8 @@ class Crane {
 
         this.scene.add(this.crane);
 
-        this.crane.position.x = -25;
-        this.test.position.x = -25;
+        // this.crane.position.x = -25;
+        // this.test.position.x = -25;
 
         // let c = new SingleContainer(this.test);
         // c.setPosition(0, 0, 5);
@@ -246,39 +249,87 @@ class Crane {
         //     }
     }
 
-    public left(dt: number): void {
-        let newp = this.test.position.x - 0.001 * dt;
-        if (newp > -this.sidewaysLength) {
-            this.test.position.x = newp;
+    public setPosition(x: number, y: number, z: number): void {
+        this.crane.position.set(x, y, z);
+        this.test.position.set(x, y, z);
+    }
+
+    public left(trigger: boolean): void {
+        if (!trigger) {
+            this.moveLeftRight = 0
         } else {
-            this.test.position.x = -this.sidewaysLength;
+            this.moveLeftRight = -1;
         }
     }
 
-    public right(dt: number): void {
-        let newp = this.test.position.x + 0.001 * dt;
-        if (newp < this.sidewaysLength) {
-            this.test.position.x = newp;
+    public right(trigger: boolean): void {
+        if (!trigger) {
+            this.moveLeftRight = 0
         } else {
-            this.test.position.x = this.sidewaysLength;
+            this.moveLeftRight = 1;
         }
     }
+
+    public up(trigger: boolean): void {
+        if (!trigger) {
+            this.moveUpDown = 0
+        } else {
+            this.moveUpDown = 1;
+        }
+    }
+
+    public down(trigger: boolean): void {
+        if (!trigger) {
+            this.moveUpDown = 0
+        } else {
+            this.moveUpDown = -1;
+        }
+    }
+    
+    // public left(dt: number): void {
+    //     let newp = this.test.position.x - 0.001 * dt;
+    //     if (newp > -this.sidewaysLength) {
+    //         this.test.position.x = newp;
+    //     } else {
+    //         this.test.position.x = -this.sidewaysLength;
+    //     }
+    // }
+
+    // public right(dt: number): void {
+    //     let newp = this.test.position.x + 0.001 * dt;
+    //     if (newp < this.sidewaysLength) {
+    //         this.test.position.x = newp;
+    //     } else {
+    //         this.test.position.x = this.sidewaysLength;
+    //     }
+    // }
 
     public update(dt: number): void {
-        
-        //this.left(dt);
-
-        if (this.dir) {
-            //this.left(dt);
-            if (!this.lifter.up(dt)) {
-                this.dir = false;
-            }
-        } else {
-            //this.right(dt);
-            if (!this.lifter.down(dt)) {
-                this.dir = true;
-            }
+        if (this.moveLeftRight == 1) {
+            this.test.position.x += 0.01 * dt;  
+        } else if (this.moveLeftRight == -1) {
+            this.test.position.x -= 0.01 * dt;
         }
+
+        if (this.moveUpDown == 1) {
+            this.lifter.up(dt);
+        } else if (this.moveUpDown == -1) {
+            this.lifter.down(dt);
+        }
+
+        // //this.left(dt);
+
+        // if (this.dir) {
+        //     //this.left(dt);
+        //     if (!this.lifter.up(dt)) {
+        //         this.dir = false;
+        //     }
+        // } else {
+        //     //this.right(dt);
+        //     if (!this.lifter.down(dt)) {
+        //         this.dir = true;
+        //     }
+        // }
     }
 
 }

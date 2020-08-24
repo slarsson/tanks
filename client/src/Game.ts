@@ -8,12 +8,12 @@ import Camera from './Camera';
 class Game {
 
     public camera: Camera;
+    public gameMap: GameMap;
     private scene: THREE.Scene;
     private renderer: THREE.WebGLRenderer;
     private timestamp: number;
     private self: number = -1;
     private outOfMap: boolean = false;
-    private gameMap: GameMap;
     private players: Map<number, Tank>;
     private projectiles: Map<number, Projectile>;
     private graphics: Graphics;
