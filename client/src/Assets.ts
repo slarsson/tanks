@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { MapManifest } from './Map';
 
 interface Textures {
@@ -8,14 +9,20 @@ interface Textures {
     maersk: THREE.Texture;
 }
 
+interface Objects {
+    crane: GLTF;
+}
+
 class Assets {
     
     public textures: Textures | undefined;
     public map: MapManifest | undefined;
+    public objects: Objects | undefined;
 
     constructor(){
         this.textures = undefined;
         this.map = undefined;
+        this.objects = undefined;
     }
 
     public load(): Promise<boolean> {
@@ -26,7 +33,8 @@ class Assets {
                     Assets.loadTexture('pn.png'),
                     Assets.loadTexture('msc.png'),
                     Assets.loadTexture('maersk.png'),
-                    Assets.loadMap('map.json')
+                    Assets.loadMap('map.json'),
+                    Assets.loadGLTF('crane1.glb')
                 ]);
 
                 this.textures = {
@@ -37,6 +45,9 @@ class Assets {
                 };
 
                 this.map = resp[4];
+                this.objects = {
+                    crane: resp[5]
+                };
                 
                 resolve(true);
             } catch(err) {
@@ -50,6 +61,17 @@ class Assets {
             new THREE.TextureLoader().load(
                 url,
                 (texture) => resolve(texture),
+                undefined,
+                (err) => reject(err)
+            );
+        });
+    }
+
+    private static loadGLTF(url): Promise<GLTF> {
+        return new Promise((resolve, reject) => {
+            new GLTFLoader().load(
+                url,
+                (obj) => resolve(obj),
                 undefined,
                 (err) => reject(err)
             );

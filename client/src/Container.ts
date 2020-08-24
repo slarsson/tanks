@@ -93,6 +93,10 @@ class Item {
         this.mesh.position.set(x, y, z);
     }
 
+    public setRotation(x: number, y: number, z: number): void {
+        this.mesh.rotation.set(x, y, z);
+    }
+
     public dispose(): void {
         this.scene.remove(this.mesh);
     }
@@ -146,4 +150,8 @@ class Container {
     }
 }
 
-export default Container;
+//export default Container;
+export {
+    Container,
+    Item as SingleContainer
+}

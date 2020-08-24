@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Assets } from './Assets';
-import Container from './Container';
+import { Container } from './Container';
+import Crane from './Crane';
 
 interface ContainersTest {
     position: {x: number, y: number, z: number};
@@ -19,6 +20,7 @@ class GameMap {
 
     private manifest: MapManifest;
     private scene: THREE.Scene;
+    private crane: Crane;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -103,6 +105,30 @@ class GameMap {
             this.scene.add(dirLight);
         }
 
+        this.crane = new Crane(this.scene);
+
+//         console.log(Assets.objects?.crane);
+// //         if (Assets.objects != undefined) {
+// //             const crane = Assets.objects.crane.scene;
+// //             //crane.rotation.y = Math.random() * 3;
+// //             crane.rotation.x = Math.PI / 2;
+
+// //             crane.scale.set(0.5, 0.5, 0.5);
+// //             crane.position.x = 20;
+            
+// //             let child = crane.children[0];
+// //             if (child instanceof THREE.Mesh) {
+// //                 child.material = new THREE.MeshPhongMaterial({color: 0xff0000, side: THREE.DoubleSide}); 
+// //             }
+
+// // //            console.log(crane.children[0].isMesh);
+            
+            
+            
+//             //this.scene.add(crane);
+//             //this.scene.add(Assets.objects.crane.scene);
+//         }
+
         //scene.add(new THREE.AxesHelper(150)); 
     }
 
@@ -111,7 +137,7 @@ class GameMap {
     }
 
     update(dt: number) {
-        // map updates goes here..
+        this.crane.update(dt);
     }
 }
 

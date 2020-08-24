@@ -42,7 +42,16 @@ func NewMap() *Map {
 	data := []byte(`{
 		"name": "Port of Nrkp",
 		"boundaries": [50, -50, 50, -50],
-		"spawns": [{"x": 0, "y":0}, {"x": 20, "y": -20}],
+		"spawns": [
+			{
+				"x": 0, 
+				"y":0
+			}, 
+			{
+				"x": 20, 
+				"y": -20
+			}
+		],
 		"containers": [
 			{
 				"position": {
@@ -66,53 +75,83 @@ func NewMap() *Map {
 			},
 			{
 				"position": {
-					"x": -30,
-					"y": 15,
+					"x": -25,
+					"y": 0,
 					"z": 0
 				},
-				"rotation": -0.5,
-				"total": 7,
+				"rotation": 1.57,
+				"total": 5,
 				"bottom": 5
-			},
-			{
-				"position": {
-					"x": 0,
-					"y": 35,
-					"z": 0
-				},
-				"rotation": 0,
-				"total": 1,
-				"bottom": 1
-			},
-			{
-				"position": {
-					"x": -20,
-					"y": 35,
-					"z": 0
-				},
-				"rotation": 0,
-				"total": 1,
-				"bottom": 1
 			},
 			{
 				"position": {
 					"x": -25,
-					"y": -20,
+					"y": -9,
 					"z": 0
 				},
-				"rotation": 1.5,
-				"total": 4,
-				"bottom": 4
+				"rotation": 1.57,
+				"total": 5,
+				"bottom": 5
 			},
 			{
 				"position": {
-					"x": -35,
-					"y": -30,
+					"x": -25,
+					"y": -35,
 					"z": 0
 				},
-				"rotation": 1.5,
-				"total": 9,
+				"rotation": 1.57,
+				"total": 5,
 				"bottom": 5
+			},
+			{
+				"position": {
+					"x": -25,
+					"y": 25,
+					"z": 0
+				},
+				"rotation": 1.3,
+				"total": 1,
+				"bottom": 1
+			},
+			{
+				"position": {
+					"x": 0,
+					"y": 30,
+					"z": 0
+				},
+				"rotation": 0,
+				"total": 1,
+				"bottom": 1
+			},
+			{
+				"position": {
+					"x": 30,
+					"y": -40,
+					"z": 0
+				},
+				"rotation": -1.2,
+				"total": 5,
+				"bottom": 3
+			},
+			{
+				"position": {
+					"x": 0,
+					"y": -40,
+					"z": 0
+				},
+				"rotation": 1.2,
+				"total": 1,
+				"bottom": 1
+			},
+			{
+				"position": {
+					"x": 5,
+					"y": -32,
+					"z": 0
+				},
+				"rotation": 1.2,
+				"total": 1,
+				"bottom": 1
 			}
 		]
 	}`)
@@ -160,6 +199,73 @@ func NewMap() *Map {
 			Radius:   poly.FindRadius(&val.Position),
 		})
 	}
+
+	// test
+	p := Vector3{X: 0.5*21.75 - 0.5, Y: 0, Z: 0}
+	p.X -= 25
+	x := 0.5 * float32(1)
+	y := 0.5 * float32(14.75)
+
+	poly := &Polygon{
+		&Vector3{
+			X: p.X - x,
+			Y: p.Y + y,
+			Z: 0,
+		},
+		&Vector3{
+			X: p.X + x,
+			Y: p.Y + y,
+			Z: 0,
+		},
+		&Vector3{
+			X: p.X + x,
+			Y: p.Y - y,
+			Z: 0,
+		},
+		&Vector3{
+			X: p.X - x,
+			Y: p.Y - y,
+			Z: 0,
+		},
+	}
+	obstacles = append(obstacles, Obstacle{
+		Polygon:  poly,
+		Centroid: p.Clone(),
+		Radius:   poly.FindRadius(&p),
+	})
+
+	p = Vector3{X: -0.5*21.75 + 0.5, Y: 0, Z: 0}
+	p.X -= 25
+	x = 0.5 * float32(1)
+	y = 0.5 * float32(14.75)
+
+	poly2 := &Polygon{
+		&Vector3{
+			X: p.X - x,
+			Y: p.Y + y,
+			Z: 0,
+		},
+		&Vector3{
+			X: p.X + x,
+			Y: p.Y + y,
+			Z: 0,
+		},
+		&Vector3{
+			X: p.X + x,
+			Y: p.Y - y,
+			Z: 0,
+		},
+		&Vector3{
+			X: p.X - x,
+			Y: p.Y - y,
+			Z: 0,
+		},
+	}
+	obstacles = append(obstacles, Obstacle{
+		Polygon:  poly2,
+		Centroid: p.Clone(),
+		Radius:   poly.FindRadius(&p),
+	})
 
 	return &Map{
 		Boundaries: manifest.Boundaries,
