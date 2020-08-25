@@ -110,6 +110,12 @@ class Manager {
                 this.graphics.addMessage('SERVER ERROR', null, Graphics.ERROR);
             } break;
 
+            case 44: {
+                let data = new Float32Array(buffer);
+                this.game.gameMap.crane.setPosition(data[0], data[1], 0);
+                this.wasm.updateCrane(data[0], data[1]);
+            } break;
+
             default: console.log('MANAGER: unknown message', mt);
         }
     }
@@ -133,26 +139,6 @@ class Manager {
                 this.graphics.addMessage('CAPS LOCK WARNING :(', 2000, Graphics.WARNING);
                 return;
             }
-
-            if (evt.key == 'h') { 
-                this.game.gameMap.crane.left(true);
-                return;
-            }
-
-            if (evt.key == 'j') { 
-                this.game.gameMap.crane.up(true);
-                return;
-            }
-
-            if (evt.key == 'k') { 
-                this.game.gameMap.crane.down(true);
-                return;
-            }
-
-            if (evt.key == 'l') { 
-                this.game.gameMap.crane.right(true);
-                return;
-            }
         }
     }
 
@@ -160,25 +146,6 @@ class Manager {
         if (!this.wasm.keypress(evt.key, false)) {
 
             // unregister key-events here..
-            if (evt.key == 'h') {
-                this.game.gameMap.crane.left(false);
-                return;
-            }
-
-            if (evt.key == 'j') { 
-                this.game.gameMap.crane.up(false);
-                return;
-            }
-
-            if (evt.key == 'k') { 
-                this.game.gameMap.crane.down(false);
-                return;
-            }
-
-            if (evt.key == 'l') { 
-                this.game.gameMap.crane.right(false);
-                return;
-            }
         }
     }
 }

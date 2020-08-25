@@ -2,20 +2,32 @@ package game
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"time"
 )
 
 type Map struct {
-	Boundaries [4]float32 // maxX, minX, maxY, minY
-	Spawns     []Point2
-	Obstacles  []Obstacle
+	Boundaries    [4]float32 // maxX, minX, maxY, minY
+	Spawns        []Point2
+	Obstacles     []Obstacle
+	ShippingCrane ShippingCrane
 }
 
 type Obstacle struct {
 	Polygon  *Polygon
 	Centroid *Vector3
 	Radius   float32
+}
+
+type ShippingCrane struct {
+	Position        *Vector3
+	Parts           [2]*Obstacle
+	Start           float32
+	Stop            float32
+	CountdownLength float32
+	countdown       float32
+	direction       int8
 }
 
 type MapData struct {
@@ -205,10 +217,9 @@ func NewMap() *Map {
 		})
 	}
 
-	// test
+	// TODO: do this better, merge with updateCranePosition osv..
 	craneWidth := 0.5 * float32(1)
 	craneHeight := 0.5 * float32(14.75)
-	//cranePosition := Vector3{X: manifest.Crane.X, Y: manifest.Crane.Y, Z: 0}
 
 	pos1 := Vector3{
 		X: manifest.Crane.X + 0.5*21.75 - 0.5,
@@ -280,82 +291,21 @@ func NewMap() *Map {
 		Radius:   poly2.FindRadius(&pos2),
 	})
 
-	// obstacles = append(obstacles, Obstacle{
-	// 	Polygon:  poly2,
-	// 	Centroid: p.Clone(),
-	// 	Radius:   poly.FindRadius(&p),
-	// })
-
-	// p := Vector3{X: 0.5*21.75 - 0.5, Y: 0, Z: 0}
-	// p.X -= 25
-	// x := 0.5 * float32(1)
-	// y := 0.5 * float32(14.75)
-
-	// poly := &Polygon{
-	// 	&Vector3{
-	// 		X: p.X - x,
-	// 		Y: p.Y + y,
-	// 		Z: 0,
-	// 	},
-	// 	&Vector3{
-	// 		X: p.X + x,
-	// 		Y: p.Y + y,
-	// 		Z: 0,
-	// 	},
-	// 	&Vector3{
-	// 		X: p.X + x,
-	// 		Y: p.Y - y,
-	// 		Z: 0,
-	// 	},
-	// 	&Vector3{
-	// 		X: p.X - x,
-	// 		Y: p.Y - y,
-	// 		Z: 0,
-	// 	},
-	// }
-	// obstacles = append(obstacles, Obstacle{
-	// 	Polygon:  poly,
-	// 	Centroid: p.Clone(),
-	// 	Radius:   poly.FindRadius(&p),
-	// })
-
-	// p = Vector3{X: -0.5*21.75 + 0.5, Y: 0, Z: 0}
-	// p.X -= 25
-	// x = 0.5 * float32(1)
-	// y = 0.5 * float32(14.75)
-
-	// poly2 := &Polygon{
-	// 	&Vector3{
-	// 		X: p.X - x,
-	// 		Y: p.Y + y,
-	// 		Z: 0,
-	// 	},
-	// 	&Vector3{
-	// 		X: p.X + x,
-	// 		Y: p.Y + y,
-	// 		Z: 0,
-	// 	},
-	// 	&Vector3{
-	// 		X: p.X + x,
-	// 		Y: p.Y - y,
-	// 		Z: 0,
-	// 	},
-	// 	&Vector3{
-	// 		X: p.X - x,
-	// 		Y: p.Y - y,
-	// 		Z: 0,
-	// 	},
-	// }
-	// obstacles = append(obstacles, Obstacle{
-	// 	Polygon:  poly2,
-	// 	Centroid: p.Clone(),
-	// 	Radius:   poly.FindRadius(&p),
-	// })
+	crane := ShippingCrane{
+		Position:        &Vector3{X: -25, Y: 0, Z: 0},
+		Parts:           [2]*Obstacle{&obstacles[len(obstacles)-1], &obstacles[len(obstacles)-2]},
+		Start:           0,
+		Stop:            -35,
+		CountdownLength: 3000,
+		countdown:       0,
+		direction:       -1,
+	}
 
 	return &Map{
-		Boundaries: manifest.Boundaries,
-		Spawns:     manifest.Spawns,
-		Obstacles:  obstacles,
+		Boundaries:    manifest.Boundaries,
+		Spawns:        manifest.Spawns,
+		Obstacles:     obstacles,
+		ShippingCrane: crane,
 	}
 }
 
@@ -375,4 +325,56 @@ func (m Map) RandomSpawn() (float32, float32) {
 
 	idx := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(n)
 	return m.Spawns[idx].X, m.Spawns[idx].Y
+}
+
+func (m *Map) MoveCrane(dt float32) {
+	if m.ShippingCrane.countdown > 0.1 {
+		m.ShippingCrane.countdown -= dt
+		return
+	}
+
+	m.ShippingCrane.Position.Y += float32(m.ShippingCrane.direction) * dt * 0.01
+	if m.ShippingCrane.Position.Y > m.ShippingCrane.Start {
+		m.ShippingCrane.Position.Y = m.ShippingCrane.Start
+		m.ShippingCrane.direction = -1
+		m.ShippingCrane.countdown = m.ShippingCrane.CountdownLength
+	} else if m.ShippingCrane.Position.Y < m.ShippingCrane.Stop {
+		m.ShippingCrane.Position.Y = m.ShippingCrane.Stop
+		m.ShippingCrane.direction = 1
+		m.ShippingCrane.countdown = m.ShippingCrane.CountdownLength
+	}
+
+	m.updateCranePosition()
+}
+
+func (m *Map) SetCranePosition(x float32, y float32) {
+	m.ShippingCrane.Position.X = x
+	m.ShippingCrane.Position.Y = y
+	m.updateCranePosition()
+}
+
+func (m *Map) updateCranePosition() {
+	craneWidth := 0.5 * float32(1)
+	craneHeight := 0.5 * float32(14.75)
+
+	m.ShippingCrane.Parts[0].Centroid.X = m.ShippingCrane.Position.X + 0.5*21.75 - 0.5
+	m.ShippingCrane.Parts[0].Centroid.Y = m.ShippingCrane.Position.Y
+	m.ShippingCrane.Parts[1].Centroid.X = m.ShippingCrane.Position.X - 0.5*21.75 + 0.5
+	m.ShippingCrane.Parts[1].Centroid.Y = m.ShippingCrane.Position.Y
+
+	for _, part := range m.ShippingCrane.Parts {
+		if len(*part.Polygon) != 4 {
+			fmt.Printf("MAP: THIS IS BAD")
+			continue
+		}
+
+		(*part.Polygon)[0].X = part.Centroid.X - craneWidth
+		(*part.Polygon)[0].Y = part.Centroid.Y + craneHeight
+		(*part.Polygon)[1].X = part.Centroid.X + craneWidth
+		(*part.Polygon)[1].Y = part.Centroid.Y + craneHeight
+		(*part.Polygon)[2].X = part.Centroid.X + craneWidth
+		(*part.Polygon)[2].Y = part.Centroid.Y - craneHeight
+		(*part.Polygon)[3].X = part.Centroid.X - craneWidth
+		(*part.Polygon)[3].Y = part.Centroid.Y - craneHeight
+	}
 }

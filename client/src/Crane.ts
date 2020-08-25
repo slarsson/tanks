@@ -8,9 +8,8 @@ class Lifter {
     private lines: THREE.Group;
     private liftArm: THREE.Group;
     
-    private height: number = 9;
     private maxHeight: number = 12;
-    private minHeight: number = 3.75 * 2;
+    private minHeight: number = 3.75;
 
     constructor() {
         this.mesh = new THREE.Group();
@@ -21,7 +20,7 @@ class Lifter {
             let m = new THREE.LineBasicMaterial({color: 0x000000});
             let g1 = new THREE.Geometry();
             g1.vertices.push(
-                new THREE.Vector3(1.4, 3.5, this.height), 
+                new THREE.Vector3(1.4, 3.5, this.maxHeight), 
                 new THREE.Vector3(1.4, 3.5, this.maxHeight+2)
             );
             this.lines.add(new THREE.Line(g1, m));
@@ -59,7 +58,7 @@ class Lifter {
             this.liftArm.add(top);
             this.liftArm.add(middle);
             this.liftArm.add(bottom);
-            this.liftArm.position.z = this.height;
+            this.liftArm.position.z = this.maxHeight;
             this.mesh.add(this.liftArm);
         }
         
@@ -68,42 +67,17 @@ class Lifter {
         c.setPosition(0, 0, -1.875); // RÄKNA RÄTT!!??!!
     }
 
-    private moveToHeight(): void {
-        this.liftArm.position.z = this.height;
+    public setHeight(h: number): void {
+        this.liftArm.position.z = h;
         for (const child of this.lines.children) {
             // fuck TypeScript, how should this be done?
             if (child instanceof THREE.Line) {
-                child.geometry.vertices[0].z = this.height;
+                child.geometry.vertices[0].z = h;
                 child.geometry.verticesNeedUpdate = true;
             }
         }
     }
-
-    public up(dt: number): boolean {
-        this.height += 0.01 * dt;
-        if (this.height > this.maxHeight) {
-            this.height = this.maxHeight;
-            return false;
-        }
-        this.moveToHeight();
-        return true;
-    }
-
-    public down(dt: number): boolean {
-        this.height -= 0.01 * dt;
-        if (this.height < this.minHeight) {
-            this.height = this.minHeight;
-            return false;
-        }
-        this.moveToHeight();
-        return true;
-    }
-
-    public setHeight(h: number): void {
-        this.height = h;
-    }
 }
-
 
 class Crane {
 
@@ -112,11 +86,10 @@ class Crane {
     private test: THREE.Group;
     private lifter: Lifter;
 
-    private dir: boolean = true;
-    private sidewaysLength: number = 7;
-
-    private moveUpDown: number = 0;
-    private moveLeftRight: number = 0;
+    private animationTime: number = 0;
+    private animationRunning: boolean = false;
+    private animationTest: number = 1;
+    private height: number = 12;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -148,188 +121,38 @@ class Crane {
 
         this.test.add(swag);
         this.test.add(this.lifter.mesh);
-        this.scene.add(this.test);
-
-        // let lifter = new THREE.Group();
-        // let lifterMaterial = new THREE.MeshPhongMaterial({color: 0xffff00});
-        
-        // let lifta = new THREE.Mesh(new THREE.BoxGeometry(3.75, 1, 0.5), lifterMaterial);
-        
-        // //let liftb = new THREE.LineSegments(new THREE.BoxGeometry(1.5, 6, 0.5), lifterMaterial);
-
-        // let liftb = new THREE.Mesh(new THREE.BoxGeometry(1.5, 6, 0.5), lifterMaterial);
-        // let liftc = new THREE.Mesh(new THREE.BoxGeometry(3.75, 1, 0.5), lifterMaterial);
-        
-        // lifta.position.y = 3.5;
-        // liftc.position.y = -3.5;
-
-        // lifter.add(lifta);
-        // lifter.add(liftb);
-        // lifter.add(liftc);
-
-        // lifter.position.z = 7;
-
-        // this.test.add(lifter);
-
-
-        // let g1 = new THREE.Geometry();
-        // g1.vertices.push(
-        //     new THREE.Vector3(1.5, 3.5, 7),
-        //     new THREE.Vector3(1.5, 3.5, 14.25)
-        // );
-        // let line1 = new THREE.Line(g1, new THREE.LineBasicMaterial({color: 0x000000}));
-
-        // let g2 = new THREE.Geometry();
-        // g2.vertices.push(
-        //     new THREE.Vector3(-1.5, 3.5, 7),
-        //     new THREE.Vector3(-1.5, 3.5, 14.25)
-        // );
-        // let line2 = new THREE.Line(g2, new THREE.LineBasicMaterial({color: 0x000000}));
-
-        // let g3 = new THREE.Geometry();
-        // g3.vertices.push(
-        //     new THREE.Vector3(1.5, -3.5, 7),
-        //     new THREE.Vector3(1.5, -3.5, 14.25)
-        // );
-        // let line3 = new THREE.Line(g3, new THREE.LineBasicMaterial({color: 0x000000}));
-
-        // let g4 = new THREE.Geometry();
-        // g4.vertices.push(
-        //     new THREE.Vector3(-1.5, -3.5, 7),
-        //     new THREE.Vector3(-1.5, -3.5, 14.25)
-        // );
-        // let line4 = new THREE.Line(g4, new THREE.LineBasicMaterial({color: 0x000000}));
-
-
-        // this.test.add(line1);
-        // this.test.add(line2);
-        // this.test.add(line3);
-        // this.test.add(line4);
-
-        // setTimeout(() => {
-        //     g1.vertices[0].z = 12;
-        //     line1.geometry.verticesNeedUpdate = true;
-        // });
-
-        // let swag2 = new THREE.Mesh(
-        //     new THREE.BoxGeometry(2, 7, 0.5),
-        //     new THREE.MeshPhongMaterial({color: 0xffff00})
-        // );
-
-        // swag2.position.z = 7;
-
-
-
-
-
-        // this.test.add(swag);
-        // // this.test.add(swag2);
             
-        // this.crane.add(this.test);
+        this.crane.add(this.test);
+        
 
         this.scene.add(this.crane);
 
-        // this.crane.position.x = -25;
-        // this.test.position.x = -25;
-
-        // let c = new SingleContainer(this.test);
-        // c.setPosition(0, 0, 5);
-        // c.setRotation(0, 0, (Math.PI / 2));
-
-        // const crane = Assets.objects.crane.scene;
-        //     //crane.rotation.y = Math.random() * 3;
-        //     crane.rotation.x = Math.PI / 2;
-
-        //     crane.scale.set(0.5, 0.5, 0.5);
-        //     crane.position.x = 20;
-            
-        //     let child = crane.children[0];
-        //     if (child instanceof THREE.Mesh) {
-        //         child.material = new THREE.MeshPhongMaterial({color: 0xff0000, side: THREE.DoubleSide}); 
-        //     }
     }
 
     public setPosition(x: number, y: number, z: number): void {
+        if (!this.animationRunning && y == this.crane.position.y) {
+            this.animationTime = 0;
+            this.animationRunning = true;
+        }
+        
         this.crane.position.set(x, y, z);
-        this.test.position.set(x, y, z);
+        //this.test.position.set(x, y, z);
     }
-
-    public left(trigger: boolean): void {
-        if (!trigger) {
-            this.moveLeftRight = 0
-        } else {
-            this.moveLeftRight = -1;
-        }
-    }
-
-    public right(trigger: boolean): void {
-        if (!trigger) {
-            this.moveLeftRight = 0
-        } else {
-            this.moveLeftRight = 1;
-        }
-    }
-
-    public up(trigger: boolean): void {
-        if (!trigger) {
-            this.moveUpDown = 0
-        } else {
-            this.moveUpDown = 1;
-        }
-    }
-
-    public down(trigger: boolean): void {
-        if (!trigger) {
-            this.moveUpDown = 0
-        } else {
-            this.moveUpDown = -1;
-        }
-    }
-    
-    // public left(dt: number): void {
-    //     let newp = this.test.position.x - 0.001 * dt;
-    //     if (newp > -this.sidewaysLength) {
-    //         this.test.position.x = newp;
-    //     } else {
-    //         this.test.position.x = -this.sidewaysLength;
-    //     }
-    // }
-
-    // public right(dt: number): void {
-    //     let newp = this.test.position.x + 0.001 * dt;
-    //     if (newp < this.sidewaysLength) {
-    //         this.test.position.x = newp;
-    //     } else {
-    //         this.test.position.x = this.sidewaysLength;
-    //     }
-    // }
 
     public update(dt: number): void {
-        if (this.moveLeftRight == 1) {
-            this.test.position.x += 0.01 * dt;  
-        } else if (this.moveLeftRight == -1) {
-            this.test.position.x -= 0.01 * dt;
+        if (this.animationRunning) {
+            this.animationTime += dt;
+
+            this.height -= this.animationTest * dt * 0.001;
+            this.lifter.setHeight(this.height);
+            this.test.position.x += this.animationTest * dt * 0.002;
+
+            if (this.animationTime >= 3200) {
+                this.animationTime = 0;
+                this.animationRunning = false;
+                this.animationTest *= -1;
+            }
         }
-
-        if (this.moveUpDown == 1) {
-            this.lifter.up(dt);
-        } else if (this.moveUpDown == -1) {
-            this.lifter.down(dt);
-        }
-
-        // //this.left(dt);
-
-        // if (this.dir) {
-        //     //this.left(dt);
-        //     if (!this.lifter.up(dt)) {
-        //         this.dir = false;
-        //     }
-        // } else {
-        //     //this.right(dt);
-        //     if (!this.lifter.down(dt)) {
-        //         this.dir = true;
-        //     }
-        // }
     }
 
 }

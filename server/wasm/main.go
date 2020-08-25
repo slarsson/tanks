@@ -185,6 +185,7 @@ func main() {
 	js.Global().Set("wasm__setSelf", js.FuncOf(setSelf))
 	js.Global().Set("wasm__updateProjectiles", js.FuncOf(updateProjectiles))
 	js.Global().Set("wasm__removePlayer", js.FuncOf(removePlayer))
+	js.Global().Set("wasm__updateCrane", js.FuncOf(updateCrane))
 
 	fmt.Println("WASM: WebAssembly init!")
 

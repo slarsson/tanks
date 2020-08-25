@@ -19,7 +19,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         getPos: wasm__get,
         removePlayer: wasm__removePlayer,
         setSelf: wasm__setSelf,
-        updateProjectiles: wasm__updateProjectiles
+        updateProjectiles: wasm__updateProjectiles,
+        updateCrane: wasm__updateCrane
     });
 
     (function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})();

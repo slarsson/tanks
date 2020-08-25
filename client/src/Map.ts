@@ -108,7 +108,8 @@ class GameMap {
         }
 
         this.crane = new Crane(this.scene);
-        this.crane.setPosition(this.manifest.crane.x, this.manifest.crane.y, 0);
+        this.crane.setPosition(-9999, -9999, 0);
+        //this.crane.setPosition(this.manifest.crane.x, this.manifest.crane.y, 0);
 
         //scene.add(new THREE.AxesHelper(150)); 
     }

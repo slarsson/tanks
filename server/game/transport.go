@@ -112,3 +112,19 @@ func ErrorMessage() []byte {
 	binary.LittleEndian.PutUint32(buf, 33)
 	return buf
 }
+
+// mt = 44
+// func SendCranePosition(pos float32) []byte {
+// 	buf := make([]byte, 8)
+// 	binary.LittleEndian.PutUint32(buf[0:4], 44)
+// 	binary.LittleEndian.PutUint32(buf[4:8], math.Float32bits(pos))
+// 	return buf
+// }
+
+func (m Map) SendCranePosition() []byte {
+	buf := make([]byte, 12)
+	binary.LittleEndian.PutUint32(buf[0:4], 44)
+	binary.LittleEndian.PutUint32(buf[4:8], math.Float32bits(m.ShippingCrane.Position.X))
+	binary.LittleEndian.PutUint32(buf[8:12], math.Float32bits(m.ShippingCrane.Position.Y))
+	return buf
+}

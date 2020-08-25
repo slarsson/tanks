@@ -40,7 +40,16 @@ func updateProjectiles(this js.Value, args []js.Value) interface{} {
 	return pmanager.UpdateLocal(dt, &networkPlayers, gameMap)
 }
 
+func updateCrane(this js.Value, args []js.Value) interface{} {
+	x := float32(args[0].Float())
+	y := float32(args[1].Float())
+	gameMap.SetCranePosition(x, y)
+	return js.ValueOf(nil)
+}
+
 func update(this js.Value, args []js.Value) interface{} {
+	//gameMap.Test()
+
 	//fmt.Println(networkPlayers)
 	for i := 0; i < len(args)-1; i += 12 {
 		key := args[i].Int()
