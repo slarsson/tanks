@@ -23,12 +23,14 @@ jobs:
       - name: build-node
         run: cd ./client && npm install && npm run build
 
-
-      - name: swag
+      - name: deploy
         run: |
-          mkdir ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/mykey
-          chmod 600 ~/.ssh/mykey
-          ssh -i ~/.ssh/mykey -o StrictHostKeyChecking=no pi@slarsson.me ls -a
+          echo "$SSH_PRIVATE_KEY" > mykey
+          chmod 600 mykey
+          ssh -i mykey -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST ls -a
+          rsync -v -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./server/build/server_arm32 $SSH_USER@$SSH_HOST:/home/$SSH_USER
+          rsync -va --delete -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build $SSH_USER@$SSH_HOST:/home/$SSH_USER/nginx/www/tanks
         env: 
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
