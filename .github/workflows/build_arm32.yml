@@ -36,7 +36,6 @@ jobs:
             IdentityFile ~/.ssh/mykey
             StrictHostKeyChecking no
           END
+          ssh myhost ls -a
         env: 
           SSH_KEY: ${{ secrets.SSH_KEY }}
-      - name: teeeest
-        run: ssh myhost ls -a
