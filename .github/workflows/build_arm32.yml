@@ -29,6 +29,6 @@ jobs:
           mkdir ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/mykey
           chmod 600 ~/.ssh/mykey
-          ssh -o StrictHostKeyChecking=no pi@slarsson.me ls -a
+          ssh -i ~/.ssh/mykey -o StrictHostKeyChecking=no pi@slarsson.me ls -a
         env: 
           SSH_KEY: ${{ secrets.SSH_KEY }}
