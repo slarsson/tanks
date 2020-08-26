@@ -19,6 +19,6 @@ jobs:
           node-version: '12'
 
       - name: build-golang
-        run: cd ./server && make build
+        run: cd ./server && go get . && make arm && make wasm
       - name: build-node
         run: cd ./client && npm install && npm run build
