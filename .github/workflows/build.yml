@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: asdf asdf
-      - run: ls -a
+        run: ls -a
