@@ -1,0 +1,13 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  TestmyTest:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: asdf asdf
+      - run: ls -a
