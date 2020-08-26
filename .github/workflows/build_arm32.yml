@@ -29,13 +29,6 @@ jobs:
           mkdir ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/mykey
           chmod 600 ~/.ssh/mykey
-          cat >>~/.ssh/config <<END
-          Host myhost
-            HostName slarsson.me
-            User pi
-            IdentityFile ~/.ssh/mykey
-            StrictHostKeyChecking no
-          END
-          ssh myhost ls -a
+          ssh pi@slarsson.me ls -a
         env: 
           SSH_KEY: ${{ secrets.SSH_KEY }}
