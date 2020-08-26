@@ -22,3 +22,13 @@ jobs:
         run: cd ./server && go get . && make arm && make wasm
       - name: build-node
         run: cd ./client && npm install && npm run build
+
+
+      - name: swag
+        run: |
+          mkdir ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/mykey
+          chmod 600 ~/.ssh/mykey
+          rsync -avz -e "ssh -i ~/.ssh/mykey -o StrictHostKeyChecking=no" ./server/build/server_arm32 pi@slarsson.me:/home/pi
+        env: 
+          SSH_KEY: ${{ secrets.SSH_KEY }}
