@@ -9,5 +9,11 @@ jobs:
   TestmyTest:
     runs-on: ubuntu-20.04
     steps:
-      - name: asdf asdf
-        run: ls -a
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          stable: 'false'
+          go-version: '1.15'
+      
+      - name: build-golang
+        run: cd ./server && make build
