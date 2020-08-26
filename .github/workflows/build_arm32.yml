@@ -20,10 +20,11 @@ jobs:
 
       - name: Build Server
         run: cd ./server && go get . && make arm && make wasm
-      - name: build-node
+      
+      - name: Build Client
         run: cd ./client && npm install && npm run build
 
-      - name: deploy
+      - name: Deploy
         run: |
           echo "$SSH_PRIVATE_KEY" > mykey
           chmod 600 mykey
