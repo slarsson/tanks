@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '12'
 
-      - name: build-golang
+      - name: Build Server
         run: cd ./server && go get . && make arm && make wasm
       - name: build-node
         run: cd ./client && npm install && npm run build
@@ -27,9 +27,9 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > mykey
           chmod 600 mykey
-          ssh -i mykey -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST ls -a
           rsync -v -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./server/build/server_arm32 $SSH_USER@$SSH_HOST:/home/$SSH_USER
           rsync -va --delete -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build $SSH_USER@$SSH_HOST:/home/$SSH_USER/nginx/www/tanks
+          ssh -i mykey -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST sudo service myservice restart
         env: 
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
