@@ -14,6 +14,11 @@ jobs:
         with:
           stable: 'false'
           go-version: '1.15'
-      
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
       - name: build-golang
         run: cd ./server && make build
+      - name: build-node
+        run: cd ./client && npm install && npm run build
