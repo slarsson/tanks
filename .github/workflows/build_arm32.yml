@@ -29,7 +29,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > mykey
           chmod 600 mykey
           rsync -v -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./server/build/server_arm32 $SSH_USER@$SSH_HOST:/home/$SSH_USER
-          rsync -vah -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build/ $SSH_USER@$SSH_HOST:/home/SSH_USER/nginx/www/tanks/ --delete
+          rsync -vah -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build/ $SSH_USER@$SSH_HOST:/home/$SSH_USER/nginx/www/tanks/ --delete
           ssh -i mykey -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST sudo service myservice restart
         env: 
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
