@@ -1,0 +1,1 @@
+declare const WS_HOST: string;

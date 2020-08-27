@@ -23,7 +23,8 @@ class Manager {
         this.wasm = wasm;
         this.graphics = new Graphics();
         this.game = new Game(this.wasm, this.graphics);
-        this.connection = new Connection('ws://localhost:1337', this.messageHandler, this.init, this.errorHandler);
+        
+        this.connection = new Connection('ws://' + WS_HOST, this.messageHandler, this.init, this.errorHandler);
         this.playerNames = new Map();
     }
 

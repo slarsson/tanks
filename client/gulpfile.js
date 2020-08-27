@@ -17,7 +17,7 @@ if (!prod) {
 }
 
 const webpackConfig = {
-	mode: 'development',
+	mode: prod ? 'production' : 'development',
 	entry: './src/index.js',
 	module: {
 		rules: [
@@ -34,7 +34,12 @@ const webpackConfig = {
 	output: {
 		filename: 'bundle.js',
 		path: path.resolve(__dirname, 'build')
-	}
+	},
+	plugins: [
+		new webpack.DefinePlugin({
+			WS_HOST: process.env.WS_HOST ? '"'+process.env.WS_HOST+'"' : '"localhost:1337"'
+		})
+	]
 };
 
 const wp = () => {
