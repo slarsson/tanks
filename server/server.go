@@ -76,8 +76,8 @@ func (s *Server) GameLoop() {
 
 	for range ticker.C {
 		// update (and send) objects first
-		// s.Game.Map.MoveCrane(step)
-		// s.Network.Broadcast <- s.Game.Map.SendCranePosition()
+		s.Game.Map.MoveCrane(step)
+		s.Network.Broadcast <- s.Game.Map.SendCranePosition()
 
 		//start := time.Now()
 
