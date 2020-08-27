@@ -49,3 +49,7 @@ https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
 
 2. GITHUB
     - add private key to secrets
+
+
+
+rsync -vah ./build/ pi@slarsson.me:/home/pi/nginx/www/tanks/ --delete
