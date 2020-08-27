@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Assets } from './Assets';
 import { SingleContainer } from './Container';
+import { runInThisContext } from 'vm';
 
 class Lifter {
 
@@ -79,21 +80,32 @@ class Lifter {
     }
 }
 
+
+interface animation {
+    type: number;
+    delay: number;
+    direction: number;
+    speed: number;
+    stop: number;
+}
+
 class Crane {
 
     private scene: THREE.Scene;
     private crane: THREE.Group;
-    private test: THREE.Group;
+    private liftArm: THREE.Group;
     private lifter: Lifter;
+    private lifterHeight: number = 12;
 
-    private animationTime: number = 0;
-    private animationRunning: boolean = false;
-    private animationTest: number = 1;
-    private height: number = 12;
+    private animation: animation[];
+    private animationIndex: number = Infinity;
+    private animationDelay: number = 0;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.crane = new THREE.Group();
+        this.lifter = new Lifter();
+        this.lifter.setHeight(this.lifterHeight);
 
         let mesh = Assets.objects?.crane?.scene.clone();
         if (mesh != undefined) {
@@ -105,56 +117,162 @@ class Crane {
             mesh.rotation.x = Math.PI / 2;
             this.crane.add(mesh);
         } else {
-            console.error('CRANE: could not found crane-mesh');
+            console.error('CRANE: crane-mesh not found :(');
         }
 
-        this.test = new THREE.Group();
+        this.liftArm = new THREE.Group();
 
-        let swag = new THREE.Mesh(
+        let block = new THREE.Mesh(
             new THREE.BoxGeometry(3, 11, 1),
             new THREE.MeshPhongMaterial({color: 0xff0000})
         );
-
-        swag.position.z = 14.25;
-        this.lifter = new Lifter();
-        //this.scene.add(this.lifter.mesh);
-
-        this.test.add(swag);
-        this.test.add(this.lifter.mesh);
-            
-        this.crane.add(this.test);
+        block.position.z = 14.25;
         
-
+        this.liftArm.add(block);
+        this.liftArm.add(this.lifter.mesh);
+        this.crane.add(this.liftArm);
         this.scene.add(this.crane);
 
+        this.animation = [
+            {
+                type: 0,
+                delay: 0,
+                direction: 1,
+                speed: 0.01,
+                stop: 7.5
+            },
+            {
+                type: 1,
+                delay: 500,
+                direction: -1,
+                speed: 0.01,
+                stop: 7.5
+            },
+            {
+                type: 1,
+                delay: 200,
+                direction: 1,
+                speed: 0.01,
+                stop: 12
+            },
+            {
+                type: 0,
+                delay: 500,
+                direction: -1,
+                speed: 0.01,
+                stop: 0
+            },
+
+            // {
+            //     type: 0,
+            //     delay: 500,
+            //     direction: -1,
+            //     speed: 0.01,
+            //     stop: -7
+            // }
+        ];
+
+        // this.animation = [
+        //     {
+        //         type: 'test',
+        //         speed: 0.01,
+        //         direction: 1,
+        //         end: 7,
+        //     },
+        //     {
+        //         type: 'test',
+        //         speed: 0.01,
+        //         direction: -1,
+        //         end: -7,
+        //     },
+        //     {
+        //         type: 'test',
+        //         speed: 0.005,
+        //         direction: 1,
+        //         end: 0,
+        //     }
+        // ];
     }
 
     public setPosition(x: number, y: number, z: number): void {
-        if (!this.animationRunning && y == this.crane.position.y) {
-            this.animationTime = 0;
-            this.animationRunning = true;
-        }
-        
         this.crane.position.set(x, y, z);
-        //this.test.position.set(x, y, z);
+    }
+
+    public triggerAnimation(): void {
+        console.log('trigge animations..');
+
+        this.animationIndex = 0;
+        // this.animationIndex = 0;
+        // this.lifterHeight = 12;
+        // this.lifter.setHeight(this.lifterHeight);
+        // this.liftArm.position.x = 0;
     }
 
     public update(dt: number): void {
-        if (this.animationRunning) {
-            this.animationTime += dt;
+        if (this.animationIndex < this.animation.length) {
+            let a = this.animation[this.animationIndex];
 
-            this.height -= this.animationTest * dt * 0.001;
-            this.lifter.setHeight(this.height);
-            this.test.position.x += this.animationTest * dt * 0.002;
-
-            if (this.animationTime >= 3200) {
-                this.animationTime = 0;
-                this.animationRunning = false;
-                this.animationTest *= -1;
+            if (a.delay > this.animationDelay) {
+                this.animationDelay += dt;
+                return;
             }
-        }
-    }
 
+            if (a.type == 0) {
+                this.liftArm.position.x += dt * a.direction * a.speed;
+                if ((a.direction == 1 && this.liftArm.position.x > a.stop) || (a.direction == -1 && this.liftArm.position.x < a.stop)) {
+                    this.liftArm.position.x = a.stop;
+                    this.animationDelay = 0;
+                    this.animationIndex++;
+                }
+            } else if (a.type == 1) {
+                this.lifterHeight += dt * a.direction * a.speed;
+                if ((a.direction == 1 && this.lifterHeight > a.stop) || (a.direction == -1 && this.lifterHeight < a.stop)) {
+                    this.lifterHeight = a.stop;
+                    this.animationDelay = 0;
+                    this.animationIndex++;
+                }
+                this.lifter.setHeight(this.lifterHeight);
+            }
+
+            //console.log(a);
+            
+            // if ((a.direction == 1 && this.liftArm.position.x > a.stop) || (a.direction == -1 && this.liftArm.position.x < a.stop)) {
+            //     if (a.type == 0) {
+            //         this.liftArm.position.x = a.stop;
+            //     } else if (a.type == 1) {
+            //         this.lifterHeight = a.stop;
+            //         this.lifter.setHeight(this.lifterHeight);
+            //     }
+            //     this.animationDelay = 0;
+            //     this.animationIndex++;
+            // }
+
+            // if ((a.direction == 1 && this.liftArm.position.x > a.stop) || (a.direction == -1 && this.liftArm.position.x < a.stop)) {
+            //     if (a.type == 0) {
+            //         this.liftArm.position.x = a.stop;
+            //     } else if (a.type == 1) {
+            //         this.lifterHeight = a.stop;
+            //         this.lifter.setHeight(this.lifterHeight);
+            //     }
+            //     this.animationDelay = 0;
+            //     this.animationIndex++;
+            // }
+
+        }
+
+
+        // let a = this.animation[this.animationIndex];
+        // if (a != undefined) {
+        //     this.liftArm.position.x += dt * a.direction * a.speed;
+        //     if (
+        //         (a.direction == 1 && this.liftArm.position.x > a.end) || 
+        //         (a.direction == -1 && this.liftArm.position.x < a.end)
+        //     ) {
+        //         this.liftArm.position.x = a.end;
+        //         this.animationIndex++;
+        //     }
+        // }
+    }
 }
 
 export default Crane;

@@ -111,10 +111,13 @@ class Manager {
                 this.graphics.addMessage('SERVER ERROR', null, Graphics.ERROR);
             } break;
 
-            case 44: {
+            case 44: {                
                 let data = new Float32Array(buffer);
                 this.game.gameMap.crane.setPosition(data[0], data[1], 0);
                 this.wasm.updateCrane(data[0], data[1]);
+                if (data[2] > 0) {
+                    this.game.gameMap.crane.triggerAnimation();
+                }
             } break;
 
             default: console.log('MANAGER: unknown message', mt);

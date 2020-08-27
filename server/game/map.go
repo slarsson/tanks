@@ -28,6 +28,7 @@ type ShippingCrane struct {
 	CountdownLength float32
 	countdown       float32
 	direction       int8
+	trigger         bool
 }
 
 type MapData struct {
@@ -299,6 +300,7 @@ func NewMap() *Map {
 		CountdownLength: 3000,
 		countdown:       0,
 		direction:       -1,
+		trigger:         false,
 	}
 
 	return &Map{
@@ -338,10 +340,12 @@ func (m *Map) MoveCrane(dt float32) {
 		m.ShippingCrane.Position.Y = m.ShippingCrane.Start
 		m.ShippingCrane.direction = -1
 		m.ShippingCrane.countdown = m.ShippingCrane.CountdownLength
+		m.ShippingCrane.trigger = true
 	} else if m.ShippingCrane.Position.Y < m.ShippingCrane.Stop {
 		m.ShippingCrane.Position.Y = m.ShippingCrane.Stop
 		m.ShippingCrane.direction = 1
 		m.ShippingCrane.countdown = m.ShippingCrane.CountdownLength
+		m.ShippingCrane.trigger = true
 	}
 
 	m.updateCranePosition()

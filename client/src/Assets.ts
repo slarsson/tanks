@@ -34,7 +34,7 @@ class Assets {
                     Assets.loadTexture('msc.png'),
                     Assets.loadTexture('maersk.png'),
                     Assets.loadMap('map.json'),
-                    Assets.loadGLTF('crane1.glb')
+                    Assets.loadGLTF('crane.glb')
                 ]);
 
                 this.textures = {

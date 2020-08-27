@@ -150,7 +150,6 @@ class Container {
     }
 }
 
-//export default Container;
 export {
     Container,
     Item as SingleContainer

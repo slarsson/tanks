@@ -1,4 +1,4 @@
-name: DEPLOY TO samuel.yoga
+name: samuel.yoga
 
 on:
   push:

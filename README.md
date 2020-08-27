@@ -53,3 +53,5 @@ https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
 
 
 rsync -vah ./build/ pi@slarsson.me:/home/pi/nginx/www/tanks/ --delete
+
+0xa6de7ab
