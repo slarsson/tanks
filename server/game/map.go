@@ -297,7 +297,7 @@ func NewMap() *Map {
 		Parts:           [2]*Obstacle{&obstacles[len(obstacles)-1], &obstacles[len(obstacles)-2]},
 		Start:           0,
 		Stop:            -35,
-		CountdownLength: 3000,
+		CountdownLength: 6000,
 		countdown:       0,
 		direction:       -1,
 		trigger:         false,

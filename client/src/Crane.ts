@@ -1,16 +1,13 @@
 import * as THREE from 'three';
 import { Assets } from './Assets';
 import { SingleContainer } from './Container';
-import { runInThisContext } from 'vm';
 
 class Lifter {
 
     public mesh: THREE.Group;
+    public liftArm: THREE.Group;
     private lines: THREE.Group;
-    private liftArm: THREE.Group;
-    
     private maxHeight: number = 12;
-    private minHeight: number = 3.75;
 
     constructor() {
         this.mesh = new THREE.Group();
@@ -62,10 +59,6 @@ class Lifter {
             this.liftArm.position.z = this.maxHeight;
             this.mesh.add(this.liftArm);
         }
-        
-        let c = new SingleContainer(this.liftArm);
-        c.setRotation(0, 0, Math.PI/2);
-        c.setPosition(0, 0, -1.875); // RÄKNA RÄTT!!??!!
     }
 
     public setHeight(h: number): void {
@@ -80,13 +73,18 @@ class Lifter {
     }
 }
 
+enum AnimationType {
+    Horizontal,
+    Vertical,
+    Trigger
+}
 
 interface animation {
-    type: number;
+    type: AnimationType;
     delay: number;
-    direction: number;
+    direction: number; // TRIGGER = add or remove container, otherwise up/down or left/right
     speed: number;
-    stop: number;
+    stop: number; // TRIGGER = taken index, otherwise end position
 }
 
 class Crane {
@@ -100,6 +98,12 @@ class Crane {
     private animation: animation[];
     private animationIndex: number = Infinity;
     private animationDelay: number = 0;
+
+    private lifterPositions: number[] = [7.5, 3.75, 0, -3.75, -7.5];
+    private containerPositions: number[] = [-17.5, -21.25, -25, -28.75, -32.5];
+    private containerGroupTop: Array<SingleContainer | null>;
+    private containerGroupBottom: Array<SingleContainer | null>;
+    private current: SingleContainer | null;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -133,65 +137,39 @@ class Crane {
         this.crane.add(this.liftArm);
         this.scene.add(this.crane);
 
+        // animations + containers
         this.animation = [
-            {
-                type: 0,
-                delay: 0,
-                direction: 1,
-                speed: 0.01,
-                stop: 7.5
-            },
-            {
-                type: 1,
-                delay: 500,
-                direction: -1,
-                speed: 0.01,
-                stop: 7.5
-            },
-            {
-                type: 1,
-                delay: 200,
-                direction: 1,
-                speed: 0.01,
-                stop: 12
-            },
-            {
-                type: 0,
-                delay: 500,
-                direction: -1,
-                speed: 0.01,
-                stop: 0
-            },
-
-            // {
-            //     type: 0,
-            //     delay: 500,
-            //     direction: -1,
-            //     speed: 0.01,
-            //     stop: -7
-            // }
+            {type: AnimationType.Horizontal, delay: 200, direction: 0, speed: 0.01, stop: 0},
+            {type: AnimationType.Vertical, delay: 300, direction: -1, speed: 0.01, stop: 7.5},
+            {type: AnimationType.Trigger, delay: 0, direction: 0, speed: 0, stop: 0},
+            {type: AnimationType.Vertical, delay: 300, direction: 1, speed: 0.01, stop: 12},
+            {type: AnimationType.Horizontal, delay: 200, direction: 0, speed: 0.01, stop: 0},
+            {type: AnimationType.Vertical, delay: 300, direction: -1, speed: 0.01, stop: 7.5},
+            {type: AnimationType.Trigger, delay: 0, direction: 0, speed: 0, stop: 0},
+            {type: AnimationType.Vertical, delay: 300, direction: 1, speed: 0.01, stop: 12},
+            {type: AnimationType.Horizontal, delay: 200, direction: 0, speed: 0.01, stop: 0}
         ];
 
-        // this.animation = [
-        //     {
-        //         type: 'test',
-        //         speed: 0.01,
-        //         direction: 1,
-        //         end: 7,
-        //     },
-        //     {
-        //         type: 'test',
-        //         speed: 0.01,
-        //         direction: -1,
-        //         end: -7,
-        //     },
-        //     {
-        //         type: 'test',
-        //         speed: 0.005,
-        //         direction: 1,
-        //         end: 0,
-        //     }
-        // ];
+        this.current = new SingleContainer(this.lifter.liftArm);
+        this.current.setRotation(0, 0, Math.PI/2);
+        this.current.setPosition(0, 0, -1.875);
+
+        this.containerGroupTop = [null, null, null, null, null];
+        this.containerGroupBottom = [null, null, null, null, null];
+
+        for (let i = 0; i < (Math.trunc(Math.random() * 4) + 1); i++) {
+            let c = new SingleContainer(this.scene);
+            c.setRotation(0, 0, Math.PI/2);
+            c.setPosition(this.containerPositions[i], 0, 5.625);
+            this.containerGroupTop[i] = c;
+        }
+
+        for (let i = (Math.trunc(Math.random() * 4) + 1); i > 0; i--) {
+            let c = new SingleContainer(this.scene);
+            c.setRotation(0, 0, Math.PI/2);
+            c.setPosition(this.containerPositions[5 - i], -35, 5.625);
+            this.containerGroupBottom[5 - i] = c;
+        }
     }
 
     public setPosition(x: number, y: number, z: number): void {
@@ -199,32 +177,54 @@ class Crane {
     }
 
     public triggerAnimation(): void {
-        console.log('trigge animations..');
+        let target = this.crane.position.y < -17 ? this.containerGroupBottom : this.containerGroupTop;
+        
+        let free: number[] = [];
+        let taken: number[] = []; 
+        for (let i = 0; i < target.length; i++) {
+            if (target[i] != null) {
+                taken.push(i);
+            } else {
+                free.push(i);
+            }
+        }
 
+        let f = free[Math.trunc(Math.random() * free.length)];
+        let t = taken[Math.trunc(Math.random() * taken.length)];
+
+        // 0, 4, 8
+        this.animation[0].stop = this.lifterPositions[f];
+        this.animation[0].direction = this.lifterPositions[f] < 0 ? -1 : 1;
+        this.animation[4].stop = this.lifterPositions[t];
+        this.animation[4].direction = t < f ? 1 : -1;
+        this.animation[8].direction = t < 2 ? -1 : 1;
+
+        // container
+        this.animation[2].direction = -1; // release
+        this.animation[2].stop = f; // index
+        this.animation[6].direction = 1; // release
+        this.animation[6].stop = t; // index
+
+        // start anime
         this.animationIndex = 0;
-        // this.animationIndex = 0;
-        // this.lifterHeight = 12;
-        // this.lifter.setHeight(this.lifterHeight);
-        // this.liftArm.position.x = 0;
     }
 
     public update(dt: number): void {
-        if (this.animationIndex < this.animation.length) {
+        if (this.animationIndex < this.animation.length) {            
             let a = this.animation[this.animationIndex];
-
             if (a.delay > this.animationDelay) {
                 this.animationDelay += dt;
                 return;
             }
 
-            if (a.type == 0) {
+            if (a.type == AnimationType.Horizontal) {
                 this.liftArm.position.x += dt * a.direction * a.speed;
                 if ((a.direction == 1 && this.liftArm.position.x > a.stop) || (a.direction == -1 && this.liftArm.position.x < a.stop)) {
                     this.liftArm.position.x = a.stop;
                     this.animationDelay = 0;
                     this.animationIndex++;
                 }
-            } else if (a.type == 1) {
+            } else if (a.type == AnimationType.Vertical) {
                 this.lifterHeight += dt * a.direction * a.speed;
                 if ((a.direction == 1 && this.lifterHeight > a.stop) || (a.direction == -1 && this.lifterHeight < a.stop)) {
                     this.lifterHeight = a.stop;
@@ -232,46 +232,36 @@ class Crane {
                     this.animationIndex++;
                 }
                 this.lifter.setHeight(this.lifterHeight);
+            } else if (a.type == AnimationType.Trigger) {
+                let target = this.containerGroupTop;
+                let y = 0;
+                if (this.crane.position.y < -17) {
+                    target = this.containerGroupBottom;
+                    y = -35;
+                }
+
+                if (a.direction == 1) {
+                    this.current = target[a.stop];
+                    target[a.stop] = null;
+                    if (this.current != null) {
+                        this.current.addTo(this.lifter.liftArm);
+                        this.current.setPosition(0, 0, -1.875);
+                    }
+                } else if (a.direction == -1) {
+                    if (this.current != null) {
+                        let c = this.current;
+                        target[a.stop] = c;
+                        this.current = null;
+
+                        c.addTo(this.scene);
+                        c.setPosition(this.containerPositions[a.stop], y, 1.5*3.75);
+                    }
+                }
+
+                this.animationDelay = 0;
+                this.animationIndex++;
             }
-
-            //console.log(a);
-            
-            // if ((a.direction == 1 && this.liftArm.position.x > a.stop) || (a.direction == -1 && this.liftArm.position.x < a.stop)) {
-            //     if (a.type == 0) {
-            //         this.liftArm.position.x = a.stop;
-            //     } else if (a.type == 1) {
-            //         this.lifterHeight = a.stop;
-            //         this.lifter.setHeight(this.lifterHeight);
-            //     }
-            //     this.animationDelay = 0;
-            //     this.animationIndex++;
-            // }
-
-            // if ((a.direction == 1 && this.liftArm.position.x > a.stop) || (a.direction == -1 && this.liftArm.position.x < a.stop)) {
-            //     if (a.type == 0) {
-            //         this.liftArm.position.x = a.stop;
-            //     } else if (a.type == 1) {
-            //         this.lifterHeight = a.stop;
-            //         this.lifter.setHeight(this.lifterHeight);
-            //     }
-            //     this.animationDelay = 0;
-            //     this.animationIndex++;
-            // }
-
         }
-
-
-        // let a = this.animation[this.animationIndex];
-        // if (a != undefined) {
-        //     this.liftArm.position.x += dt * a.direction * a.speed;
-        //     if (
-        //         (a.direction == 1 && this.liftArm.position.x > a.end) || 
-        //         (a.direction == -1 && this.liftArm.position.x < a.end)
-        //     ) {
-        //         this.liftArm.position.x = a.end;
-        //         this.animationIndex++;
-        //     }
-        // }
     }
 }
 

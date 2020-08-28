@@ -3,10 +3,10 @@ import { Assets } from './Assets';
 
 class Item {
     
-    private scene: THREE.Group;
+    private scene: THREE.Group | THREE.Scene;
     private mesh: THREE.Mesh;
     
-    constructor(scene: THREE.Group) {
+    constructor(scene: THREE.Group | THREE.Scene) {
         this.scene = scene;
         
         let g = new THREE.BoxGeometry(8, 3.75, 3.75);
@@ -95,6 +95,10 @@ class Item {
 
     public setRotation(x: number, y: number, z: number): void {
         this.mesh.rotation.set(x, y, z);
+    }
+
+    public addTo(group: THREE.Group | THREE.Scene) {
+        group.add(this.mesh);
     }
 
     public dispose(): void {
