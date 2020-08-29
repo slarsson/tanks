@@ -1,4 +1,4 @@
-module github.com/slarsson/game
+module github.com/slarsson/tanks
 
 go 1.15
 
