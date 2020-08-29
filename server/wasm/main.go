@@ -6,7 +6,7 @@ import (
 	"syscall/js"
 	"time"
 
-	"github.com/slarsson/game/game"
+	"github.com/slarsson/tanks/game"
 )
 
 // updateRate: is the rate (time in ms) which updates are sent to the server

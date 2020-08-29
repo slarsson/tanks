@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/slarsson/game/game"
-	"github.com/slarsson/game/network"
+	"github.com/slarsson/tanks/game"
+	"github.com/slarsson/tanks/network"
 )
 
 // Server ...

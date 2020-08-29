@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/slarsson/game/network"
+	"github.com/slarsson/tanks/network"
 )
 
 const (

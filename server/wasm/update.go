@@ -5,7 +5,7 @@ import (
 	"syscall/js"
 	"time"
 
-	"github.com/slarsson/game/game"
+	"github.com/slarsson/tanks/game"
 )
 
 func updateLocalPlayer() {

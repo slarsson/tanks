@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/slarsson/game/network"
+	"github.com/slarsson/tanks/network"
 )
 
 // Constant to handle speed of movment
