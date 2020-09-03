@@ -81,6 +81,7 @@ class Manager {
             } break; 
 
             case 99: {
+                let self = this.game.getSelf();
                 let data = new Uint32Array(buffer);
                 let k1 = this.playerNames.get(data[0]);
                 let k2 = this.playerNames.get(data[1]);
@@ -88,7 +89,13 @@ class Manager {
                     console.warn('MANAGER: can not show kill log :(');
                 } else {
                     this.graphics.addKillMessage(k1, k2);
+                    if (self == data[0]) {
+                        this.graphics.addMessage(`YOU KILLED ${k2}`, 1500, Graphics.INFO);
+                    } else if (self == data[1]) {
+                        this.graphics.addMessage(`KILLED BY ${k1}`, 1500, Graphics.INFO);
+                    }
                 }
+
             } break;
             
             case 98: {

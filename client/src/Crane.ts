@@ -204,7 +204,7 @@ class Crane {
         this.animation[2].stop = f; // index
         this.animation[6].direction = 1; // release
         this.animation[6].stop = t; // index
-
+        
         // start anime
         this.animationIndex = 0;
     }

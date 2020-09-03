@@ -66,6 +66,7 @@ func update(this js.Value, args []js.Value) interface{} {
 			}
 
 			p.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
+			p.Velocity.Set(float32(args[i+4].Float()), float32(args[i+5].Float()), float32(args[i+6].Float()))
 			p.Rotation = float32(args[i+7].Float())
 			p.TurretRotation = float32(args[i+8].Float())
 
@@ -92,7 +93,7 @@ func update(this js.Value, args []js.Value) interface{} {
 			networkPlayer := game.NewLocalPlayer()
 			networkPlayer.ID = key
 			networkPlayer.Position.Set(float32(args[i+1].Float()), float32(args[i+2].Float()), float32(args[i+3].Float()))
-			networkPlayer.Position.Set(float32(args[i+4].Float()), float32(args[i+5].Float()), float32(args[i+6].Float()))
+			networkPlayer.Velocity.Set(float32(args[i+4].Float()), float32(args[i+5].Float()), float32(args[i+6].Float()))
 			networkPlayers[key] = networkPlayer
 		}
 	}

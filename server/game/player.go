@@ -239,6 +239,7 @@ func (p *Player) HandleCollsionWithPlayers(players *map[int]*Player, dt float32)
 
 func (p *Player) SyncState(target *Player) {
 	p.Position.SetFromVector(target.Position)
+	p.Velocity.SetFromVector(target.Velocity)
 	p.Rotation = target.Rotation
 	p.TurretRotation = target.TurretRotation
 }
