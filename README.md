@@ -1,57 +1,56 @@
-# game
+# tanks
+DEMO: slarsson.me/tanks
+
+Simple online multiplayer game created with Go, TypeScript and WebAssembly.
 
 ![alt text](./assets/screen2.png)
 
-## Client
-TODO
 
-## Server
-TODO
+## `./client`
+Run build
+```sh
+npm run build
+```
+
+Start dev (expects the server to be running on port 1337)
+```sh
+npm run dev
+```
+
+## `./server`
+Go version = 1.15
 
 ### Makefile:
+Run server
+```sh
+make run
+```
 
 Build server + wasm
-```
+```sh
 make build
 ```
 
-Build wasm part only
-```
+Build wasm part only + sync main.wasm with client
+```sh
 make wasm
 ```
 
-Run server
+Build for arm-processors (32-bit) 
+```sh
+make arm
 ```
-make run
-```
-## Misc
+&nbsp;
 
+## #inspo
+https://www.youtube.com/watch?v=ZyGw1yLNO9E
 
+https://github.com/awdng/triebwerk
 
-Go target = wasm
-```
-GOOS=js GOARCH=wasm go build -o main.wasm
-```
+## URLs
 
 https://github.com/golang/go/wiki/GoArm
 
 https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
 
-
-
-## SSH
-
-1. HOST
-    - create ssh-key: <em>ssh-keygen -t rsa -b 4096 -C "your_email@example.com"</em>
-    - create authorized_keys file in ~/.ssh/authorized_keys containing public key (id_rsa.pub)
-    - ensure: .ssh => chmod 700
-    - ensure: authorized_keys => chmod 600
-
-2. GITHUB
-    - add private key to secrets
-
-
-
-rsync -vah ./build/ pi@slarsson.me:/home/pi/nginx/www/tanks/ --delete
-
-0xa6de7ab
+https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server
