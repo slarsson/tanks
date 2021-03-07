@@ -1,5 +1,5 @@
 # tanks
-DEMO: http://samuel.yoga/tanks
+DEMO: http://game.samuel.yoga
 
 Simple online multiplayer game created with Go, TypeScript and WebAssembly.
 
