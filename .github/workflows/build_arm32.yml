@@ -75,7 +75,7 @@ jobs:
           npm install
           npm run build
         env:
-          WS_HOST: samuel.yoga:1337
+          WS_HOST: tanks.samuel.yoga
       
       - uses: actions/upload-artifact@v2
         with:
