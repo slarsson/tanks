@@ -89,6 +89,17 @@ jobs:
           rsync -vah -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build/ root@samuel.yoga:/home/html/tanks/ --delete
         env: 
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PATH: ${{ secrets.SSH_PATH }}
+
+      - name: Restart containers
+        uses: appleboy/ssh-action@master
+        with:
+          host: samuel.yoga
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            cd /home/asdf
+            docker-compose pull   
+            docker-compose up -d
+            docker image prune
