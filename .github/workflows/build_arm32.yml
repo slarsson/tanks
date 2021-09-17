@@ -86,7 +86,7 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > mykey
           chmod 600 mykey
-          rsync -vah -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build/ $SSH_USER@$SSH_HOST:$SSH_PATH --delete
+          rsync -vah -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build/ root@samuel.yoga:/home/html/tanks/ --delete
         env: 
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
