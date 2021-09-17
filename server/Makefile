@@ -14,5 +14,8 @@ wasm:
 arm:
 	GOOS=linux GOARCH=arm go build -o build/server_arm32 .
 
+amd64:
+	GOOS=linux GOARCH=amd64 go build -o build/server_amd64 .
+
 run:
 	go run .

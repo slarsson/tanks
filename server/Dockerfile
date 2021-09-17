@@ -10,7 +10,7 @@ COPY . .
 
 RUN go get -d -v ./...
 
-RUN make arm
+RUN make amd64
 
 
 # deploy
@@ -20,8 +20,8 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /
 
-COPY --from=0 /game/build/server_arm32 .
+COPY --from=0 /game/build/server_amd64 .
 
 EXPOSE 1337
 
-CMD ["./server_arm32"] 
+CMD ["./server_amd64"]
