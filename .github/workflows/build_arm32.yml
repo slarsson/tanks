@@ -80,4 +80,15 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: client
-          path: ./client/build/ # or path/to/artifact
+          path: ./client/build/
+
+      - name: Deploy
+        run: |
+          echo "$SSH_PRIVATE_KEY" > mykey
+          chmod 600 mykey
+          rsync -vah -e 'ssh -i mykey -o StrictHostKeyChecking=no' ./client/build/ $SSH_USER@$SSH_HOST:$SSH_PATH --delete
+        env: 
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PATH: ${{ secrets.SSH_PATH }}
