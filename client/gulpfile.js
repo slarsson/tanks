@@ -37,7 +37,7 @@ const webpackConfig = {
 	},
 	plugins: [
 		new webpack.DefinePlugin({
-			WS_HOST: process.env.WS_HOST ? '"'+process.env.WS_HOST+'"' : '"localhost:1337"'
+			WS_HOST: process.env.WS_HOST ? '"'+process.env.WS_HOST+'"' : '"ws://localhost:1337"'
 		})
 	]
 };

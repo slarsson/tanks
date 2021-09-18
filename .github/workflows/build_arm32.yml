@@ -75,12 +75,7 @@ jobs:
           npm install
           npm run build
         env:
-          WS_HOST: tanks.samuel.yoga
-      
-      - uses: actions/upload-artifact@v2
-        with:
-          name: client
-          path: ./client/build/
+          WS_HOST: wss://tanks.samuel.yoga
 
       - name: Deploy
         run: |
@@ -90,16 +85,14 @@ jobs:
         env: 
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # - name: Restart containers
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: samuel.yoga
-      #     username: root
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     port: 22
-      #     script_stop: true
-      #     script: |
-      #       cd /home/asdf
-      #       docker-compose pull   
-      #       docker-compose up -d
-      #       docker image prune
+      - name: Restart containers
+        uses: appleboy/ssh-action@master
+        with:
+          host: samuel.yoga
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            cd /home/asdf
+            ./start.sh
