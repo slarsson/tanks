@@ -11,7 +11,7 @@
   "author": "Samuel Larsson",
   "license": "ISC",
   "dependencies": {
-    "three": "0.117.1"
+    "three": "0.137.0"
   },
   "devDependencies": {
     "@types/node": "^14.0.13",
